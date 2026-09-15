@@ -20,6 +20,14 @@ function isInBotJoiningSoonWindow(
 }
 
 
+function isMeetingEnded(endTimeIso: string, nowMs = Date.now()): boolean {
+  const endMs = Date.parse(endTimeIso)
+  if (Number.isNaN(endMs)) {
+    return true
+  }
+  return endMs <= nowMs
+}
+
 function isManualCaptureAllowed(
   startTimeIso: string,
   nowMs = Date.now()
@@ -36,5 +44,6 @@ function isManualCaptureAllowed(
 export {
   MEETING_CAPTURE_LEAD_MS,
   isInBotJoiningSoonWindow,
-  isManualCaptureAllowed
+  isManualCaptureAllowed,
+  isMeetingEnded
 }

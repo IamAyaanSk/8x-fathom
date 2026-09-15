@@ -2,7 +2,7 @@ import { parseBaasApiStatus } from '@repo/api-contract/baas-bot-status'
 import { MEETING_CAPTURE_LEAD_MS } from './capture-window.js'
 import { Prisma, prisma, type BaasBotStatus } from '@repo/db'
 
-import { BOT_NAME, DISPATCH_BATCH_SIZE } from './constants.js'
+import {  DISPATCH_BATCH_SIZE } from './constants.js'
 import { DispatchError } from './errors.js'
 import { createMeetingBaasClient } from './meeting-baas-client.js'
 
@@ -138,7 +138,7 @@ async function _dispatchLockedMeeting(
   const client = createMeetingBaasClient(meetingBaasApiKey)
   const createResult = await client.createBot({
     meeting_url: row.meetingUrl,
-    bot_name: `${row.userName} ${BOT_NAME}`,
+    bot_name: `${row.userName}'s 8x Notetaker}`,
     transcription_enabled: true,
     allow_multiple_bots: false,
     timeout_config: {

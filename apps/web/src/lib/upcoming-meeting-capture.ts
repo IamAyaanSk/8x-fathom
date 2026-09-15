@@ -1,7 +1,8 @@
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
 import {
   isInBotJoiningSoonWindow,
-  isManualCaptureAllowed
+  isManualCaptureAllowed,
+  isMeetingEnded
 } from '@repo/meeting-dispatch/capture-window'
 
 const CAPTURE_HINT =
@@ -31,7 +32,7 @@ function getUpcomingMeetingCaptureUi({
     meeting.startTime,
     nowMs
   )
-  const hasEnded = Date.parse(meeting.endTime) <= nowMs
+  const hasEnded = isMeetingEnded(meeting.endTime, nowMs)
   const canCapture =
     !hasBot && manualCaptureAllowed && !hasEnded && !isCapturing
 

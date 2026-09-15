@@ -6,6 +6,7 @@ import {
   meetingsQueryKeys,
   useMeetingsUpcomingQuery
 } from '@repo/api-client/v1/meetings/hooks'
+import { isMeetingEnded } from '@repo/meeting-dispatch/capture-window'
 import { Button } from '@repo/ui-web/components/button'
 import { useQueryClient } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -14,6 +15,7 @@ import { useState } from 'react'
 
 import { GoogleMark } from '#components/auth/google-mark'
 import { UpcomingMeetingRow } from '#components/meetings/upcoming-meeting-row'
+import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
 
 const GOOGLE_CALENDAR_EVENTS_READONLY_SCOPE =
@@ -23,6 +25,7 @@ const authenticatedRoute = getRouteApi('/_authenticated')
 
 function HomePage() {
   const { session } = authenticatedRoute.useRouteContext()
+  const now = useNow()
   const queryClient = useQueryClient()
   const { data, isPending, isError, refetch } = useCalendarStatusQuery()
   const syncMutation = useCalendarSyncMutation({
@@ -155,8 +158,9 @@ function HomePage() {
         ? 'Sync failed. Try again.'
         : null
 
-  const meetings =
+  const meetings = (
     meetingsData?.success === true ? meetingsData.data.meetings : []
+  ).filter((meeting) => !isMeetingEnded(meeting.endTime, now))
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-8 sm:px-6">

@@ -22,7 +22,7 @@ const getMeetingsUpcomingController = async (
     const now = new Date()
 
     const rows = await prisma.meeting.findMany({
-      where: { userId, endTime: { gte: now } },
+      where: { userId, endTime: { gt: now } },
       orderBy: { startTime: 'asc' },
       select: {
         id: true,

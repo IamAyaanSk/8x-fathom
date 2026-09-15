@@ -1,8 +1,7 @@
 import type { IncomingHttpHeaders } from 'node:http'
 
 import {
-  mapBaasApiStatus,
-  patchFromBaasCompleted,
+  mapBaasApiStatus,  
   patchFromBaasFailed,
   patchFromBaasStatusChange,
   type BaasBotStatus,
@@ -152,14 +151,8 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
   }
 
   if (event.event === 'bot.completed') {
-    const patch = patchFromBaasCompleted(state)
-    if (!patch) {
-      return
-    }
-    await prisma.meeting.update({
-      where: { id: meeting.id },
-      data: patch
-    })
+    // TODO: handle storing keys
+
     return
   }
 

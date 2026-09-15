@@ -11,6 +11,10 @@
       "types": "./src/baas-bot-status.ts",
       "default": "./dist/baas-bot-status.js"
     },
+    "./baas-completed-storage": {
+      "types": "./src/baas-completed-storage.ts",
+      "default": "./dist/baas-completed-storage.js"
+    },
     "./meeting-baas-webhook": {
       "types": "./src/meeting-baas-webhook.ts",
       "default": "./dist/meeting-baas-webhook.js"

@@ -4,6 +4,7 @@ const BAAS_BOT_STATUSES = [
   'in_waiting_room',
   'in_call_recording',
   'transcribing',
+  'completed',
   'failed'
 ] as const
 
@@ -41,15 +42,22 @@ const BAAS_API_STATUS_TO_STORED: Record<string, BaasBotStatus> = {
   MEET_LOGIN_FAILED_TIMEOUT: 'failed'
 }
 
+
+
 const BAAS_STATUS_RANK: Record<BaasBotStatus, number> = {
   joining: 1,
   in_waiting_room: 2,
   in_call_recording: 3,
   transcribing: 4,
-  failed: 5
+  completed: 5,
+  failed: 6
 }
 
-const TERMINAL_BAAS_STATUSES: BaasBotStatus[] = ['transcribing', 'failed']
+const TERMINAL_BAAS_STATUSES: BaasBotStatus[] = [
+  'transcribing',
+  'completed',
+  'failed'
+]
 
 const MEETING_PROCESSING_STATUSES = [
   'idle',
@@ -65,6 +73,7 @@ const MEETING_BOT_UI_PHASES = [
   'starting_soon',
   'joining',
   'in_call_recording',
+  'transcribing',
   'call_ended_processing',
   'ready',
   'failed_to_join',
@@ -77,6 +86,7 @@ const MEETING_BOT_UI_LABELS: Record<MeetingBotUiPhase, string> = {
   starting_soon: 'Starting soon',
   joining: 'Joining…',
   in_call_recording: 'In call — recording',
+  transcribing: 'Transcribing…',
   call_ended_processing: 'Call ended, processing…',
   ready: 'Ready',
   failed_to_join: 'Failed to join',
@@ -86,6 +96,7 @@ const MEETING_BOT_UI_LABELS: Record<MeetingBotUiPhase, string> = {
 const ACTIVE_BOT_UI_PHASES = new Set<MeetingBotUiPhase>([
   'joining',
   'in_call_recording',
+  'transcribing',
   'call_ended_processing'
 ])
 
@@ -106,7 +117,7 @@ function mapBaasApiStatus(status: string): BaasBotStatus | null {
   return BAAS_API_STATUS_TO_STORED[status] ?? null
 }
 
-function shouldApplyBaasStatus(
+function _shouldApplyBaasStatus(
   current: BaasBotStatus | null,
   next: BaasBotStatus
 ): boolean {
@@ -162,8 +173,11 @@ function getMeetingBotUiPhase(
   if (meeting.baasStatus === 'in_call_recording') {
     return 'in_call_recording'
   }
+  if (meeting.baasStatus === 'transcribing') {
+    return 'transcribing'
+  }
   if (
-    meeting.baasStatus === 'transcribing' ||
+    meeting.baasStatus === 'completed' ||
     meeting.processingStatus === 'pending' ||
     meeting.processingStatus === 'processing'
   ) {
@@ -186,19 +200,6 @@ function isActiveMeetingBotUiPhase(phase: MeetingBotUiPhase): boolean {
   return ACTIVE_BOT_UI_PHASES.has(phase)
 }
 
-function _processingPatchFromRaw(
-  rawStatus: string,
-  current: MeetingProcessingStatus
-): MeetingProcessingStatus | undefined {
-  if (current === 'ready' || current === 'failed' || current === 'processing') {
-    return undefined
-  }
-  if (rawStatus === 'transcribing') {
-    return 'processing'
-  }
-  return undefined
-}
-
 function patchFromBaasStatusChange(
   meeting: MeetingBotStateFields,
   rawStatus: string,
@@ -209,11 +210,7 @@ function patchFromBaasStatusChange(
     return null
   }
 
-  const applyStatus = shouldApplyBaasStatus(meeting.baasStatus, nextStatus)
-  const processingStatus = _processingPatchFromRaw(
-    rawStatus,
-    meeting.processingStatus
-  )
+  const applyStatus = _shouldApplyBaasStatus(meeting.baasStatus, nextStatus)
   const recordingStartedAt =
     nextStatus === 'in_call_recording' &&
     recordingStartTimeSec != null &&
@@ -221,27 +218,20 @@ function patchFromBaasStatusChange(
       ? new Date(recordingStartTimeSec * 1000)
       : undefined
 
-  if (!applyStatus && processingStatus == null && recordingStartedAt == null) {
+  if (!applyStatus && recordingStartedAt == null) {
     return null
   }
 
   return {
     ...(applyStatus ? { baasStatus: nextStatus } : {}),
-    ...(processingStatus ? { processingStatus } : {}),
     ...(recordingStartedAt ? { recordingStartedAt } : {})
   }
-}
-
-function patchFromBaasCompleted(
-  meeting: MeetingBotStateFields
-): MeetingBaasStatusPatch | null {
-  return patchFromBaasStatusChange(meeting, 'completed')
 }
 
 function patchFromBaasFailed(
   meeting: MeetingBotStateFields
 ): MeetingBaasStatusPatch | null {
-  if (!shouldApplyBaasStatus(meeting.baasStatus, 'failed')) {
+  if (!_shouldApplyBaasStatus(meeting.baasStatus, 'failed')) {
     return null
   }
   return { baasStatus: 'failed' }
@@ -264,7 +254,6 @@ export {
   getMeetingBotUiPhase,
   isActiveMeetingBotUiPhase,
   mapBaasApiStatus,
-  patchFromBaasCompleted,
   patchFromBaasFailed,
   patchFromBaasStatusChange
 }

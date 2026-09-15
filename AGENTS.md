@@ -26,7 +26,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 
 - Bots are dispatched **automatically** by the worker scheduler. No start-capture button.
 - Calendar sync only creates/updates `Meeting` rows for events with a `meetingUrl` (Meet / Zoom / Teams).
-- Store a small lifecycle on `Meeting.baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `failed`). Map MeetingBaas API codes onto that enum in `@repo/api-contract`. Derive UI from the same mapper.
+- Store a small lifecycle on `Meeting.baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `completed` \| `failed`). Map MeetingBaas API codes onto that enum in `@repo/api-contract`. Derive UI from the same mapper.
 
 | UI state               | Stored `baasStatus` / `processingStatus`                                                                                                           |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -34,7 +34,8 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 | Joining…               | `joining`                                                                                                                                          |
 | In waiting room…       | `in_waiting_room`                                                                                                                                  |
 | In call — recording    | `in_call_recording`                                                                                                                                |
-| Call ended, processing | `transcribing`, or `processingStatus` `pending` / `processing`. `bot.completed` → `transcribing` only; transcription completion webhook → `pending` (then worker → `processing` / `ready`) |
+| Transcribing… | `transcribing` (post-call, before artifacts) — show transcript UI when available |
+| Call ended, processing | `completed` (R2 keys from `bot.completed`), or `processingStatus` `pending` / `processing`. `bot.completed` → `completed` + `recordingR2Key` / `transcriptR2Key`; transcription completion webhook → `pending` (then worker → `processing` / `ready`) |
 | Ready                  | `processingStatus: ready`                                                                                                                          |
 | Failed to join         | `failed` and no `recordingStartedAt` (capture again if the meeting has not ended, outside the 2-minute pre-start window) |
 | Failed processing      | `processingStatus: failed`, or `failed` after the bot joined                                                                                       |

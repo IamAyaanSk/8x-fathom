@@ -1,5 +1,7 @@
 import { z } from 'zod/v4'
 
+import { meetingBaasCompletedDataSchema } from '#src/baas-completed-storage'
+
 const meetingBaasWebhookExtraSchema = z
   .object({
     meetingId: z.string().optional()
@@ -23,10 +25,7 @@ const meetingBaasStatusChangeWebhookSchema = z.object({
 
 const meetingBaasCompletedWebhookSchema = z.object({
   event: z.literal('bot.completed'),
-  data: z.object({
-    bot_id: z.string(),
-    joined_at: z.string().nullable().optional()
-  }),
+  data: meetingBaasCompletedDataSchema,
   extra: meetingBaasWebhookExtraSchema
 })
 

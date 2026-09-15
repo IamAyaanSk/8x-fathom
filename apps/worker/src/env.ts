@@ -16,6 +16,7 @@ const envZodSchema = z
     DATABASE_URL: trimmedStringWithMinLengthOneSchema,
     MEETINGBAAS_API_KEY: trimmedStringWithMinLengthOneSchema,
     MEETINGBAAS_WEBHOOK_SECRET: trimmedStringWithMinLengthOneSchema,
+    DEEPGRAM_API_KEY: trimmedStringWithMinLengthOneSchema,
     BASE_URL: trimmedStringWithMinLengthOneSchema,
     R2_ACCOUNT_ID: trimmedStringWithMinLengthOneSchema,
     R2_ACCESS_KEY_ID: trimmedStringWithMinLengthOneSchema,

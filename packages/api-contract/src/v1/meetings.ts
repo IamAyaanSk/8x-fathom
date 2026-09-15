@@ -18,11 +18,15 @@ const meetingListItemSchema = z.object({
   uiPhase: meetingBotUiPhaseSchema
 })
 
-const getMeetingsUpcomingResponseSchema = _createResponseApiZod(
-  z.object({
-    meetings: z.array(meetingListItemSchema)
-  })
-)
+const meetingsListDataSchema = z.object({
+  meetings: z.array(meetingListItemSchema)
+})
+
+const getMeetingsUpcomingResponseSchema =
+  _createResponseApiZod(meetingsListDataSchema)
+
+const getMeetingsCompletedResponseSchema =
+  _createResponseApiZod(meetingsListDataSchema)
 
 const postMeetingBotDispatchDataSchema = z.object({
   meetingId: z.string(),
@@ -42,6 +46,13 @@ export type GetMeetingsUpcomingSuccessResponse = Extract<
   GetMeetingsUpcomingResponse,
   { success: true }
 >
+export type GetMeetingsCompletedResponse = z.infer<
+  typeof getMeetingsCompletedResponseSchema
+>
+export type GetMeetingsCompletedSuccessResponse = Extract<
+  GetMeetingsCompletedResponse,
+  { success: true }
+>
 export type MeetingListItem = z.infer<typeof meetingListItemSchema>
 export type PostMeetingCaptureResponse = z.infer<
   typeof postMeetingCaptureResponseSchema
@@ -53,8 +64,10 @@ export type PostMeetingCaptureSuccessResponse = Extract<
 
 export {
   baasBotStatusSchema,
+  getMeetingsCompletedResponseSchema,
   getMeetingsUpcomingResponseSchema,
   meetingBotUiPhaseSchema,
   meetingListItemSchema,
+  meetingsListDataSchema,
   postMeetingCaptureResponseSchema
 }

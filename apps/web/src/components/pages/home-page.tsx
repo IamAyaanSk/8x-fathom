@@ -4,9 +4,9 @@ import {
 } from '@repo/api-client/v1/calendar/hooks'
 import {
   meetingsQueryKeys,
+  useMeetingsCompletedQuery,
   useMeetingsUpcomingQuery
 } from '@repo/api-client/v1/meetings/hooks'
-import { isMeetingEnded } from '@repo/meeting-dispatch/capture-window'
 import { Button } from '@repo/ui-web/components/button'
 import { useQueryClient } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -14,9 +14,10 @@ import { CalendarDays, Loader2, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 
 import { GoogleMark } from '#components/auth/google-mark'
-import { UpcomingMeetingRow } from '#components/meetings/upcoming-meeting-row'
+import { MeetingCallsTabs } from '#components/meetings/meeting-calls-tabs'
 import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
+import { categorizeMeetingsForTabs } from '#lib/meeting-call-tabs'
 
 const GOOGLE_CALENDAR_EVENTS_READONLY_SCOPE =
   'https://www.googleapis.com/auth/calendar.events.readonly'
@@ -30,9 +31,7 @@ function HomePage() {
   const { data, isPending, isError, refetch } = useCalendarStatusQuery()
   const syncMutation = useCalendarSyncMutation({
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: meetingsQueryKeys.upcoming()
-      })
+      void queryClient.invalidateQueries({ queryKey: meetingsQueryKeys.all })
     }
   })
   const [isConnecting, setIsConnecting] = useState(false)
@@ -41,11 +40,18 @@ function HomePage() {
   const connected = data?.success === true && data.data.connected
 
   const {
-    data: meetingsData,
-    isPending: meetingsPending,
-    isError: meetingsError,
-    refetch: refetchMeetings
+    data: upcomingData,
+    isPending: upcomingPending,
+    isError: upcomingError,
+    refetch: refetchUpcoming
   } = useMeetingsUpcomingQuery({ enabled: connected === true })
+
+  const {
+    data: completedData,
+    isPending: completedPending,
+    isError: completedError,
+    refetch: refetchCompleted
+  } = useMeetingsCompletedQuery({ enabled: connected === true })
 
   async function handleConnectCalendar() {
     setIsConnecting(true)
@@ -158,83 +164,64 @@ function HomePage() {
         ? 'Sync failed. Try again.'
         : null
 
-  const meetings = (
-    meetingsData?.success === true ? meetingsData.data.meetings : []
-  ).filter((meeting) => !isMeetingEnded(meeting.endTime, now))
+  const openMeetings =
+    upcomingData?.success === true ? upcomingData.data.meetings : []
+  const pastMeetings =
+    completedData?.success === true ? completedData.data.meetings : []
+  const categories = categorizeMeetingsForTabs({
+    openMeetings,
+    pastMeetings,
+    nowMs: now
+  })
+  const meetingsLoading = upcomingPending || completedPending
+  const meetingsError =
+    upcomingError ||
+    completedError ||
+    (upcomingData != null && !upcomingData.success) ||
+    (completedData != null && !completedData.success)
+
+  function handleRefetchMeetings() {
+    void refetchUpcoming()
+    void refetchCompleted()
+  }
+
+  const syncButton = (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      disabled={syncMutation.isPending}
+      onClick={() => {
+        syncMutation.reset()
+        syncMutation.mutate()
+      }}
+    >
+      {syncMutation.isPending ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <RefreshCw />
+      )}
+      Sync now
+    </Button>
+  )
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-8 sm:px-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-4 pb-8 sm:px-6 sm:pt-5">
       <section className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-muted-foreground text-xs font-medium tracking-widest uppercase">
-            Upcoming calls
-          </h2>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={syncMutation.isPending}
-            onClick={() => {
-              syncMutation.reset()
-              syncMutation.mutate()
-            }}
-          >
-            {syncMutation.isPending ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <RefreshCw />
-            )}
-            Sync now
-          </Button>
-        </div>
+        <MeetingCallsTabs
+          categories={categories}
+          isLoading={meetingsLoading}
+          isError={meetingsError}
+          nowMs={now}
+          onRetry={handleRefetchMeetings}
+          toolbarEnd={syncButton}
+        />
         {syncMutation.isError ? (
           <p className="text-destructive text-sm">Could not sync calendar.</p>
         ) : null}
         {syncMessage ? (
           <p className="text-muted-foreground text-sm">{syncMessage}</p>
         ) : null}
-
-        {meetingsPending ? (
-          <div className="flex items-center justify-center gap-2 py-16">
-            <Loader2
-              aria-hidden
-              className="text-muted-foreground size-6 animate-spin"
-            />
-            <p className="text-muted-foreground text-sm">Loading meetings…</p>
-          </div>
-        ) : meetingsError || (meetingsData && !meetingsData.success) ? (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-destructive text-sm">
-              Could not load upcoming calls.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                void refetchMeetings()
-              }}
-            >
-              Try again
-            </Button>
-          </div>
-        ) : meetings.length === 0 ? (
-          <div className="border-border border-b py-12 text-center">
-            <p className="text-foreground text-sm font-medium">
-              No upcoming calls with a video link
-            </p>
-            <p className="text-muted-foreground mt-2 text-sm">
-              Events in your sync window with Meet, Zoom, or Teams links appear
-              here. Try Sync now if you just added one.
-            </p>
-          </div>
-        ) : (
-          <ul className="border-border border-t">
-            {meetings.map((meeting) => (
-              <UpcomingMeetingRow key={meeting.id} meeting={meeting} />
-            ))}
-          </ul>
-        )}
       </section>
     </div>
   )

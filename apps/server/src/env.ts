@@ -21,6 +21,7 @@ const envZodSchema = z.object({
   WEB_ORIGIN: trimmedStringWithMinLengthOneSchema,
   MEETINGBAAS_API_KEY: trimmedStringWithMinLengthOneSchema,
   MEETINGBAAS_WEBHOOK_SECRET: trimmedStringWithMinLengthOneSchema,
+  DEEPGRAM_API_KEY: trimmedStringWithMinLengthOneSchema,
   R2_ACCOUNT_ID: trimmedStringWithMinLengthOneSchema,
   R2_ACCESS_KEY_ID: trimmedStringWithMinLengthOneSchema,
   R2_SECRET_ACCESS_KEY: trimmedStringWithMinLengthOneSchema,

@@ -1,9 +1,11 @@
 import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
+  GetMeetingsCompletedSuccessResponse,
   GetMeetingsUpcomingSuccessResponse,
+  MeetingListItem,
   PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meetings'
-import { prisma } from '@repo/db'
+import { type Prisma, prisma } from '@repo/db'
 import {
   dispatchBotForMeeting,
   DispatchError,
@@ -20,7 +22,8 @@ function _dispatchCallbackParams() {
   return {
     meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
     callbackBaseUrl: env.BASE_URL,
-    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET
+    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET,
+    transcriptionApiKey: env.DEEPGRAM_API_KEY
   }
 }
 
@@ -30,6 +33,42 @@ function _meetingIdFromRequest(req: Request): string | null {
     return null
   }
   return meetingId
+}
+
+const _meetingListSelect = {
+  id: true,
+  title: true,
+  startTime: true,
+  endTime: true,
+  meetingUrl: true,
+  htmlLink: true,
+  baasBotId: true,
+  baasStatus: true,
+  recordingStartedAt: true,
+  processingStatus: true
+} as const
+
+type MeetingListRow = Prisma.MeetingGetPayload<{
+  select: typeof _meetingListSelect
+}>
+
+function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
+  return {
+    id: row.id,
+    title: row.title,
+    startTime: row.startTime.toISOString(),
+    endTime: row.endTime.toISOString(),
+    meetingUrl: row.meetingUrl,
+    htmlLink: row.htmlLink,
+    baasBotId: row.baasBotId,
+    baasStatus: row.baasStatus,
+    uiPhase: getMeetingBotUiPhase({
+      baasBotId: row.baasBotId,
+      baasStatus: row.baasStatus,
+      recordingStartedAt: row.recordingStartedAt,
+      processingStatus: row.processingStatus
+    })
+  }
 }
 
 function _dispatchResponseData(
@@ -61,40 +100,42 @@ const getMeetingsUpcomingController = async (
     const rows = await prisma.meeting.findMany({
       where: { userId, endTime: { gt: now } },
       orderBy: { startTime: 'asc' },
-      select: {
-        id: true,
-        title: true,
-        startTime: true,
-        endTime: true,
-        meetingUrl: true,
-        htmlLink: true,
-        baasBotId: true,
-        baasStatus: true,
-        recordingStartedAt: true,
-        processingStatus: true
-      }
+      select: _meetingListSelect
     })
 
     res.json({
       success: true,
       message: 'Upcoming meetings fetched successfully',
       data: {
-        meetings: rows.map((row) => ({
-          id: row.id,
-          title: row.title,
-          startTime: row.startTime.toISOString(),
-          endTime: row.endTime.toISOString(),
-          meetingUrl: row.meetingUrl,
-          htmlLink: row.htmlLink,
-          baasBotId: row.baasBotId,
-          baasStatus: row.baasStatus,
-          uiPhase: getMeetingBotUiPhase({
-            baasBotId: row.baasBotId,
-            baasStatus: row.baasStatus,
-            recordingStartedAt: row.recordingStartedAt,
-            processingStatus: row.processingStatus
-          })
-        }))
+        meetings: rows.map(_toMeetingListItem)
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getMeetingsCompletedController = async (
+  req: Request,
+  res: Response<GetMeetingsCompletedSuccessResponse>,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.session!.user.id
+
+    const now = new Date()
+
+    const rows = await prisma.meeting.findMany({
+      where: { userId, endTime: { lte: now } },
+      orderBy: { startTime: 'desc' },
+      select: _meetingListSelect
+    })
+
+    res.json({
+      success: true,
+      message: 'Past meetings fetched successfully',
+      data: {
+        meetings: rows.map(_toMeetingListItem)
       }
     })
   } catch (error) {
@@ -143,4 +184,8 @@ const postMeetingCaptureController = async (
   }
 }
 
-export { getMeetingsUpcomingController, postMeetingCaptureController }
+export {
+  getMeetingsCompletedController,
+  getMeetingsUpcomingController,
+  postMeetingCaptureController
+}

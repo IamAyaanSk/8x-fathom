@@ -1,4 +1,5 @@
 import {
+  getMeetingsCompletedResponseSchema,
   getMeetingsUpcomingResponseSchema,
   postMeetingCaptureResponseSchema,
   type MeetingListItem
@@ -14,6 +15,12 @@ async function getMeetingsUpcoming(options: _HttpRequestOptions = {}) {
   return getMeetingsUpcomingResponseSchema.parse(response.data)
 }
 
+async function getMeetingsCompleted(options: _HttpRequestOptions = {}) {
+  const client = _getApiClient()
+  const response = await client.get('/meetings/completed', options)
+  return getMeetingsCompletedResponseSchema.parse(response.data)
+}
+
 async function postMeetingCapture(
   meetingId: string,
   options: _HttpRequestOptions = {}
@@ -27,4 +34,4 @@ async function postMeetingCapture(
   return postMeetingCaptureResponseSchema.parse(response.data)
 }
 
-export { getMeetingsUpcoming, postMeetingCapture }
+export { getMeetingsCompleted, getMeetingsUpcoming, postMeetingCapture }

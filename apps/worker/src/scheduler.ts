@@ -8,7 +8,8 @@ function _dispatchCallbackParams() {
   return {
     meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
     callbackBaseUrl: env.BASE_URL,
-    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET
+    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET,
+    transcriptionApiKey: env.DEEPGRAM_API_KEY
   }
 }
 

@@ -5,6 +5,7 @@ import {
   postCalendarSyncController
 } from '#src/v1/controllers/calendar'
 import {
+  getMeetingsCompletedController,
   getMeetingsUpcomingController,
   postMeetingCaptureController
 } from '#src/v1/controllers/meetings'
@@ -18,6 +19,7 @@ router.get('/users', getUsersController)
 router.get('/calendar/status', getCalendarStatusController)
 router.post('/calendar/sync', postCalendarSyncController)
 router.get('/meetings/upcoming', getMeetingsUpcomingController)
+router.get('/meetings/completed', getMeetingsCompletedController)
 router.post('/meetings/:meetingId/capture', postMeetingCaptureController)
 
 export default router

@@ -21,7 +21,9 @@ type MeetingChatMessageInsert = {
   sentAt: Date
 }
 
-function parseMeetingBaasChatMessagesFile(data: unknown): MeetingBaasChatMessage[] {
+function parseMeetingBaasChatMessagesFile(
+  data: unknown
+): MeetingBaasChatMessage[] {
   return z.parse(meetingBaasChatMessagesFileSchema, data)
 }
 

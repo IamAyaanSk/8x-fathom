@@ -128,6 +128,7 @@ model Meeting {
   actionItemsExtractedAt DateTime?
   chatMessagesIngestedAt       DateTime?
   transcriptEmbeddingsExtractedAt DateTime?
+  processingLeaseExpiresAt        DateTime?
   highlights             Highlight[]
   scratchpadEntries  ScratchpadEntry[]
   actionItems        ActionItem[]

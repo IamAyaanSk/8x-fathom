@@ -42,8 +42,6 @@ const BAAS_API_STATUS_TO_STORED: Record<string, BaasBotStatus> = {
   MEET_LOGIN_FAILED_TIMEOUT: 'failed'
 }
 
-
-
 const BAAS_STATUS_RANK: Record<BaasBotStatus, number> = {
   joining: 1,
   in_waiting_room: 2,

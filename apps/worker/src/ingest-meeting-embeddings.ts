@@ -1,14 +1,19 @@
 import '#src/env'
+import { randomUUID } from 'node:crypto'
 
 import { generateEmbeddings } from '@repo/ai'
 import { parseMeetingBaasOutputTranscriptionFromJson } from '@repo/api-contract/meeting-baas-transcript'
 import {
   buildTranscriptEmbeddingChunks,
-  TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS,
+  TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS
 } from '@repo/api-contract/transcript-embedding-chunks'
 import { prisma } from '@repo/db'
-import { randomUUID } from 'node:crypto'
 
+import {
+  extendMeetingProcessingLease,
+  failMeetingProcessing,
+  isUnrecoverableTranscriptArtifactError
+} from '#src/meeting-processing-lifecycle'
 import { getR2ObjectUtf8 } from '#src/r2-client'
 
 function _errorMessage(error: unknown): string {
@@ -43,14 +48,18 @@ async function ingestMeetingEmbeddings(meetingId: string): Promise<void> {
     console.error(
       `Transcript embeddings skipped for ${meetingId}: missing transcriptR2Key`
     )
+    await failMeetingProcessing(
+      meetingId,
+      'Missing transcript artifact in storage'
+    )
     return
   }
 
   try {
+    await extendMeetingProcessingLease(meetingId)
     const rawTranscript = await getR2ObjectUtf8(meeting.transcriptR2Key)
-    const transcription = parseMeetingBaasOutputTranscriptionFromJson(
-      rawTranscript
-    )
+    const transcription =
+      parseMeetingBaasOutputTranscriptionFromJson(rawTranscript)
     const chunks = buildTranscriptEmbeddingChunks({
       meetingId: meeting.id,
       transcription
@@ -101,6 +110,12 @@ async function ingestMeetingEmbeddings(meetingId: string): Promise<void> {
     console.error(
       `Transcript embeddings ingest failed for ${meetingId}: ${_errorMessage(error)}`
     )
+    if (isUnrecoverableTranscriptArtifactError(error)) {
+      await failMeetingProcessing(
+        meetingId,
+        `Transcript embeddings: ${_errorMessage(error)}`
+      )
+    }
   }
 }
 

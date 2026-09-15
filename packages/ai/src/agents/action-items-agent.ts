@@ -3,10 +3,7 @@ import { z } from 'zod/v4'
 
 import { llmModel } from '../model.js'
 
-export const meetingActionItemKindSchema = z.enum([
-  'commitment',
-  'action_plan'
-])
+export const meetingActionItemKindSchema = z.enum(['commitment', 'action_plan'])
 
 export const meetingActionItemSchema = z.object({
   owner: z

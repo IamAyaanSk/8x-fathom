@@ -34,9 +34,7 @@ async function runStatusPollTick() {
     if (checkedCount === 0) {
       return
     }
-    console.log(
-      `Status poll: checked ${checkedCount}, updated ${updatedCount}`
-    )
+    console.log(`Status poll: checked ${checkedCount}, updated ${updatedCount}`)
   } catch (error) {
     console.error('Status poll failed', error)
   }
@@ -56,8 +54,4 @@ async function runPendingProcessingTick() {
   }
 }
 
-export {
-  runDispatchTick,
-  runPendingProcessingTick,
-  runStatusPollTick
-}
+export { runDispatchTick, runPendingProcessingTick, runStatusPollTick }

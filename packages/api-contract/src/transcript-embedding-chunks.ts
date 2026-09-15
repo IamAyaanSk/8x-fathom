@@ -28,7 +28,9 @@ function _utteranceSlicesFromTranscription(
 ): _UtteranceSlice[] {
   const slices: _UtteranceSlice[] = []
 
-  for (const utterance of meetingBaasTranscriptUtterancesInOrder(transcription)) {
+  for (const utterance of meetingBaasTranscriptUtterancesInOrder(
+    transcription
+  )) {
     const line = formatMeetingBaasTranscriptUtteranceLine(utterance)
     if (!line) {
       continue
@@ -140,7 +142,4 @@ function buildTranscriptEmbeddingChunks({
   return chunks
 }
 
-export {
-  buildTranscriptEmbeddingChunks,
-  type TranscriptEmbeddingChunkDraft
-}
+export { buildTranscriptEmbeddingChunks, type TranscriptEmbeddingChunkDraft }

@@ -99,7 +99,9 @@ async function _findMeetingForWebhook(params: {
   return byExtraId
 }
 
-function _r2KeyFromSignedUrl(value: string | null | undefined): string | undefined {
+function _r2KeyFromSignedUrl(
+  value: string | null | undefined
+): string | undefined {
   if (!value) {
     return undefined
   }
@@ -196,7 +198,7 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
         ...(chatMessagesR2Key ? { chatMessagesR2Key } : {}),
         ...(participants
           ? {
-              participants: {                
+              participants: {
                 create: participants.map((participant) => ({
                   name: participant.name,
                   baasUserId: participant.id,

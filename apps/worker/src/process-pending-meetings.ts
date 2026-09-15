@@ -1,8 +1,8 @@
 import '#src/env'
-
 import { Prisma, prisma } from '@repo/db'
 
 import {
+  MEETING_PROCESSING_LEASE_MS,
   PENDING_PROCESSING_BATCH_SIZE,
   PENDING_PROCESSING_TRANSACTION_TIMEOUT_MS
 } from '#src/constants'
@@ -29,6 +29,10 @@ async function _lockPendingMeetingRows(
           OR m."chatMessagesIngestedAt" IS NULL
           OR m."transcriptEmbeddingsExtractedAt" IS NULL
         )
+        AND (
+          m."processingLeaseExpiresAt" IS NULL
+          OR m."processingLeaseExpiresAt" < NOW()
+        )
       )
     )
     ORDER BY m."updatedAt" ASC
@@ -39,7 +43,8 @@ async function _lockPendingMeetingRows(
 
 async function _markMeetingsProcessing(
   tx: Prisma.TransactionClient,
-  meetingIds: string[]
+  meetingIds: string[],
+  leaseExpiresAt: Date
 ) {
   if (meetingIds.length === 0) {
     return
@@ -47,11 +52,16 @@ async function _markMeetingsProcessing(
 
   await tx.meeting.updateMany({
     where: { id: { in: meetingIds } },
-    data: { processingStatus: 'processing' }
+    data: {
+      processingStatus: 'processing',
+      processingLeaseExpiresAt: leaseExpiresAt
+    }
   })
 }
 
 async function runPendingMeetingProcessing() {
+  const leaseExpiresAt = new Date(Date.now() + MEETING_PROCESSING_LEASE_MS)
+
   const meetingIds = await prisma.$transaction(
     async (tx) => {
       const rows = await _lockPendingMeetingRows(
@@ -59,7 +69,7 @@ async function runPendingMeetingProcessing() {
         PENDING_PROCESSING_BATCH_SIZE
       )
       const ids = rows.map((row) => row.id)
-      await _markMeetingsProcessing(tx, ids)
+      await _markMeetingsProcessing(tx, ids, leaseExpiresAt)
       return ids
     },
     { timeout: PENDING_PROCESSING_TRANSACTION_TIMEOUT_MS }

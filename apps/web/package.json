@@ -22,8 +22,8 @@
   "dependencies": {
     "@repo/api-client": "workspace:*",
     "@repo/api-contract": "workspace:*",
-    "@repo/meeting-dispatch": "workspace:*",
     "@repo/env": "workspace:*",
+    "@repo/meeting-dispatch": "workspace:*",
     "@repo/shared-validations": "workspace:*",
     "@repo/ui-web": "workspace:*",
     "@tanstack/react-query": "catalog:",

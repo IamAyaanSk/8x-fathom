@@ -1,5 +1,4 @@
 import '#src/env'
-
 import {
   formatMeetingActionItemText,
   generateMeetingActionItems,
@@ -10,6 +9,10 @@ import { prisma } from '@repo/db'
 
 import { ingestMeetingChatMessages } from '#src/ingest-meeting-chat-messages'
 import { ingestMeetingEmbeddings } from '#src/ingest-meeting-embeddings'
+import {
+  extendMeetingProcessingLease,
+  failMeetingProcessing
+} from '#src/meeting-processing-lifecycle'
 import { tryMarkMeetingProcessingReady } from '#src/meeting-processing-ready'
 import { getR2ObjectUtf8 } from '#src/r2-client'
 
@@ -17,18 +20,40 @@ function _errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Unknown error'
 }
 
+async function _isMeetingStillProcessing(meetingId: string): Promise<boolean> {
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId },
+    select: { processingStatus: true }
+  })
+  return meeting?.processingStatus === 'processing'
+}
+
+type _TranscriptLoadResult =
+  | { ok: true; transcript: string }
+  | { ok: false; unrecoverable: boolean }
+
 async function _loadMeetingTranscriptText(
   meetingId: string,
   transcriptR2Key: string
-): Promise<string | null> {
+): Promise<_TranscriptLoadResult> {
+  let rawTranscript: string
   try {
-    const rawTranscript = await getR2ObjectUtf8(transcriptR2Key)
-    return formatMeetingBaasTranscriptTextFromJson(rawTranscript)
+    rawTranscript = await getR2ObjectUtf8(transcriptR2Key)
   } catch (error) {
     console.error(
       `Transcript load failed for ${meetingId}: ${_errorMessage(error)}`
     )
-    return null
+    return { ok: false, unrecoverable: false }
+  }
+
+  try {
+    const transcript = formatMeetingBaasTranscriptTextFromJson(rawTranscript)
+    return { ok: true, transcript }
+  } catch (error) {
+    console.error(
+      `Transcript parse failed for ${meetingId}: ${_errorMessage(error)}`
+    )
+    return { ok: false, unrecoverable: true }
   }
 }
 
@@ -129,18 +154,28 @@ async function _runTranscriptArtifactSteps(meetingId: string): Promise<void> {
     console.error(
       `Transcript artifacts skipped for ${meetingId}: missing transcriptR2Key`
     )
+    await failMeetingProcessing(
+      meetingId,
+      'Missing transcript artifact in storage'
+    )
     return
   }
 
-  const transcript = await _loadMeetingTranscriptText(
+  const transcriptLoad = await _loadMeetingTranscriptText(
     meetingId,
     meeting.transcriptR2Key
   )
-  if (!transcript) {
+  if (!transcriptLoad.ok) {
+    if (transcriptLoad.unrecoverable) {
+      await failMeetingProcessing(meetingId, 'Transcript could not be parsed')
+    }
     return
   }
 
+  const { transcript } = transcriptLoad
+
   if (needsSummary) {
+    await extendMeetingProcessingLease(meetingId)
     await _runSummaryStep({
       meetingId: meeting.id,
       meetingTitle: meeting.title,
@@ -148,38 +183,49 @@ async function _runTranscriptArtifactSteps(meetingId: string): Promise<void> {
     })
   }
 
-  const afterSummary = await prisma.meeting.findUnique({
-    where: { id: meetingId },
-    select: {
-      summary: true,
-      actionItemsExtractedAt: true,
-      title: true
-    }
-  })
-
-  if (
-    !afterSummary ||
-    afterSummary.summary === null ||
-    afterSummary.actionItemsExtractedAt !== null
-  ) {
+  if (!(await _isMeetingStillProcessing(meetingId))) {
     return
   }
 
+  const forActionItems = await prisma.meeting.findUnique({
+    where: { id: meetingId },
+    select: {
+      title: true,
+      actionItemsExtractedAt: true
+    }
+  })
+
+  if (!forActionItems || forActionItems.actionItemsExtractedAt !== null) {
+    return
+  }
+
+  await extendMeetingProcessingLease(meetingId)
   await _runActionItemsStep({
     meetingId: meeting.id,
-    meetingTitle: afterSummary.title,
+    meetingTitle: forActionItems.title,
     transcript
   })
 }
 
 async function processMeetingArtifacts(meetingId: string): Promise<void> {
+  await extendMeetingProcessingLease(meetingId)
+
   await ingestMeetingChatMessages(meetingId)
+  if (!(await _isMeetingStillProcessing(meetingId))) {
+    return
+  }
   await tryMarkMeetingProcessingReady(meetingId)
 
   await _runTranscriptArtifactSteps(meetingId)
+  if (!(await _isMeetingStillProcessing(meetingId))) {
+    return
+  }
   await tryMarkMeetingProcessingReady(meetingId)
 
   await ingestMeetingEmbeddings(meetingId)
+  if (!(await _isMeetingStillProcessing(meetingId))) {
+    return
+  }
   await tryMarkMeetingProcessingReady(meetingId)
 }
 

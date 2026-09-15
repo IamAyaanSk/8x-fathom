@@ -19,7 +19,6 @@ function isInBotJoiningSoonWindow(
   return nowMs >= startMs - MEETING_CAPTURE_LEAD_MS && nowMs < startMs
 }
 
-
 function isMeetingEnded(endTimeIso: string, nowMs = Date.now()): boolean {
   const endMs = Date.parse(endTimeIso)
   if (Number.isNaN(endMs)) {
@@ -36,9 +35,7 @@ function isManualCaptureAllowed(
   if (startMs == null) {
     return false
   }
-  return (
-    nowMs < startMs - MEETING_CAPTURE_LEAD_MS || nowMs >= startMs
-  )
+  return nowMs < startMs - MEETING_CAPTURE_LEAD_MS || nowMs >= startMs
 }
 
 export {

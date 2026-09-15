@@ -1,8 +1,4 @@
-import {
-  embed,
-  type Embedding,
-  type EmbeddingModelUsage
-} from 'ai'
+import { embed, type Embedding, type EmbeddingModelUsage } from 'ai'
 
 import { embeddingModel } from './model.js'
 
@@ -22,9 +18,7 @@ export async function generateEmbedding(query: string): Promise<{
   }
 }
 
-export async function generateEmbeddings(
-  values: string[]
-): Promise<{
+export async function generateEmbeddings(values: string[]): Promise<{
   embeddings: Embedding[]
   tokenUsage: EmbeddingModelUsage
 }> {

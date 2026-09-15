@@ -7,7 +7,10 @@ export {
   type MeetingActionItem,
   type MeetingActionItemKind
 } from './agents/action-items-agent.js'
-export { generateMeetingSummary, meetingSummarySchema } from './agents/summary-agent.js'
+export {
+  generateMeetingSummary,
+  meetingSummarySchema
+} from './agents/summary-agent.js'
 export {
   buildMeetingSummarySystemPrompt,
   getSummaryTemplateSystemPrompt,

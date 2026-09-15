@@ -83,8 +83,7 @@ function formatMeetingBaasTranscriptUtteranceLine(
     metaParts.push(`confidence=${utterance.confidence}`)
   }
 
-  const meta =
-    metaParts.length > 0 ? `[${metaParts.join(' ')}] ` : ''
+  const meta = metaParts.length > 0 ? `[${metaParts.join(' ')}] ` : ''
 
   const speaker = utterance.speaker?.trim()
   const speakerPrefix = speaker ? `${speaker}: ` : ''

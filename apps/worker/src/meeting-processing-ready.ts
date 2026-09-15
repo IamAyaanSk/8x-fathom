@@ -1,5 +1,4 @@
 import '#src/env'
-
 import { prisma } from '@repo/db'
 
 async function tryMarkMeetingProcessingReady(meetingId: string): Promise<void> {
@@ -33,7 +32,10 @@ async function tryMarkMeetingProcessingReady(meetingId: string): Promise<void> {
 
   await prisma.meeting.update({
     where: { id: meetingId },
-    data: { processingStatus: 'ready' }
+    data: {
+      processingStatus: 'ready',
+      processingLeaseExpiresAt: null
+    }
   })
 }
 

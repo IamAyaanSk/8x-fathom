@@ -28,17 +28,17 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 - Calendar sync only creates/updates `Meeting` rows for events with a `meetingUrl` (Meet / Zoom / Teams).
 - Store a small lifecycle on `Meeting.baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `completed` \| `failed`). Map MeetingBaas API codes onto that enum in `@repo/api-contract`. Derive UI from the same mapper.
 
-| UI state               | Stored `baasStatus` / `processingStatus`                                                                                                           |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Starting soon          | Pre-`createBot` (`baasBotId` null)                                                                                                                 |
-| Joining…               | `joining`                                                                                                                                          |
-| In waiting room…       | `in_waiting_room`                                                                                                                                  |
-| In call — recording    | `in_call_recording`                                                                                                                                |
-| Transcribing… | `transcribing` (post-call, before artifacts) — show transcript UI when available |
+| UI state               | Stored `baasStatus` / `processingStatus`                                                                                                                                                                                                              |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Starting soon          | Pre-`createBot` (`baasBotId` null)                                                                                                                                                                                                                    |
+| Joining…               | `joining`                                                                                                                                                                                                                                             |
+| In waiting room…       | `in_waiting_room`                                                                                                                                                                                                                                     |
+| In call — recording    | `in_call_recording`                                                                                                                                                                                                                                   |
+| Transcribing…          | `transcribing` (post-call, before artifacts) — show transcript UI when available                                                                                                                                                                      |
 | Call ended, processing | `completed` (R2 keys from `bot.completed`), or `processingStatus` `pending` / `processing`. `bot.completed` → `completed` + `recordingR2Key` / `transcriptR2Key`; transcription completion webhook → `pending` (then worker → `processing` / `ready`) |
-| Ready                  | `processingStatus: ready`                                                                                                                          |
-| Failed to join         | `failed` and no `recordingStartedAt` (capture again if the meeting has not ended, outside the 2-minute pre-start window) |
-| Failed processing      | `processingStatus: failed`, or `failed` after the bot joined                                                                                       |
+| Ready                  | `processingStatus: ready`                                                                                                                                                                                                                             |
+| Failed to join         | `failed` and no `recordingStartedAt` (capture again if the meeting has not ended, outside the 2-minute pre-start window)                                                                                                                              |
+| Failed processing      | `processingStatus: failed`, or `failed` after the bot joined                                                                                                                                                                                          |
 
 **Ongoing call:** active once `createBot` has been called. Poll `GET /bots/{id}/status` every ~5–10s in Joining…; ~60s in In call. Distinct honest labels — never a blank spinner. Failures shown immediately. No live transcript — show elapsed recording time. Highlight click writes `{ meetingId, timestampSec, note? }`. Scratchpad: upsert `ScratchpadEntry` at `{ meetingId, timestampSec, text }` (debounced).
 

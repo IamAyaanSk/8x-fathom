@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
-import { cancelJoiningBotForDeletedCalendarEvent } from '@repo/meeting-dispatch'
 import { prisma } from '@repo/db'
+import { cancelJoiningBotForDeletedCalendarEvent } from '@repo/meeting-dispatch'
 import { google, type calendar_v3 } from 'googleapis'
 
 import { env } from '#src/env'

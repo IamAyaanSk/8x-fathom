@@ -27,6 +27,7 @@ async function _lockPendingMeetingRows(
           m.summary IS NULL
           OR m."actionItemsExtractedAt" IS NULL
           OR m."chatMessagesIngestedAt" IS NULL
+          OR m."transcriptEmbeddingsExtractedAt" IS NULL
         )
       )
     )

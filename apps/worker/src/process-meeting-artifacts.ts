@@ -9,6 +9,8 @@ import { formatMeetingBaasTranscriptTextFromJson } from '@repo/api-contract/meet
 import { prisma } from '@repo/db'
 
 import { ingestMeetingChatMessages } from '#src/ingest-meeting-chat-messages'
+import { ingestMeetingEmbeddings } from '#src/ingest-meeting-embeddings'
+import { tryMarkMeetingProcessingReady } from '#src/meeting-processing-ready'
 import { getR2ObjectUtf8 } from '#src/r2-client'
 
 function _errorMessage(error: unknown): string {
@@ -172,7 +174,13 @@ async function _runTranscriptArtifactSteps(meetingId: string): Promise<void> {
 
 async function processMeetingArtifacts(meetingId: string): Promise<void> {
   await ingestMeetingChatMessages(meetingId)
+  await tryMarkMeetingProcessingReady(meetingId)
+
   await _runTranscriptArtifactSteps(meetingId)
+  await tryMarkMeetingProcessingReady(meetingId)
+
+  await ingestMeetingEmbeddings(meetingId)
+  await tryMarkMeetingProcessingReady(meetingId)
 }
 
 export { processMeetingArtifacts }

@@ -111,6 +111,12 @@ function formatMeetingBaasTranscriptTextFromJson(rawJson: string): string {
   return formatMeetingBaasTranscriptText(transcription)
 }
 
+function parseMeetingBaasOutputTranscriptionFromJson(
+  rawJson: string
+): MeetingBaasOutputTranscription {
+  return parseMeetingBaasOutputTranscription(JSON.parse(rawJson))
+}
+
 export {
   formatMeetingBaasTranscriptText,
   formatMeetingBaasTranscriptTextFromJson,
@@ -120,6 +126,7 @@ export {
   meetingBaasTranscriptWordSchema,
   meetingBaasTranscriptUtterancesInOrder,
   parseMeetingBaasOutputTranscription,
+  parseMeetingBaasOutputTranscriptionFromJson,
   type MeetingBaasOutputTranscription,
   type MeetingBaasTranscriptUtterance
 }

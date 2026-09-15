@@ -23,6 +23,10 @@
       "types": "./src/meeting-baas-chat-messages.ts",
       "default": "./dist/meeting-baas-chat-messages.js"
     },
+    "./transcript-embedding-chunks": {
+      "types": "./src/transcript-embedding-chunks.ts",
+      "default": "./dist/transcript-embedding-chunks.js"
+    },
     "./v1/*": {
       "types": "./src/v1/*.ts",
       "default": "./dist/v1/*.js"

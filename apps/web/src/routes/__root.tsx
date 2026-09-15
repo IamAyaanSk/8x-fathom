@@ -2,31 +2,14 @@
 // https://tanstack.com/router/latest/docs/framework/react/examples/router-monorepo-react-query
 
 import type { QueryClient } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import {
-  createRootRouteWithContext,
-  Link,
-  Outlet
-} from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { createRootRouteWithContext } from '@tanstack/react-router'
+
+import { RootLayout } from '#components/layout/root-layout'
+import { RootNotFound } from '#components/layout/root-not-found'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
-  component: () => (
-    <>
-      <Outlet />
-      <h1>Hello</h1>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <TanStackRouterDevtools />
-    </>
-  ),
-  notFoundComponent: () => {
-    return (
-      <div>
-        <p>This is the notFoundComponent configured on root route</p>
-        <Link to="/">Start Over</Link>
-      </div>
-    )
-  }
+  component: RootLayout,
+  notFoundComponent: RootNotFound
 })

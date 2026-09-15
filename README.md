@@ -10,6 +10,12 @@ Use a local PostgreSQL instance with the **pgvector** extension (`CREATE EXTENSI
 
 Copy `apps/server/.env.example` to `apps/server/.env` and set `DATABASE_URL`. Prisma CLI loads that file from `packages/database/prisma.config.ts` (optional `packages/database/.env` fallback).
 
+Copy `apps/web/.env.example` to `apps/web/.env`. In local dev the Vite app proxies `/api` to Express (`http://localhost:3000`), so keep these aligned:
+
+- `WEB_ORIGIN` and `BETTER_AUTH_URL` = `http://localhost:5173`
+- `VITE_API_URL` = `http://localhost:5173`
+- Google OAuth authorized redirect URI = `http://localhost:5173/api/auth/callback/google`
+
 ```bash
 pnpm --filter @repo/db db:generate
 pnpm --filter @repo/db db:migrate

@@ -68,7 +68,7 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | --- | ------------------------------------------------------------------- | ----------- |
 | F0  | Context files (this document + cursor rules + README)               | done        |
 | F1  | Schema, pgvector, env, catalog deps                                 | done        |
-| F2  | Google auth, sessions, protected API                                | not started |
+| F2  | Google auth, sessions, protected API                                | done        |
 | F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | not started |
 | F4  | Events / library list UI                                            | not started |
 | F5  | Worker dispatch `createBot` at start − buffer                       | not started |
@@ -139,6 +139,7 @@ shared-validations → api-contract → api-client → apps/web
 ### 4. `apps/web`
 
 - File-based routes in `src/routes/`; generated `routeTree.gen.ts` is lint-ignored — do not hand-edit.
+- Route files export only `Route` (config); page/layout components live under `src/components/` (`pages/`, `layout/`, feature folders) so Fast Refresh works.
 - Prefer route `loader` + `queryClient.ensureQueryData(...)` for prefetch; use hooks in components.
 - Path aliases: `#src/*`, `#lib/*`, `#components/*`, `#hooks/*`.
 - UI: import from `@repo/ui-web`; global styles via `@repo/ui-web/globals.css`.

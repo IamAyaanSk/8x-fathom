@@ -9,6 +9,7 @@ alwaysApply: false
 ## Router & data
 
 - File routes in `apps/web/src/routes/`. Do not edit `routeTree.gen.ts`.
+- **Fast Refresh:** route modules export only the TanStack `Route` (loaders, `beforeLoad`, `component` references). Put page and layout UI in `apps/web/src/components/` — e.g. `components/pages/`, `components/layout/`, `components/auth/`. Use `getRouteApi(...)` in components when you need parent route context; do not import `Route` from a route file into a component.
 - Product routes: `/login` (Google-only), `/` (upcoming events + library), `/meetings/$id` (Ongoing | Recording tabs), `/share/$shareSlug` (public, no auth).
 - Root route provides `queryClient` context (`__root.tsx`).
 - Prefetch in route `loader` with `queryClient.ensureQueryData(xxxQueryOptions())`; read data with hooks from `@repo/api-client`.

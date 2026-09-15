@@ -107,10 +107,10 @@ model CalendarWatch {
 }
 
 model Meeting {
-  id                 String            @id @default(cuid())
+  id                 String               @id @default(cuid())
   userId             String
-  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  googleEventId      String            @unique
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  googleEventId      String               @unique
   title              String
   startTime          DateTime
   endTime            DateTime
@@ -118,23 +118,39 @@ model Meeting {
   htmlLink           String?
   baasBotId          String?
   baasStatus         BaasBotStatus?
-  processingStatus   ProcessingStatus  @default(idle)
-  shareSlug          String?           @unique
+  processingStatus   ProcessingStatus     @default(idle)
+  shareSlug          String?              @unique
   recordingR2Key     String?
   transcriptR2Key    String?
+  chatMessagesR2Key  String?
   recordingStartedAt DateTime?
   summary            String?
   highlights         Highlight[]
   scratchpadEntries  ScratchpadEntry[]
   actionItems        ActionItem[]
   transcriptChunks   TranscriptChunk[]
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  participants       MeetingParticipant[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@index([userId])
   @@index([userId, startTime])
   @@index([processingStatus])
   @@map("meeting")
+}
+
+model MeetingParticipant {
+  id             String   @id @default(cuid())
+  meetingId      String
+  meeting        Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  name           String
+  baasUserId     Int?
+  displayName    String?
+  profilePicture String?
+  createdAt      DateTime @default(now())
+
+  @@index([meetingId])
+  @@map("meeting_participant")
 }
 
 model Highlight {

@@ -21,6 +21,13 @@ const meetingBaasStatusChangeWebhookSchema = z.object({
   extra: meetingBaasWebhookExtraSchema
 })
 
+const meetingBaasParticipantSchema = z.object({
+  name: z.string(),
+  id: z.number().nullable(),
+  display_name: z.string().optional(),
+  profile_picture: z.string().optional()
+})
+
 const meetingBaasCompletedWebhookSchema = z.object({
   event: z.literal('bot.completed'),
   data: z
@@ -30,6 +37,8 @@ const meetingBaasCompletedWebhookSchema = z.object({
       transcription: z.url().nullish(),
       raw_transcription: z.url().nullish(),
       audio: z.url().nullish(),
+      chat_messages: z.url().nullish(),
+      participants: z.array(meetingBaasParticipantSchema).optional(),
       joined_at: z.string().nullable().optional(),
       data_deleted: z.boolean().optional()
     })

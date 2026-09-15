@@ -183,6 +183,8 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
 
     const recordingR2Key = _r2KeyFromSignedUrl(event.data.video)
     const transcriptR2Key = _r2KeyFromSignedUrl(event.data.transcription)
+    const chatMessagesR2Key = _r2KeyFromSignedUrl(event.data.chat_messages)
+    const participants = event.data.participants
 
     await prisma.meeting.update({
       where: { id: meeting.id },
@@ -190,7 +192,20 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
         baasStatus: 'completed',
         processingStatus: 'pending',
         ...(recordingR2Key ? { recordingR2Key } : {}),
-        ...(transcriptR2Key ? { transcriptR2Key } : {})
+        ...(transcriptR2Key ? { transcriptR2Key } : {}),
+        ...(chatMessagesR2Key ? { chatMessagesR2Key } : {}),
+        ...(participants
+          ? {
+              participants: {                
+                create: participants.map((participant) => ({
+                  name: participant.name,
+                  baasUserId: participant.id,
+                  displayName: participant.display_name,
+                  profilePicture: participant.profile_picture
+                }))
+              }
+            }
+          : {})
       }
     })
     return

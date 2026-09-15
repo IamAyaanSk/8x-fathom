@@ -1,8 +1,13 @@
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
-import { isMeetingCaptureWindowOpen } from '@repo/meeting-dispatch/capture-window'
+import {
+  isInBotJoiningSoonWindow,
+  isManualCaptureAllowed
+} from '@repo/meeting-dispatch/capture-window'
 
-const CAPTURE_HINT = 'Use this to start capture now for this meet.'
-const CAPTURE_EARLY_HINT = 'Capture opens 2 minutes before the call starts.'
+const CAPTURE_HINT =
+  'Use this to start capture now for this meet by sending bot.'
+const CAPTURE_BOT_JOINING_SOON_HINT =
+  'The bot will be joining the meet soon.'
 const CAPTURE_STARTED_LABEL = 'Capture started'
 
 type UpcomingMeetingCaptureUi = {
@@ -21,12 +26,14 @@ function getUpcomingMeetingCaptureUi({
   isCapturing: boolean
 }): UpcomingMeetingCaptureUi {
   const hasBot = meeting.baasBotId != null
-  const withinCaptureWindow = isMeetingCaptureWindowOpen(
+  const botJoiningSoon = isInBotJoiningSoonWindow(meeting.startTime, nowMs)
+  const manualCaptureAllowed = isManualCaptureAllowed(
     meeting.startTime,
     nowMs
   )
   const hasEnded = Date.parse(meeting.endTime) <= nowMs
-  const canCapture = !hasBot && withinCaptureWindow && !hasEnded && !isCapturing
+  const canCapture =
+    !hasBot && manualCaptureAllowed && !hasEnded && !isCapturing
 
   if (hasBot) {
     return {
@@ -36,11 +43,11 @@ function getUpcomingMeetingCaptureUi({
     }
   }
 
-  if (!withinCaptureWindow) {
+  if (botJoiningSoon) {
     return {
       canCapture: false,
-      tooltip: CAPTURE_EARLY_HINT,
-      ariaLabel: CAPTURE_EARLY_HINT
+      tooltip: CAPTURE_BOT_JOINING_SOON_HINT,
+      ariaLabel: CAPTURE_BOT_JOINING_SOON_HINT
     }
   }
 

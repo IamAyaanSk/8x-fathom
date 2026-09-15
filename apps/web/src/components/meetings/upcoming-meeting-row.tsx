@@ -25,7 +25,6 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
     nowMs: now,
     isCapturing
   })
-
   return (
     <li className="border-border flex flex-wrap items-center justify-between gap-4 border-b py-5 last:border-b-0">
       <div className="min-w-0 flex-1">

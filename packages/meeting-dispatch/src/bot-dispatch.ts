@@ -51,10 +51,14 @@ function _toDispatchResult(meeting: {
 }
 
 function _assertCaptureWindow(startTime: Date, nowMs: number) {
-  if (startTime.getTime() > nowMs + MEETING_CAPTURE_LEAD_MS) {
+  const startMs = startTime.getTime()
+  if (
+    nowMs >= startMs - MEETING_CAPTURE_LEAD_MS &&
+    nowMs < startMs
+  ) {
     throw new DispatchError(
       409,
-      'Capture is available within 2 minutes of the call start'
+      'Capture is unavailable while the bot is scheduled to join soon'
     )
   }
 }
@@ -137,7 +141,13 @@ async function _dispatchLockedMeeting(
     bot_name: `${row.userName} ${BOT_NAME}`,
     transcription_enabled: true,
     allow_multiple_bots: false,
-    extra: { meetingId: row.id }
+    timeout_config: {
+      silence_timeout: 300,    
+      no_one_joined_timeout: 120,
+      waiting_room_timeout: 200  
+    },    
+    extra: { meetingId: row.id },
+    transcription_config: {},
   })
 
   if (!createResult.success) {

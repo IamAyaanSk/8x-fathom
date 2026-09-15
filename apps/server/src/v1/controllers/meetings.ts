@@ -75,13 +75,15 @@ const postMeetingCaptureController = async (
 
     let dispatched
     try {
+      
       dispatched = await dispatchBotForMeeting({
         meetingId,
         userId,
         mode: 'capture',
-        meetingBaasApiKey: env.MEETINGBAAS_API_KEY
+        meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
       })
     } catch (error) {
+      
       if (error instanceof DispatchError) {
         throw new HttpError(error.statusCode, error.message)
       }

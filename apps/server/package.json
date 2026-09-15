@@ -1,0 +1,46 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "imports": {
+    "#src/*": {
+      "development": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch --conditions=development ./src/server.ts",
+    "clean": "rimraf dist",
+    "build": "tsc",
+    "start": "node ./dist/server.js",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/api-contract": "workspace:*",
+    "@repo/db": "workspace:*",
+    "@repo/env": "workspace:*",
+    "body-parser": "catalog:",
+    "cookie-parser": "catalog:",
+    "cors": "catalog:",
+    "express": "catalog:",
+    "helmet": "catalog:",
+    "morgan": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/body-parser": "catalog:",
+    "@types/cookie-parser": "catalog:",
+    "@types/cors": "catalog:",
+    "@types/express": "catalog:",
+    "@types/morgan": "catalog:",
+    "@types/node": "catalog:",
+    "rimraf": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

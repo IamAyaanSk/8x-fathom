@@ -1,0 +1,50 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#components/*": "./src/components/*.tsx",
+    "#lib/*": "./src/lib/*.ts",
+    "#hooks/*": "./src/hooks/*.ts",
+    "#src/*": "./src/*.ts"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "start": "vite preview",
+    "check-types": "tsc --noEmit",
+    "clean": "rimraf dist node_modules/.tmp"
+  },
+  "dependencies": {
+    "@repo/api-client": "workspace:*",
+    "@repo/env": "workspace:*",
+    "@repo/shared-validations": "workspace:*",
+    "@repo/ui-web": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-query-devtools": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-router-devtools": "catalog:",
+    "axios": "catalog:",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@repo/typescript-config": "workspace:*",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/router-plugin": "catalog:",
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^6.0.3",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
+    "vite": "^8.1.1"
+  }
+}

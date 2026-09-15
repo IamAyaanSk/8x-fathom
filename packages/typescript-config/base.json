@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleDetection": "force",
+    "target": "es2023",
+    "allowJs": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "isolatedModules": true
+  }
+}

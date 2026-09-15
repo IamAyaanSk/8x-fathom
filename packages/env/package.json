@@ -1,0 +1,30 @@
+{
+  "name": "@repo/env",
+  "version": "1.0.0",
+  "description": "Utils and helpers related to validating environment variables in node based server applications",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "zod": "catalog:"
+  }
+}

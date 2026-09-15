@@ -1,0 +1,34 @@
+{
+  "name": "@repo/api-contract",
+  "version": "1.0.0",
+  "description": "Complete types and validations for API request and response",
+  "type": "module",
+  "imports": {
+    "#src/*": "./dist/*.js"
+  },
+  "exports": {
+    "./v1/*": {
+      "types": "./src/v1/*.ts",
+      "default": "./dist/v1/*.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/shared-validations": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "zod": "catalog:"
+  }
+}

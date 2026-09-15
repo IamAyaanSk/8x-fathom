@@ -1,0 +1,37 @@
+---
+description: Vite React app, TanStack Router/Query, and shared UI package
+globs: "{apps/web/**,packages/ui-web/**}"
+alwaysApply: false
+---
+
+# Web frontend
+
+## Router & data
+
+- File routes in `apps/web/src/routes/`. Do not edit `routeTree.gen.ts`.
+- Root route provides `queryClient` context (`__root.tsx`).
+- Prefetch in route `loader` with `queryClient.ensureQueryData(xxxQueryOptions())`; read data with hooks from `@repo/api-client`.
+- Honor `@tanstack/router/create-route-property-order` (oxlint).
+
+## API wiring
+
+- Configure HTTP client in `apps/web` (`configureApiClient` in `main.tsx`).
+- Env: `apps/web/src/env.ts` with Zod + `import.meta.env` (`VITE_*`).
+
+## UI (`@repo/ui-web`)
+
+- shadcn-style components with Tailwind 4, `cn()` from `#lib/utils`, CVA variants where used.
+- Add new shared components here; app-specific pieces stay in `apps/web`.
+- Global theme/CSS: `@repo/ui-web/globals.css` (`packages/ui-web/src/styles/globals.css`).
+
+## Theming (strict)
+
+- **Only semantic theme utilities** from `globals.css` (`@theme inline` + `:root` / `.dark`): e.g. `bg-background`, `text-foreground`, `bg-primary`, `text-primary-foreground`, `bg-muted`, `text-muted-foreground`, `border-border`, `ring-ring`, `bg-card`, `bg-destructive`, sidebar/chart tokens, `rounded-lg` / radius scale.
+- **Never** ad-hoc Tailwind: no default palette (`text-gray-500`, `bg-blue-600`), no arbitrary colors (`bg-[#…]`, `text-[oklch(...)]`), no one-off hex/rgb in classNames.
+- Need a new color or radius? **Extend `globals.css`** (CSS variables + `@theme`), then use the new token class — do not hardcode in JSX.
+- Prefer existing `@repo/ui-web` components and their variants before custom styled markup.
+
+## Imports
+
+- App aliases: `#src/*`, `#lib/*`, `#components/*`, `#hooks/*`.
+- React 19 + React Compiler; functional components only.

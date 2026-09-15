@@ -1,0 +1,15 @@
+---
+description: Strict typing, DRY, simplicity, and single-responsibility packages
+alwaysApply: true
+---
+
+# Code conventions (strict)
+
+- **No `any`**. Use `unknown`, generics, Zod/`z.infer`, Prisma types, `Extract`, discriminated unions.
+- **No duplication**. One definition for validation and API types (`shared-validations` → `api-contract`). Reuse or extract; do not copy schemas, hooks, or response shapes.
+- **Strong types**. Prefer inference and contract types over `as`. Justify rare assertions briefly.
+- **Minimal state**. Derive data; use Query + route loaders for server state. Avoid extra `useState`/`useEffect` when cache, props, or URL already hold the value.
+- **Simple logic**. Early returns, flat control flow, smallest change that works. No unnecessary abstractions.
+- **One package, one duty**. Match `AGENTS.md` layout. Wrong layer = move code or ask first.
+- **Less than 90% sure → ask**. Clarify requirements, ownership, or breaking changes before coding.
+- **UI theming**: semantic tokens from `@repo/ui-web` `globals.css` only — no random palette or arbitrary color utilities in classNames.

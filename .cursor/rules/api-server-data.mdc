@@ -1,0 +1,39 @@
+---
+description: API contract, Express server, Prisma, and client package patterns
+globs: "{apps/server/**,packages/api-contract/**,packages/api-client/**,packages/database/**,packages/shared-validations/**}"
+alwaysApply: false
+---
+
+# API & data layer
+
+## Response shape
+
+Use `_createResponseApiZod` in `api-contract`. Controllers return:
+
+```ts
+res.json({ success: true, message: '...', data })
+```
+
+Type controllers with `*SuccessResponse` from the contract.
+
+## Zod
+
+- Prefer `import { z } from 'zod/v4'` in shared packages and server-related code.
+- Reuse `@repo/shared-validations` for emails, names, trimmed strings, etc.
+
+## Server
+
+- Routes: `apps/server/src/v1/routes/` → mount on `/api/v1`.
+- Controllers: async, `try/catch`, `next(error)` on failure.
+- DB: `import { prisma } from '@repo/db'` only here (or server-local services).
+- Imports: `#src/*` per `apps/server/package.json`.
+
+## api-client
+
+- Parse every response with the contract Zod schema.
+- Export `queryOptions`, `useXxxQuery`, and stable `queryKeys` from `hooks.ts`.
+- Do not configure Axios inside the package; apps call `configureApiClient` at bootstrap.
+
+## Prisma
+
+- Migrations and schema live in `packages/database`. Run generate before dev/build (`db:generate`).

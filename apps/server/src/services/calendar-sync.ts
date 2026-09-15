@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
+import { cancelJoiningBotForDeletedCalendarEvent } from '@repo/meeting-dispatch'
 import { prisma } from '@repo/db'
 import { google, type calendar_v3 } from 'googleapis'
 
@@ -70,6 +71,11 @@ async function saveEvent(
     event.status !== 'cancelled' ? resolveMeetingUrl(event) : null
 
   if (!meetingUrl) {
+    await cancelJoiningBotForDeletedCalendarEvent({
+      userId,
+      googleEventId: event.id,
+      meetingBaasApiKey: env.MEETINGBAAS_API_KEY
+    })
     await prisma.meeting.deleteMany({
       where: { userId, googleEventId: event.id, baasBotId: null }
     })

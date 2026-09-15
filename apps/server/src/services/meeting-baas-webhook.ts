@@ -7,7 +7,7 @@ import {
 import type { MeetingBaasWebhookEvent } from '@repo/api-contract/meeting-baas-webhook'
 import { prisma } from '@repo/db'
 import type { IncomingHttpHeaders } from 'node:http'
-import { Webhook } from 'svix'
+import { Webhook, WebhookVerificationError } from 'svix'
 
 import { env } from '#src/env'
 
@@ -22,10 +22,12 @@ function _headerValue(
   return value
 }
 
+
+
 function verifyMeetingBaasWebhook(
   headers: IncomingHttpHeaders,
   rawBody: string
-): unknown {
+): unknown | null {
   const svixId = _headerValue(headers, 'svix-id')
   const svixTimestamp = _headerValue(headers, 'svix-timestamp')
   const svixSignature = _headerValue(headers, 'svix-signature')
@@ -33,14 +35,31 @@ function verifyMeetingBaasWebhook(
     return null
   }
 
-  try {
-    return new Webhook(env.MEETINGBAAS_WEBHOOK_SECRET).verify(rawBody, {
-      'svix-id': svixId,
-      'svix-timestamp': svixTimestamp,
-      'svix-signature': svixSignature
-    })
-  } catch {
+  if (rawBody.length === 0) {
+    console.log(rawBody.length)
     return null
+  }
+
+  try {
+    new Webhook(env.MEETINGBAAS_WEBHOOK_SECRET).verify(
+      rawBody,
+      {
+        'svix-id': svixId,
+        'svix-timestamp': svixTimestamp,
+        'svix-signature': svixSignature
+      }
+    )
+
+    console.log(JSON.parse(rawBody))
+    return JSON.parse(rawBody) as unknown
+  } catch (error) {
+    if (error instanceof WebhookVerificationError) {
+      return null
+    }
+    if (error instanceof SyntaxError) {
+      return null
+    }
+    throw error
   }
 }
 
@@ -151,7 +170,6 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
   }
 
   if (event.event === 'bot.completed') {
-    // TODO: create a processing job
     if (!_shouldApplyBaasStatus(meeting.baasStatus, 'completed')) {
       return
     }

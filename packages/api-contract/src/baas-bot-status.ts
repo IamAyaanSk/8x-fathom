@@ -173,13 +173,36 @@ function isActiveMeetingBotUiPhase(phase: MeetingBotUiPhase): boolean {
   return ACTIVE_BOT_UI_PHASES.has(phase)
 }
 
+function hasMeetingBotJoinedCall(params: {
+  baasStatus: BaasBotStatus | null
+  recordingStartedAt: Date | null
+}): boolean {
+  if (params.recordingStartedAt != null) {
+    return true
+  }
+  if (params.baasStatus == null) {
+    return false
+  }
+  if (JOINING_STATUSES.has(params.baasStatus)) {
+    return false
+  }
+  if (FAILED_JOIN_STATUSES.has(params.baasStatus)) {
+    return false
+  }
+  return true
+}
+
+const FAILED_JOIN_BAAS_STATUSES = [...FAILED_JOIN_STATUSES] as const
+
 export type { BaasBotStatus, MeetingBotUiPhase }
 export {
   BAAS_BOT_STATUSES,
+  FAILED_JOIN_BAAS_STATUSES,
   MEETING_BOT_UI_PHASES,
   TERMINAL_BAAS_STATUSES,
   getMeetingBotUiLabel,
   getMeetingBotUiPhase,
+  hasMeetingBotJoinedCall,
   isActiveMeetingBotUiPhase,
   isBaasBotStatus,
   isFailedMeetingBotUiPhase,

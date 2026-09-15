@@ -1,5 +1,7 @@
 import {
+  FAILED_JOIN_BAAS_STATUSES,
   getMeetingBotUiPhase,
+  hasMeetingBotJoinedCall,
   isFailedMeetingBotUiPhase,
   parseBaasApiStatus
 } from '@repo/api-contract/baas-bot-status'
@@ -75,6 +77,34 @@ function _toDispatchResult(meeting: {
   }
 }
 
+function _assertNoPriorBotJoin(meeting: {
+  id: string
+  baasStatus: BaasBotStatus | null
+  recordingStartedAt: Date | null
+}) {
+  if (hasMeetingBotJoinedCall(meeting)) {
+    throw new DispatchError(
+      409,
+      'A bot already joined this meeting',
+      meeting.id
+    )
+  }
+}
+
+const _failedJoinStatusSql = Prisma.join(
+  FAILED_JOIN_BAAS_STATUSES.map((status) => Prisma.sql`${status}::"BaasBotStatus"`)
+)
+
+function _eligibleForNewBotDispatchSql() {
+  return Prisma.sql`
+    AND m."recordingStartedAt" IS NULL
+    AND (
+      m."baasStatus" IS NULL
+      OR m."baasStatus" IN (${_failedJoinStatusSql})
+    )
+  `
+}
+
 function _assertCaptureWindow(startTime: Date, nowMs: number) {
   const startMs = startTime.getTime()
   if (
@@ -119,6 +149,7 @@ async function _lockMeetingRow(
     WHERE m.id = ${params.meetingId}
       AND m."baasBotId" IS NULL
       AND m."endTime" > ${params.now}
+      ${_eligibleForNewBotDispatchSql()}
       ${dueFilter}
       ${userFilter}
     FOR UPDATE OF m SKIP LOCKED
@@ -143,6 +174,7 @@ async function _lockNextDueMeetingRow(
     WHERE m."baasBotId" IS NULL
       AND m."endTime" > ${params.now}
       AND m."startTime" <= ${params.dueBy}
+      ${_eligibleForNewBotDispatchSql()}
     ORDER BY m."startTime" ASC
     LIMIT 1
     FOR UPDATE OF m SKIP LOCKED
@@ -223,6 +255,7 @@ async function dispatchBotForMeeting(
       id: true,
       baasBotId: true,
       baasStatus: true,
+      recordingStartedAt: true,
       startTime: true,
       endTime: true
     }
@@ -235,6 +268,8 @@ async function dispatchBotForMeeting(
   if (existing.baasBotId) {
     return _toDispatchResult(existing)
   }
+
+  _assertNoPriorBotJoin(existing)
 
   if (existing.endTime.getTime() <= now.getTime()) {
     throw new DispatchError(409, 'Meeting has ended', params.meetingId)
@@ -303,6 +338,7 @@ async function retryBotForMeeting(
       id: true,
       baasBotId: true,
       baasStatus: true,
+      recordingStartedAt: true,
       endTime: true
     }
   })
@@ -315,6 +351,8 @@ async function retryBotForMeeting(
     throw new DispatchError(409, 'Meeting has ended', params.meetingId)
   }
 
+  _assertNoPriorBotJoin(existing)
+
   const uiPhase = getMeetingBotUiPhase({
     baasBotId: existing.baasBotId,
     baasStatus: existing.baasStatus
@@ -323,6 +361,14 @@ async function retryBotForMeeting(
     throw new DispatchError(
       409,
       'Bot can only be retried after a failure',
+      params.meetingId
+    )
+  }
+
+  if (uiPhase === 'failed_processing') {
+    throw new DispatchError(
+      409,
+      'Bot cannot be retried after joining the call',
       params.meetingId
     )
   }

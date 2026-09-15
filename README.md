@@ -20,7 +20,7 @@ In local dev the Vite app proxies `/api` to Express (`http://localhost:3000`), s
 
 **Calendar webhooks:** Google `events.watch` needs a public HTTPS URL. Use ngrok (or similar), point `BETTER_AUTH_URL` and the browser at that origin, and add the ngrok callback URL to Google OAuth redirect URIs. See `docs/features/F3/DECISIONS.md`.
 
-**MeetingBaas callbacks:** set `BASE_URL` on the API server (and worker) to a public origin so `createBot` can register `POST {BASE_URL}/api/webhooks/meetingbaas`. Locally, the worker polls `getBotStatus` so list UI still updates without a public URL. Optionally point the MeetingBaas account webhook at the same path for `bot.status_change` events. v2 webhooks are Svix-signed: set `MEETINGBAAS_WEBHOOK_SECRET` to the dashboard signing secret (`whsec_…`) and verify `svix-id`, `svix-timestamp`, and `svix-signature`.
+**MeetingBaas callbacks:** set `BASE_URL` on the API server (and worker) to a public origin. Register the **account webhook URL** in MeetingBaas as `{BASE_URL}/api/webhooks/meetingbaas` (required for `bot.status_change`; per-bot callbacks only send terminal events). Set `MEETINGBAAS_WEBHOOK_SECRET` to the Svix signing secret from the dashboard (with or without the `whsec_` prefix). Locally, the worker polls `getBotStatus` so list UI still updates without webhooks.
 
 `pnpm dev` runs web, API, and shared package watchers (not the dispatch worker). Start the worker in a second terminal with `pnpm dev:worker`.
 

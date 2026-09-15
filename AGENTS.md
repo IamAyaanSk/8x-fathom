@@ -34,7 +34,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 | Joining…               | `joining`                                                                                                                                          |
 | In waiting room…       | `in_waiting_room`                                                                                                                                  |
 | In call — recording    | `in_call_recording`                                                                                                                                |
-| Call ended, processing | `transcribing`, or `processingStatus` `pending` / `processing`. `bot.completed` → `transcribing` + `pending`; transcription webhook → `processing` |
+| Call ended, processing | `transcribing`, or `processingStatus` `pending` / `processing`. `bot.completed` → `transcribing` only; transcription completion webhook → `pending` (then worker → `processing` / `ready`) |
 | Ready                  | `processingStatus: ready`                                                                                                                          |
 | Failed to join         | `failed` and no `recordingStartedAt` (capture again if the meeting has not ended, outside the 2-minute pre-start window) |
 | Failed processing      | `processingStatus: failed`, or `failed` after the bot joined                                                                                       |
@@ -74,7 +74,7 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | done        |
 | F4  | Events / library list UI                                            | done        |
 | F5  | Worker dispatch `createBot` at start − buffer                       | done        |
-| F7  | Baas callback, worker AI, `processingStatus: ready`                 | not started |
+| F7  | Baas callback, worker AI, `processingStatus: ready`                 | done        |
 | F8  | Playback + transcript sync + share                                  | not started |
 | F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
 | F9  | Q&A RAG chatbot                                                     | not started |

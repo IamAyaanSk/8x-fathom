@@ -200,8 +200,8 @@ async function _dispatchLockedMeeting(
     },
     extra: { meetingId: row.id },
     entry_message: `I am 8x Notetaker responsible to record this call and take notes 😉`,
-    bot_image:
-      'https://sdmntprnortheu.oaiusercontent.com/files/00000000-7c30-81f4-8051-01ee58d6142d/raw?se=2026-09-15T16%3A07%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=e4a73326-1d7b-49f6-ba7b-acd74fe5aea6&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-14T20%3A20%3A21Z&ske=2026-09-15T20%3A20%3A21Z&sks=b&skv=2026-02-06&sig=8QrblDuze1/mk5t8qTnBki4dORGsJ8oT9srlRkb6q4k%3D',
+    // bot_image:
+    //   'https://sdmntprnortheu.oaiusercontent.com/files/00000000-7c30-81f4-8051-01ee58d6142d/raw?se=2026-09-15T16%3A07%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=e4a73326-1d7b-49f6-ba7b-acd74fe5aea6&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-14T20%3A20%3A21Z&ske=2026-09-15T20%3A20%3A21Z&sks=b&skv=2026-02-06&sig=8QrblDuze1/mk5t8qTnBki4dORGsJ8oT9srlRkb6q4k%3D',
     transcription_config: {},
     callback_enabled: true,
     callback_config: _callbackConfig(params)

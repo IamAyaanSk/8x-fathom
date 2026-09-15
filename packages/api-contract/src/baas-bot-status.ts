@@ -196,9 +196,6 @@ function _processingPatchFromRaw(
   if (rawStatus === 'transcribing') {
     return 'processing'
   }
-  if (rawStatus === 'completed' && current === 'idle') {
-    return 'pending'
-  }
   return undefined
 }
 

@@ -132,6 +132,9 @@ catalogs:
     morgan:
       specifier: ^1.11.0
       version: 1.11.0
+    node-cron:
+      specifier: ^4.6.0
+      version: 4.6.0
     pg:
       specifier: ^8.22.0
       version: 8.22.0
@@ -206,9 +209,6 @@ importers:
       '@better-auth/prisma-adapter':
         specifier: 'catalog:'
         version: 1.7.5(@better-auth/core@1.7.5(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.4)(kysely@0.29.5)(nanostores@1.5.3))(@better-auth/utils@0.4.2)(@prisma/client@7.9.0(prisma@7.9.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3))(typescript@6.0.3))(prisma@7.9.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3))
-      '@meeting-baas/sdk':
-        specifier: 'catalog:'
-        version: 6.2.9(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       '@repo/api-contract':
         specifier: workspace:*
         version: link:../../packages/api-contract
@@ -218,6 +218,9 @@ importers:
       '@repo/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@repo/meeting-dispatch':
+        specifier: workspace:*
+        version: link:../../packages/meeting-dispatch
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -291,6 +294,9 @@ importers:
       '@repo/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@repo/meeting-dispatch':
+        specifier: workspace:*
+        version: link:../../packages/meeting-dispatch
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -370,6 +376,58 @@ importers:
       vite:
         specifier: ^8.1.1
         version: 8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.0)
+
+  apps/worker:
+    dependencies:
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@repo/env':
+        specifier: workspace:*
+        version: link:../../packages/env
+      '@repo/meeting-dispatch':
+        specifier: workspace:*
+        version: link:../../packages/meeting-dispatch
+      '@repo/shared-validations':
+        specifier: workspace:*
+        version: link:../../packages/shared-validations
+      express:
+        specifier: 'catalog:'
+        version: 5.2.1(supports-color@8.1.1)
+      helmet:
+        specifier: 'catalog:'
+        version: 8.3.0
+      morgan:
+        specifier: 'catalog:'
+        version: 1.11.0(supports-color@8.1.1)
+      node-cron:
+        specifier: 'catalog:'
+        version: 4.6.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@types/express':
+        specifier: 'catalog:'
+        version: 5.0.6
+      '@types/morgan':
+        specifier: 'catalog:'
+        version: 1.9.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.1.3
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
   packages/api-client:
     dependencies:
@@ -460,6 +518,31 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.4.3
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.1.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/meeting-dispatch:
+    dependencies:
+      '@meeting-baas/sdk':
+        specifier: 'catalog:'
+        version: 6.2.9(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      '@repo/api-contract':
+        specifier: workspace:*
+        version: link:../api-contract
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../database
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -3867,6 +3950,10 @@ packages:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
     engines: {node: '>= 0.6'}
 
+  node-cron@4.6.0:
+    resolution: {integrity: sha512-Si/bzYiKRHOB8/a99T2+SDGN582ONDMSTlJr5oCkT6GtnqPjZ2s10eoQRYkW9ZHwjVxONL+W8Fb+qR0AHMQsdg==}
+    engines: {node: '>=20'}
+
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
@@ -6170,7 +6257,7 @@ snapshots:
       jiti: 2.7.0
       magic-string: 0.30.21
       prettier: 3.9.6
-      zod: 4.4.3
+      zod: 4.6.5
     transitivePeerDependencies:
       - supports-color
 
@@ -7903,6 +7990,8 @@ snapshots:
   natural-compare@1.4.0: {}
 
   negotiator@1.0.0: {}
+
+  node-cron@4.6.0: {}
 
   node-domexception@1.0.0: {}
 

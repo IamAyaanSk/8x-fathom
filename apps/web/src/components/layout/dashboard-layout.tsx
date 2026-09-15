@@ -1,11 +1,6 @@
 import { Button } from '@repo/ui-web/components/button'
 import { Link, useNavigate } from '@tanstack/react-router'
-import {
-  CircleHelp,
-  LogOut,
-  Settings,
-  Waves
-} from 'lucide-react'
+import { CircleHelp, LogOut, Settings, Waves } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { authClient } from '#lib/auth-client'
@@ -57,7 +52,6 @@ function DashboardLayout({ children, user }: DashboardLayoutProps) {
               8X FATHOM
             </span>
           </Link>
-
 
           <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
             <Button

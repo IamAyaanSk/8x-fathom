@@ -1,4 +1,6 @@
-import { type Request, type Response, type NextFunction } from 'express'
+import type { NextFunction, Request, Response } from 'express'
+
+import { HttpError } from '#src/v1/errors/http-error'
 
 function errorMiddleware(
   err: Error,
@@ -6,11 +8,22 @@ function errorMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  // TODO: Create custom error and use that
   if (res.headersSent) {
     return next(err)
   }
-  res.status(500)
+
+  if (err instanceof HttpError) {
+    res.status(err.statusCode).json({
+      success: false,
+      message: err.message
+    })
+    return
+  }
+
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error'
+  })
 }
 
 export { errorMiddleware }

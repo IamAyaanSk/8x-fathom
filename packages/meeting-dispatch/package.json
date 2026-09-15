@@ -1,0 +1,33 @@
+{
+  "name": "@repo/meeting-dispatch",
+  "version": "1.0.0",
+  "description": "MeetingBaas bot dispatch with PostgreSQL row locks",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./capture-window": {
+      "types": "./src/capture-window.ts",
+      "default": "./dist/capture-window.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@meeting-baas/sdk": "catalog:",
+    "@repo/api-contract": "workspace:*",
+    "@repo/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:"
+  }
+}

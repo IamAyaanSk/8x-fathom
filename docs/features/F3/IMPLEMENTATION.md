@@ -14,16 +14,16 @@ Calendar connect (`linkSocial`), sync eligible events into `Meeting` / `Calendar
 
 ## Files
 
-| Path | Change |
-| --- | --- |
-| `apps/server/src/auth/plugins/calendar.ts` | Webhook + callback hook |
-| `apps/server/src/services/calendar-sync.ts` | Sync + watch |
-| `apps/server/src/services/google-account.ts` | Token + connection helpers |
-| `apps/server/src/v1/controllers/calendar.ts` | Status, sync |
-| `packages/api-contract/src/v1/calendar.ts` | Zod contracts |
-| `packages/api-client/src/v1/calendar/*` | Client + hooks |
-| `apps/web/src/components/pages/home-page.tsx` | Connect CTA |
-| `packages/database/prisma/schema.prisma` | `Meeting` calendar fields |
+| Path                                          | Change                     |
+| --------------------------------------------- | -------------------------- |
+| `apps/server/src/auth/plugins/calendar.ts`    | Webhook + callback hook    |
+| `apps/server/src/services/calendar-sync.ts`   | Sync + watch               |
+| `apps/server/src/services/google-account.ts`  | Token + connection helpers |
+| `apps/server/src/v1/controllers/calendar.ts`  | Status, sync               |
+| `packages/api-contract/src/v1/calendar.ts`    | Zod contracts              |
+| `packages/api-client/src/v1/calendar/*`       | Client + hooks             |
+| `apps/web/src/components/pages/home-page.tsx` | Connect CTA                |
+| `packages/database/prisma/schema.prisma`      | `Meeting` calendar fields  |
 
 ## Acceptance
 

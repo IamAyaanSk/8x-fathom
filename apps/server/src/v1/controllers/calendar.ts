@@ -5,9 +5,10 @@ import type {
 } from '@repo/api-contract/v1/calendar'
 
 import '#src/types/express'
+import type { NextFunction, Request, Response } from 'express'
+
 import { setupCalendarWatchAndSync } from '#src/services/calendar-sync'
 import { isCalendarConnectedForUser } from '#src/services/google-account'
-import type { NextFunction, Request, Response } from 'express'
 
 const getCalendarStatusController = async (
   req: Request,

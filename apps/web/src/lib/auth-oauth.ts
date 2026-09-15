@@ -12,7 +12,9 @@ async function startGoogleSignIn(): Promise<{ error: Error | null }> {
   })
 
   if (error) {
-    return { error: new Error(error.message ?? 'Could not start Google sign-in.') }
+    return {
+      error: new Error(error.message ?? 'Could not start Google sign-in.')
+    }
   }
 
   if (data?.url) {

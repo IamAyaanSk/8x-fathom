@@ -1,5 +1,6 @@
 import {
   getMeetingsUpcomingResponseSchema,
+  postMeetingCaptureResponseSchema,
   type MeetingListItem
 } from '@repo/api-contract/v1/meetings'
 
@@ -13,4 +14,17 @@ async function getMeetingsUpcoming(options: _HttpRequestOptions = {}) {
   return getMeetingsUpcomingResponseSchema.parse(response.data)
 }
 
-export { getMeetingsUpcoming }
+async function postMeetingCapture(
+  meetingId: string,
+  options: _HttpRequestOptions = {}
+) {
+  const client = _getApiClient()
+  const response = await client.post(
+    `/meetings/${meetingId}/capture`,
+    undefined,
+    options
+  )
+  return postMeetingCaptureResponseSchema.parse(response.data)
+}
+
+export { getMeetingsUpcoming, postMeetingCapture }

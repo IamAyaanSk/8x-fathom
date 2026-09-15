@@ -1,5 +1,5 @@
-import { postCalendarSync } from '@repo/api-client/v1/calendar/index'
 import { calendarStatusQueryOptions } from '@repo/api-client/v1/calendar/hooks'
+import { postCalendarSync } from '@repo/api-client/v1/calendar/index'
 import { meetingsUpcomingQueryOptions } from '@repo/api-client/v1/meetings/hooks'
 import { createFileRoute } from '@tanstack/react-router'
 

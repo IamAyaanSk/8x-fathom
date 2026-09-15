@@ -26,7 +26,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 
 - Bots are dispatched **automatically** by the worker scheduler. No start-capture button.
 - Calendar sync only creates/updates `Meeting` rows for events with a `meetingUrl` (Meet / Zoom / Teams).
-- Store MeetingBaas bot status on `Meeting.baasStatus` as the `BaasBotStatus` enum (map unknown `MEET_LOGIN_*` API strings to `meet_login_error` when persisting). Derive UI from one shared mapper in `packages/api-contract` (imported by server and web).
+- Store MeetingBaas bot status on `Meeting.baasStatus` as the `BaasBotStatus` enum (same strings as the v2 API `status` field). Derive UI from one shared mapper in `packages/api-contract` (imported by server and web).
 
 | UI state               | MeetingBaas `baasStatus`                                                                                                    |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -35,7 +35,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 | In call — recording    | `in_call_recording`, `recording_resumed`, `in_call_not_recording`                                                           |
 | Call ended, processing | `call_ended`, `recording_succeeded`, `transcribing`                                                                         |
 | Ready                  | `completed`                                                                                                                 |
-| Failed to join         | `bot_rejected`, `invalid_meeting_url`, `meeting_error`, `waiting_room_timeout`, `bot_removed_too_early`, any `MEET_LOGIN_*` |
+| Failed to join         | `bot_rejected`, `invalid_meeting_url`, `meeting_error`, `waiting_room_timeout`, `bot_removed_too_early`, `bot_removed`, `MEET_LOGIN_*` |
 | Failed processing      | `failed`, `transcription_failed`, `recording_failed`                                                                        |
 
 **Ongoing call:** active once `createBot` has been called. Poll `GET /bots/{id}/status` every ~5–10s in Joining…; ~60s in In call. Distinct honest labels — never a blank spinner. Failures shown immediately. No live transcript — show elapsed recording time. Highlight click writes `{ meetingId, timestampSec, note? }`. Scratchpad: upsert `ScratchpadEntry` at `{ meetingId, timestampSec, text }` (debounced).
@@ -45,8 +45,8 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 - **Better Auth** on Express: mount `toNodeHandler(auth)` at `/api/auth/*splat` (**Express 5**) **before** `express.json()`. Prisma adapter against `@repo/db`. `accessType: 'offline'` + consent so we keep a refresh token. Use `auth.api.getAccessToken({ providerId: 'google' })` for Calendar API calls. Docs: [Express](https://better-auth.com/docs/integrations/express), [Google](https://better-auth.com/docs/authentication/google), [Prisma](https://better-auth.com/docs/adapters/prisma), [extra scopes](https://better-auth.com/docs/concepts/oauth). Prefer Better Auth MCP when available.
 - **Calendar webhooks via Better Auth:** register an inbound webhook as a Better Auth **plugin endpoint** (`createAuthEndpoint`, e.g. `/calendar/webhook` under `/api/auth`). After Calendar scopes are granted, call Google Calendar `events.watch` with `address` = that Better Auth URL. On ping, incremental `events.list` with `syncToken`. Also support **Sync now** and sync on list page load (needed locally without a public HTTPS URL). Do **not** use MeetingBaas calendar webhooks.
 - **MeetingBaas v2 Bot API only** (`@meeting-baas/sdk`, `api_version: 'v2'`): `createBot`, `getBotStatus`. Per-bot `callback_config` to our public URL; `extra.meetingId` for correlation; transcription on. [BYO storage](https://docs.meetingbaas.com/bring-your-own-storage) configured once (dashboard or `PUT /v2/storage-config`) to **our R2**. R2 CORS must allow **our** web origin (GET/HEAD). Playback via `@aws-sdk/client-s3` + presigner.
-- **AI:** Vercel AI SDK in the worker after artifacts exist. Chat is F9.
-- **Worker:** `apps/server/src/worker.ts` — **second process** (not in-process with Express). Polls `Meeting.processingStatus` (no jobs table). Same process runs the **dispatch scheduler** (due events → `createBot`).
+- **AI:** Vercel AI SDK in `apps/worker` after artifacts exist. Chat is F9.
+- **Worker:** `apps/worker` — separate Express process/deploy. Cron scheduler reads PostgreSQL (`FOR UPDATE SKIP LOCKED`) and calls MeetingBaas `createBot` directly (`@repo/meeting-dispatch`). Capture API on the server uses the same package. Later slices poll `Meeting.processingStatus` (no jobs table).
 
 ### Data model (Prisma)
 
@@ -72,7 +72,7 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | F2  | Google auth, sessions, protected API                                | done        |
 | F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | done        |
 | F4  | Events / library list UI                                            | done        |
-| F5  | Worker dispatch `createBot` at start − buffer                       | not started |
+| F5  | Worker dispatch `createBot` at start − buffer                       | done        |
 | F7  | Baas callback, worker AI, `processingStatus: ready`                 | not started |
 | F8  | Playback + transcript sync + share                                  | not started |
 | F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
@@ -82,22 +82,24 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 
 - **Tooling**: Turborepo + pnpm workspaces (`catalogMode: prefer` — use `catalog:` for shared dependency versions in `pnpm-workspace.yaml`).
 - **Node**: `>=22`. **ESM** everywhere (`"type": "module"`, TypeScript `module` / `moduleResolution`: `NodeNext`).
-- **Root scripts**: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm lint:fix`, `pnpm format`, `pnpm format:fix`.
+- **Root scripts**: `pnpm dev` (web + API; excludes worker), `pnpm dev:worker` (dispatch scheduler), `pnpm build`, `pnpm lint`, `pnpm lint:fix`, `pnpm format`, `pnpm format:fix`.
 - **Turbo env**: `DATABASE_URL` and `NODE_ENV` are `globalEnv`. New env vars used in tasks must be declared in `turbo.json` (oxlint `turbo/no-undeclared-env-vars`).
 
 ## Layout
 
-| Path                             | Role                                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------------------ |
-| `apps/web`                       | Vite 8, React 19, TanStack Router (file routes), TanStack Query                      |
-| `apps/server`                    | Express 5 API at `/api/v1`; Better Auth at `/api/auth`; worker entry `src/worker.ts` |
-| `packages/api-contract`          | Zod schemas + inferred types for API payloads                                        |
-| `packages/api-client`            | Axios calls + TanStack Query `queryOptions` / hooks                                  |
-| `packages/database` (`@repo/db`) | Prisma 7 + PostgreSQL (`PrismaPg` adapter)                                           |
-| `packages/env`                   | `unsafeValidateEnv` + `NODE_ENV` helpers                                             |
-| `packages/shared-validations`    | Reusable Zod field schemas                                                           |
-| `packages/ui-web`                | shadcn/ui-style components + `globals.css`                                           |
-| `packages/typescript-config`     | Shared `base.json` tsconfig                                                          |
+| Path                             | Role                                                                           |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/web`                       | Vite 8, React 19, TanStack Router (file routes), TanStack Query                |
+| `apps/server`                    | Express 5 API at `/api/v1`; Better Auth at `/api/auth`; bot dispatch + capture |
+| `apps/worker`                    | Express scheduler; DB row-lock dispatch via `@repo/meeting-dispatch`           |
+| `packages/meeting-dispatch`      | MeetingBaas `createBot` + `FOR UPDATE SKIP LOCKED` dispatch                    |
+| `packages/api-contract`          | Zod schemas + inferred types for API payloads                                  |
+| `packages/api-client`            | Axios calls + TanStack Query `queryOptions` / hooks                            |
+| `packages/database` (`@repo/db`) | Prisma 7 + PostgreSQL (`PrismaPg` adapter)                                     |
+| `packages/env`                   | `unsafeValidateEnv` + `NODE_ENV` helpers                                       |
+| `packages/shared-validations`    | Reusable Zod field schemas                                                     |
+| `packages/ui-web`                | shadcn/ui-style components + `globals.css`                                     |
+| `packages/typescript-config`     | Shared `base.json` tsconfig                                                    |
 
 ## Package boundaries
 
@@ -105,8 +107,10 @@ Respect dependency direction:
 
 ```
 shared-validations → api-contract → api-client → apps/web
-@repo/db → apps/server
+@repo/db → apps/server, apps/worker
 @repo/env → apps/*
+@repo/api-contract → apps/server, apps/worker, packages/api-client, packages/meeting-dispatch
+@repo/meeting-dispatch → apps/server, apps/worker
 @repo/ui-web → apps/web
 ```
 

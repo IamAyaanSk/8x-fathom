@@ -14,7 +14,10 @@ import { getGoogleAccessTokenForUser } from '#src/services/google-account'
 
 type SyncResult = { syncedCount: number }
 type SetupResult = SyncResult & { watchRegistered: boolean }
-type FetchEventsResult = { events: calendar_v3.Schema$Event[]; syncToken: string | null }
+type FetchEventsResult = {
+  events: calendar_v3.Schema$Event[]
+  syncToken: string | null
+}
 
 const WATCH_RENEW_BEFORE_MS = 24 * 60 * 60 * 1000
 const WATCH_DURATION_MS = 7 * 24 * 60 * 60 * 1000 - 60_000
@@ -63,7 +66,8 @@ async function saveEvent(
 ): Promise<boolean> {
   if (!event.id) return false
 
-  const meetingUrl = event.status !== 'cancelled' ? resolveMeetingUrl(event) : null
+  const meetingUrl =
+    event.status !== 'cancelled' ? resolveMeetingUrl(event) : null
 
   if (!meetingUrl) {
     await prisma.meeting.deleteMany({
@@ -109,8 +113,17 @@ async function fetchEventsWithTokenRecovery(
     return await fetchEvents(calendar, listParams)
   } catch (error) {
     if (isSyncTokenError(error) && watchSyncToken) {
-      await prisma.calendarWatch.update({ where: { userId }, data: { syncToken: null } })
-      return fetchEventsWithTokenRecovery(userId, calendar, null, baseParams, timeMin)
+      await prisma.calendarWatch.update({
+        where: { userId },
+        data: { syncToken: null }
+      })
+      return fetchEventsWithTokenRecovery(
+        userId,
+        calendar,
+        null,
+        baseParams,
+        timeMin
+      )
     }
     throw error
   }
@@ -144,7 +157,10 @@ async function runSync(userId: string): Promise<SyncResult> {
   }
 
   if (syncToken) {
-    await prisma.calendarWatch.updateMany({ where: { userId }, data: { syncToken } })
+    await prisma.calendarWatch.updateMany({
+      where: { userId },
+      data: { syncToken }
+    })
   }
 
   return { syncedCount }
@@ -175,7 +191,8 @@ async function ensureCalendarWatch(
   const existing = await prisma.calendarWatch.findUnique({ where: { userId } })
   const isPlaceholder = existing?.channelId.startsWith('local-')
   const expiringSoon =
-    existing && existing.expiration.getTime() - Date.now() < WATCH_RENEW_BEFORE_MS
+    existing &&
+    existing.expiration.getTime() - Date.now() < WATCH_RENEW_BEFORE_MS
 
   if (existing && !isPlaceholder && !expiringSoon) return true
 
@@ -245,4 +262,7 @@ export {
   syncCalendarEventsForUser
 }
 
-export type { SetupResult as SetupCalendarWatchAndSyncResult, SyncResult as SyncCalendarResult }
+export type {
+  SetupResult as SetupCalendarWatchAndSyncResult,
+  SyncResult as SyncCalendarResult
+}

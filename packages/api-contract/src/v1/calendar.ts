@@ -31,7 +31,4 @@ export type PostCalendarSyncSuccessResponse = Extract<
   { success: true }
 >
 
-export {
-  getCalendarStatusResponseSchema,
-  postCalendarSyncResponseSchema
-}
+export { getCalendarStatusResponseSchema, postCalendarSyncResponseSchema }

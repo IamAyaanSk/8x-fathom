@@ -11,7 +11,7 @@ const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
   trustedOrigins: [env.WEB_ORIGIN],
-  advanced: {    
+  advanced: {
     disableOriginCheck: [CALENDAR_WEBHOOK_PATH] as unknown as boolean
   },
   database: prismaAdapter(prisma, {

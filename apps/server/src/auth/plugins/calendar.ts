@@ -29,9 +29,7 @@ function calendarPlugin(): BetterAuthPlugin {
         },
         async (ctx) => {
           const channelId = ctx.request?.headers.get(GOOGLE_CHANNEL_ID_HEADER)
-          const resourceId = ctx.request?.headers.get(
-            GOOGLE_RESOURCE_ID_HEADER
-          )
+          const resourceId = ctx.request?.headers.get(GOOGLE_RESOURCE_ID_HEADER)
           const channelToken = ctx.request?.headers.get(
             GOOGLE_CHANNEL_TOKEN_HEADER
           )

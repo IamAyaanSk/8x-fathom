@@ -10,13 +10,17 @@ Use a local PostgreSQL instance with the **pgvector** extension (`CREATE EXTENSI
 
 Copy `apps/server/.env.example` to `apps/server/.env` and set `DATABASE_URL`. Prisma CLI loads that file from `packages/database/prisma.config.ts` (optional `packages/database/.env` fallback).
 
-Copy `apps/web/.env.example` to `apps/web/.env`. In local dev the Vite app proxies `/api` to Express (`http://localhost:3000`), so keep these aligned:
+Copy `apps/web/.env.example` to `apps/web/.env`. Copy `apps/worker/.env.example` to `apps/worker/.env` and set the same `DATABASE_URL` and `MEETINGBAAS_API_KEY` as the API server. Worker HTTP (health) defaults to port `3001`.
+
+In local dev the Vite app proxies `/api` to Express (`http://localhost:3000`), so keep these aligned:
 
 - `WEB_ORIGIN` and `BETTER_AUTH_URL` = `http://localhost:5173`
 - `VITE_API_URL` = `http://localhost:5173`
 - Google OAuth authorized redirect URI = `http://localhost:5173/api/auth/callback/google`
 
 **Calendar webhooks:** Google `events.watch` needs a public HTTPS URL. Use ngrok (or similar), point `BETTER_AUTH_URL` and the browser at that origin, and add the ngrok callback URL to Google OAuth redirect URIs. See `docs/features/F3/DECISIONS.md`.
+
+`pnpm dev` runs web, API, and shared package watchers (not the dispatch worker). Start the worker in a second terminal with `pnpm dev:worker`.
 
 ```bash
 pnpm --filter @repo/db db:generate
@@ -52,7 +56,8 @@ pnpm --filter @repo/db db:migrate
 ```
 ├── apps/
 │   ├── web/                  # Vite + React web app
-│   ├── server/               # Express API + Better Auth; worker in src/worker.ts
+│   ├── server/               # Express API + Better Auth + bot dispatch
+│   ├── worker/               # Express scheduler (DB lock + MeetingBaas dispatch)
 │
 ├── packages/
 │   ├── ui-web/               # shadcn/ui components + styles (shared UI library)

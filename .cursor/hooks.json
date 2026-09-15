@@ -1,6 +1,32 @@
 {
   "version": 1,
   "hooks": {
+    "beforeReadFile": [
+      {
+        "command": "python3 .cursor/hooks/block-env-access.py",
+        "failClosed": true
+      }
+    ],
+    "beforeTabFileRead": [
+      {
+        "command": "python3 .cursor/hooks/block-env-access.py",
+        "failClosed": true
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "python3 .cursor/hooks/block-env-access.py",
+        "matcher": "Read|Write|Grep|Delete",
+        "failClosed": true
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "python3 .cursor/hooks/block-env-access.py",
+        "matcher": "(^|[\\s'\"'/=])\\.env($|[\\s'\"./])",
+        "failClosed": true
+      }
+    ],
     "sessionStart": [
       {
         "command": ".cursor/hooks/agent-capture.sh"

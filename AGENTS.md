@@ -69,7 +69,7 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | F1  | Schema, pgvector, env, catalog deps                                 | done        |
 | F2  | Google auth, sessions, protected API                                | done        |
 | F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | done        |
-| F4  | Events / library list UI                                            | not started |
+| F4  | Events / library list UI                                            | done |
 | F5  | Worker dispatch `createBot` at start − buffer                       | not started |
 | F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
 | F7  | Baas callback, worker AI, `processingStatus: ready`                 | not started |

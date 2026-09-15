@@ -123,9 +123,10 @@ model Meeting {
   recordingR2Key     String?
   transcriptR2Key    String?
   chatMessagesR2Key  String?
-  recordingStartedAt DateTime?
-  summary            String?
-  highlights         Highlight[]
+  recordingStartedAt     DateTime?
+  summary                String?
+  actionItemsExtractedAt DateTime?
+  highlights             Highlight[]
   scratchpadEntries  ScratchpadEntry[]
   actionItems        ActionItem[]
   transcriptChunks   TranscriptChunk[]
@@ -203,7 +204,9 @@ model ActionItem {
   meeting      Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   text         String
   timestampSec Int?
+  completed    Boolean  @default(false)
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([meetingId])
   @@map("action_item")

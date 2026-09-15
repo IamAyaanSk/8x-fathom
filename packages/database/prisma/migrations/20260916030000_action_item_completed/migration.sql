@@ -1,0 +1,4 @@
+ALTER TABLE "action_item" ADD COLUMN "completed" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "action_item" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE "meeting" ADD COLUMN "actionItemsExtractedAt" TIMESTAMP(3);

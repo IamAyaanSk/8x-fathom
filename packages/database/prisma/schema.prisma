@@ -130,6 +130,7 @@ model Meeting {
   actionItems        ActionItem[]
   transcriptChunks   TranscriptChunk[]
   participants       MeetingParticipant[]
+  chatMessages       MeetingChatMessage[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -151,6 +152,23 @@ model MeetingParticipant {
 
   @@index([meetingId])
   @@map("meeting_participant")
+}
+
+model MeetingChatMessage {
+  id             String   @id @default(cuid())
+  meetingId      String
+  meeting        Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  baasMessageId  String
+  senderName     String
+  baasSenderId   Int?
+  text           String
+  sentAt         DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([meetingId, baasMessageId])
+  @@index([meetingId])
+  @@index([meetingId, sentAt])
+  @@map("meeting_chat_message")
 }
 
 model Highlight {

@@ -57,6 +57,7 @@ Replace demo `User` / `Post`. Enable `CREATE EXTENSION vector`. Better Auth core
 - `CalendarWatch` — per user: `channelId`, `resourceId`, `expiration`, `syncToken`
 - `Meeting` — `userId`, `googleEventId` (unique), title, start/end, `meetingUrl`, `htmlLink`, `baasBotId`, `baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `completed` \| `failed`, nullable pre-dispatch), `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, R2 keys (`recordingR2Key` / `transcriptR2Key` / optional `chatMessagesR2Key` from `bot.completed`), `recordingStartedAt`, summary fields (`@@map("meeting")`). Rows are upserted from calendar sync only when the Google event is in the sync window and has a meeting URL; cancel / loss of URL deletes pre-dispatch rows (`baasBotId` null).
 - `MeetingParticipant` — from `bot.completed`: `meetingId`, `name`, `baasUserId?` (platform/assigned id), `displayName?`, `profilePicture?`
+- `MeetingChatMessage` — per meeting: `baasMessageId`, `senderName`, `baasSenderId?`, `text`, `sentAt` (from chat artifact JSON; populated later)
 - `ScratchpadEntry` — `meetingId`, `timestampSec`, `text` (unique per meeting + timestamp; debounced upsert in F6)
 - `Highlight` — `meetingId`, `timestampSec`, `note?`
 - `ActionItem` — `meetingId`, `text`, `timestampSec?`

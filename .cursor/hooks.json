@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/agent-capture.sh"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/agent-capture.sh"
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": ".cursor/hooks/agent-capture.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/agent-capture.sh"
+      }
+    ]
+  }
+}

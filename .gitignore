@@ -33,6 +33,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Agent capture hook state (session counters; logs in .agent-logs/*.md are committed)
+.agent-logs/.state/
+
 # Misc
 .DS_Store
 *.pem

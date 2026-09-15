@@ -1,12 +1,15 @@
+import type { IncomingHttpHeaders } from 'node:http'
+
 import {
-  isBaasBotStatus,
-  isTerminalBaasStatus,
-  parseBaasApiStatus,
-  type BaasBotStatus
+  mapBaasApiStatus,
+  patchFromBaasCompleted,
+  patchFromBaasFailed,
+  patchFromBaasStatusChange,
+  type BaasBotStatus,
+  type MeetingProcessingStatus
 } from '@repo/api-contract/baas-bot-status'
 import type { MeetingBaasWebhookEvent } from '@repo/api-contract/meeting-baas-webhook'
 import { prisma } from '@repo/db'
-import type { IncomingHttpHeaders } from 'node:http'
 import { Webhook, WebhookVerificationError } from 'svix'
 
 import { env } from '#src/env'
@@ -22,8 +25,6 @@ function _headerValue(
   return value
 }
 
-
-
 function verifyMeetingBaasWebhook(
   headers: IncomingHttpHeaders,
   rawBody: string
@@ -36,21 +37,16 @@ function verifyMeetingBaasWebhook(
   }
 
   if (rawBody.length === 0) {
-    console.log(rawBody.length)
     return null
   }
 
   try {
-    new Webhook(env.MEETINGBAAS_WEBHOOK_SECRET).verify(
-      rawBody,
-      {
-        'svix-id': svixId,
-        'svix-timestamp': svixTimestamp,
-        'svix-signature': svixSignature
-      }
-    )
+    new Webhook(env.MEETINGBAAS_WEBHOOK_SECRET).verify(rawBody, {
+      'svix-id': svixId,
+      'svix-timestamp': svixTimestamp,
+      'svix-signature': svixSignature
+    })
 
-    console.log(JSON.parse(rawBody))
     return JSON.parse(rawBody) as unknown
   } catch (error) {
     if (error instanceof WebhookVerificationError) {
@@ -63,22 +59,6 @@ function verifyMeetingBaasWebhook(
   }
 }
 
-function _shouldApplyBaasStatus(
-  current: BaasBotStatus | null,
-  next: BaasBotStatus
-): boolean {
-  if (current === next) {
-    return false
-  }
-  if (current === 'completed') {
-    return false
-  }
-  if (isTerminalBaasStatus(current) && !isTerminalBaasStatus(next)) {
-    return false
-  }
-  return true
-}
-
 async function _findMeetingForWebhook(params: {
   botId: string
   meetingId?: string
@@ -89,7 +69,8 @@ async function _findMeetingForWebhook(params: {
       id: true,
       baasBotId: true,
       baasStatus: true,
-      recordingStartedAt: true
+      recordingStartedAt: true,
+      processingStatus: true
     }
   })
   if (byBotId) {
@@ -106,7 +87,8 @@ async function _findMeetingForWebhook(params: {
       id: true,
       baasBotId: true,
       baasStatus: true,
-      recordingStartedAt: true
+      recordingStartedAt: true,
+      processingStatus: true
     }
   })
   if (!byExtraId) {
@@ -118,11 +100,18 @@ async function _findMeetingForWebhook(params: {
   return byExtraId
 }
 
-function _failedBaasStatus(errorCode: string | undefined): BaasBotStatus {
-  if (errorCode && isBaasBotStatus(errorCode)) {
-    return errorCode
+function _meetingBotState(meeting: {
+  baasBotId: string | null
+  baasStatus: BaasBotStatus | null
+  recordingStartedAt: Date | null
+  processingStatus: MeetingProcessingStatus
+}) {
+  return {
+    baasBotId: meeting.baasBotId,
+    baasStatus: meeting.baasStatus,
+    recordingStartedAt: meeting.recordingStartedAt,
+    processingStatus: meeting.processingStatus
   }
-  return 'failed'
 }
 
 async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
@@ -136,57 +125,51 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
     return
   }
 
+  const state = _meetingBotState(meeting)
+
   if (event.event === 'bot.status_change') {
-    let nextStatus: BaasBotStatus
-    try {
-      nextStatus = parseBaasApiStatus(event.data.status.code)
-    } catch {
+    if (!mapBaasApiStatus(event.data.status.code)) {
       console.warn(
         `Ignored unknown MeetingBaas status code: ${event.data.status.code}`
       )
       return
     }
 
-    if (!_shouldApplyBaasStatus(meeting.baasStatus, nextStatus)) {
+    const patch = patchFromBaasStatusChange(
+      state,
+      event.data.status.code,
+      event.data.status.start_time
+    )
+    if (!patch) {
       return
     }
 
-    const recordingStartedAt =
-      nextStatus === 'in_call_recording' &&
-      event.data.status.start_time != null
-        ? new Date(event.data.status.start_time * 1000)
-        : undefined
-
     await prisma.meeting.update({
       where: { id: meeting.id },
-      data: {
-        baasStatus: nextStatus,
-        ...(recordingStartedAt && !meeting.recordingStartedAt
-          ? { recordingStartedAt }
-          : {})
-      }
+      data: patch
     })
     return
   }
 
   if (event.event === 'bot.completed') {
-    if (!_shouldApplyBaasStatus(meeting.baasStatus, 'completed')) {
+    const patch = patchFromBaasCompleted(state)
+    if (!patch) {
       return
     }
     await prisma.meeting.update({
       where: { id: meeting.id },
-      data: { baasStatus: 'completed', processingStatus: 'pending' }
+      data: patch
     })
     return
   }
 
-  const nextStatus = _failedBaasStatus(event.data.error_code)
-  if (!_shouldApplyBaasStatus(meeting.baasStatus, nextStatus)) {
+  const patch = patchFromBaasFailed(state)
+  if (!patch) {
     return
   }
   await prisma.meeting.update({
     where: { id: meeting.id },
-    data: { baasStatus: nextStatus }
+    data: patch
   })
 }
 

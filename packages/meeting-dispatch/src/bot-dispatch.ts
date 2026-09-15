@@ -1,17 +1,11 @@
 import {
-  FAILED_JOIN_BAAS_STATUSES,
-  getMeetingBotUiPhase,
-  hasMeetingBotJoinedCall,
-  isFailedMeetingBotUiPhase,
-  parseBaasApiStatus
+  canDispatchNewBot,
+  mapBaasApiStatus
 } from '@repo/api-contract/baas-bot-status'
 import { Prisma, prisma, type BaasBotStatus } from '@repo/db'
 
 import { MEETING_CAPTURE_LEAD_MS } from './capture-window.js'
-import {
-  DISPATCH_BATCH_SIZE,
-  MEETING_BAAS_WEBHOOK_PATH
-} from './constants.js'
+import { DISPATCH_BATCH_SIZE, MEETING_BAAS_WEBHOOK_PATH } from './constants.js'
 import { DispatchError } from './errors.js'
 import { createMeetingBaasClient } from './meeting-baas-client.js'
 
@@ -56,7 +50,7 @@ function _callbackConfig(params: MeetingBaasCallbackParams) {
   const baseUrl = params.callbackBaseUrl.replace(/\/+$/, '')
   return {
     url: `${baseUrl}${MEETING_BAAS_WEBHOOK_PATH}`,
-    secret: params.webhookSecret,    
+    secret: params.webhookSecret,
     method: 'POST' as const
   }
 }
@@ -77,40 +71,36 @@ function _toDispatchResult(meeting: {
   }
 }
 
-function _assertNoPriorBotJoin(meeting: {
+function _assertCanDispatchNewBot(meeting: {
   id: string
+  baasBotId: string | null
   baasStatus: BaasBotStatus | null
   recordingStartedAt: Date | null
+  processingStatus: 'idle' | 'pending' | 'processing' | 'ready' | 'failed'
 }) {
-  if (hasMeetingBotJoinedCall(meeting)) {
+  if (!canDispatchNewBot(meeting)) {
     throw new DispatchError(
       409,
-      'A bot already joined this meeting',
+      'A bot is already active for this meeting',
       meeting.id
     )
   }
 }
 
-const _failedJoinStatusSql = Prisma.join(
-  FAILED_JOIN_BAAS_STATUSES.map((status) => Prisma.sql`${status}::"BaasBotStatus"`)
-)
-
 function _eligibleForNewBotDispatchSql() {
   return Prisma.sql`
     AND m."recordingStartedAt" IS NULL
+    AND m."processingStatus" = 'idle'::"ProcessingStatus"
     AND (
       m."baasStatus" IS NULL
-      OR m."baasStatus" IN (${_failedJoinStatusSql})
+      OR m."baasStatus" = 'failed'::"BaasBotStatus"
     )
   `
 }
 
 function _assertCaptureWindow(startTime: Date, nowMs: number) {
   const startMs = startTime.getTime()
-  if (
-    nowMs >= startMs - MEETING_CAPTURE_LEAD_MS &&
-    nowMs < startMs
-  ) {
+  if (nowMs >= startMs - MEETING_CAPTURE_LEAD_MS && nowMs < startMs) {
     throw new DispatchError(
       409,
       'Capture is unavailable while the bot is scheduled to join soon'
@@ -147,7 +137,6 @@ async function _lockMeetingRow(
     FROM meeting m
     INNER JOIN "user" u ON u.id = m."userId"
     WHERE m.id = ${params.meetingId}
-      AND m."baasBotId" IS NULL
       AND m."endTime" > ${params.now}
       ${_eligibleForNewBotDispatchSql()}
       ${dueFilter}
@@ -171,8 +160,7 @@ async function _lockNextDueMeetingRow(
       u.name AS "userName"
     FROM meeting m
     INNER JOIN "user" u ON u.id = m."userId"
-    WHERE m."baasBotId" IS NULL
-      AND m."endTime" > ${params.now}
+    WHERE m."endTime" > ${params.now}
       AND m."startTime" <= ${params.dueBy}
       ${_eligibleForNewBotDispatchSql()}
     ORDER BY m."startTime" ASC
@@ -189,7 +177,14 @@ async function _dispatchLockedMeeting(
   params: { meetingBaasApiKey: string } & MeetingBaasCallbackParams
 ): Promise<DispatchResult> {
   if (row.baasBotId) {
-    return _toDispatchResult(row)
+    await tx.meeting.update({
+      where: { id: row.id },
+      data: {
+        baasBotId: null,
+        baasStatus: null,
+        processingStatus: 'idle'
+      }
+    })
   }
 
   const client = createMeetingBaasClient(params.meetingBaasApiKey)
@@ -205,7 +200,8 @@ async function _dispatchLockedMeeting(
     },
     extra: { meetingId: row.id },
     entry_message: `I am 8x Notetaker responsible to record this call and take notes 😉`,
-    bot_image: 'https://sdmntprnortheu.oaiusercontent.com/files/00000000-7c30-81f4-8051-01ee58d6142d/raw?se=2026-09-15T16%3A07%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=e4a73326-1d7b-49f6-ba7b-acd74fe5aea6&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-14T20%3A20%3A21Z&ske=2026-09-15T20%3A20%3A21Z&sks=b&skv=2026-02-06&sig=8QrblDuze1/mk5t8qTnBki4dORGsJ8oT9srlRkb6q4k%3D',
+    bot_image:
+      'https://sdmntprnortheu.oaiusercontent.com/files/00000000-7c30-81f4-8051-01ee58d6142d/raw?se=2026-09-15T16%3A07%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=e4a73326-1d7b-49f6-ba7b-acd74fe5aea6&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-14T20%3A20%3A21Z&ske=2026-09-15T20%3A20%3A21Z&sks=b&skv=2026-02-06&sig=8QrblDuze1/mk5t8qTnBki4dORGsJ8oT9srlRkb6q4k%3D',
     transcription_config: {},
     callback_enabled: true,
     callback_config: _callbackConfig(params)
@@ -221,11 +217,11 @@ async function _dispatchLockedMeeting(
   }
 
   const botId = createResult.data.bot_id
-  let baasStatus: BaasBotStatus = 'queued'
+  let baasStatus: BaasBotStatus = 'joining'
 
   const statusResult = await client.getBotStatus({ bot_id: botId })
   if (statusResult.success) {
-    baasStatus = parseBaasApiStatus(statusResult.data.status)
+    baasStatus = mapBaasApiStatus(statusResult.data.status) ?? 'joining'
   }
 
   await tx.meeting.update({
@@ -256,6 +252,7 @@ async function dispatchBotForMeeting(
       baasBotId: true,
       baasStatus: true,
       recordingStartedAt: true,
+      processingStatus: true,
       startTime: true,
       endTime: true
     }
@@ -265,11 +262,11 @@ async function dispatchBotForMeeting(
     throw new DispatchError(404, 'Meeting not found', params.meetingId)
   }
 
-  if (existing.baasBotId) {
+  if (existing.baasBotId && !canDispatchNewBot(existing)) {
     return _toDispatchResult(existing)
   }
 
-  _assertNoPriorBotJoin(existing)
+  _assertCanDispatchNewBot(existing)
 
   if (existing.endTime.getTime() <= now.getTime()) {
     throw new DispatchError(409, 'Meeting has ended', params.meetingId)
@@ -306,9 +303,15 @@ async function dispatchBotForMeeting(
             id: params.meetingId,
             ...(params.userId ? { userId: params.userId } : {})
           },
-          select: { id: true, baasBotId: true, baasStatus: true }
+          select: {
+            id: true,
+            baasBotId: true,
+            baasStatus: true,
+            recordingStartedAt: true,
+            processingStatus: true
+          }
         })
-        if (row?.baasBotId) {
+        if (row?.baasBotId && !canDispatchNewBot(row)) {
           return _toDispatchResult(row)
         }
         throw new DispatchError(
@@ -319,116 +322,6 @@ async function dispatchBotForMeeting(
       }
 
       return _dispatchLockedMeeting(tx, locked, params)
-    },
-    { timeout: 120_000 }
-  )
-}
-
-async function retryBotForMeeting(
-  params: Omit<DispatchBotForMeetingParams, 'mode'>
-): Promise<DispatchResult> {
-  const now = new Date()
-
-  const existing = await prisma.meeting.findFirst({
-    where: {
-      id: params.meetingId,
-      ...(params.userId ? { userId: params.userId } : {})
-    },
-    select: {
-      id: true,
-      baasBotId: true,
-      baasStatus: true,
-      recordingStartedAt: true,
-      endTime: true
-    }
-  })
-
-  if (!existing) {
-    throw new DispatchError(404, 'Meeting not found', params.meetingId)
-  }
-
-  if (existing.endTime.getTime() <= now.getTime()) {
-    throw new DispatchError(409, 'Meeting has ended', params.meetingId)
-  }
-
-  _assertNoPriorBotJoin(existing)
-
-  const uiPhase = getMeetingBotUiPhase({
-    baasBotId: existing.baasBotId,
-    baasStatus: existing.baasStatus
-  })
-  if (!isFailedMeetingBotUiPhase(uiPhase)) {
-    throw new DispatchError(
-      409,
-      'Bot can only be retried after a failure',
-      params.meetingId
-    )
-  }
-
-  if (uiPhase === 'failed_processing') {
-    throw new DispatchError(
-      409,
-      'Bot cannot be retried after joining the call',
-      params.meetingId
-    )
-  }
-
-  return prisma.$transaction(
-    async (tx) => {
-      const userFilter = params.userId
-        ? Prisma.sql`AND m."userId" = ${params.userId}`
-        : Prisma.empty
-
-      const rows = await tx.$queryRaw<LockedMeetingRow[]>`
-        SELECT
-          m.id,
-          m."meetingUrl" AS "meetingUrl",
-          m."baasBotId" AS "baasBotId",
-          m."baasStatus" AS "baasStatus",
-          u.name AS "userName"
-        FROM meeting m
-        INNER JOIN "user" u ON u.id = m."userId"
-        WHERE m.id = ${params.meetingId}
-          AND m."endTime" > ${now}
-          ${userFilter}
-        FOR UPDATE OF m SKIP LOCKED
-      `
-
-      const locked = rows[0]
-      if (!locked) {
-        throw new DispatchError(
-          409,
-          'Could not lock meeting for retry',
-          params.meetingId
-        )
-      }
-
-      const lockedPhase = getMeetingBotUiPhase({
-        baasBotId: locked.baasBotId,
-        baasStatus: locked.baasStatus
-      })
-      if (!isFailedMeetingBotUiPhase(lockedPhase)) {
-        throw new DispatchError(
-          409,
-          'Bot can only be retried after a failure',
-          params.meetingId
-        )
-      }
-
-      await tx.meeting.update({
-        where: { id: locked.id },
-        data: {
-          baasBotId: null,
-          baasStatus: null,
-          processingStatus: 'idle'
-        }
-      })
-
-      return _dispatchLockedMeeting(
-        tx,
-        { ...locked, baasBotId: null, baasStatus: null },
-        params
-      )
     },
     { timeout: 120_000 }
   )
@@ -474,10 +367,5 @@ async function dispatchDueMeetings(
   return { dispatchedCount, errors }
 }
 
-export {
-  dispatchBotForMeeting,
-  dispatchDueMeetings,
-  retryBotForMeeting,
-  DispatchError
-}
+export { dispatchBotForMeeting, dispatchDueMeetings, DispatchError }
 export type { DispatchDueResult, DispatchResult }

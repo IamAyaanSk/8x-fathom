@@ -83,34 +83,11 @@ enum ProcessingStatus {
 }
 
 enum BaasBotStatus {
-  queued
-  pickup_delayed
-  awaiting_reconciliation
-  joining_call
+  joining
   in_waiting_room
-  in_waiting_for_host
   in_call_recording
-  recording_paused
-  recording_resumed
-  in_call_not_recording
-  call_ended
-  recording_succeeded
   transcribing
-  completed
-  api_request_stop
-  bot_rejected
-  bot_removed
-  bot_removed_too_early
-  waiting_room_timeout
-  invalid_meeting_url
-  meeting_error
   failed
-  transcription_failed
-  recording_failed
-  MEET_LOGIN_UNAVAILABLE
-  MEET_LOGIN_REQUIRED
-  MEET_LOGIN_FAILED_SAML_REJECTED
-  MEET_LOGIN_FAILED_TIMEOUT
 }
 
 model CalendarWatch {

@@ -1,8 +1,7 @@
 import { isActiveMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingsUpcomingResponse,
-  PostMeetingCaptureResponse,
-  PostMeetingRetryBotResponse
+  PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meetings'
 import {
   type UseMutationOptions,
@@ -13,11 +12,7 @@ import {
   useQueryClient
 } from '@tanstack/react-query'
 
-import {
-  getMeetingsUpcoming,
-  postMeetingCapture,
-  postMeetingRetryBot
-} from '#src/v1/meetings/index'
+import { getMeetingsUpcoming, postMeetingCapture } from '#src/v1/meetings/index'
 
 type UseMeetingsUpcomingOptions = Omit<
   UseQueryOptions<GetMeetingsUpcomingResponse>,
@@ -30,13 +25,12 @@ const MEETINGS_UPCOMING_ACTIVE_REFETCH_MS = 10_000
 const meetingsQueryKeys = {
   all: ['meetings'] as const,
   upcoming: () => [...meetingsQueryKeys.all, 'upcoming'] as const,
-  capture: () => [...meetingsQueryKeys.all, 'capture'] as const,
-  retryBot: () => [...meetingsQueryKeys.all, 'retry-bot'] as const
+  capture: () => [...meetingsQueryKeys.all, 'capture'] as const
 } as const
 
-function _upcomingRefetchInterval(
-  query: { state: { data: GetMeetingsUpcomingResponse | undefined } }
-) {
+function _upcomingRefetchInterval(query: {
+  state: { data: GetMeetingsUpcomingResponse | undefined }
+}) {
   const data = query.state.data
   if (data?.success !== true) {
     return MEETINGS_UPCOMING_CACHE_MS
@@ -87,34 +81,10 @@ function usePostMeetingCaptureMutation(
   })
 }
 
-type UsePostMeetingRetryBotMutationOptions = Omit<
-  UseMutationOptions<PostMeetingRetryBotResponse, Error, string>,
-  'mutationFn'
->
-
-function usePostMeetingRetryBotMutation(
-  options?: UsePostMeetingRetryBotMutationOptions
-) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: meetingsQueryKeys.retryBot(),
-    mutationFn: (meetingId) => postMeetingRetryBot(meetingId),
-    ...options,
-    onSuccess: async (data, meetingId, onMutateResult, context) => {
-      await queryClient.invalidateQueries({
-        queryKey: meetingsQueryKeys.upcoming()
-      })
-      await options?.onSuccess?.(data, meetingId, onMutateResult, context)
-    }
-  })
-}
-
 export {
   MEETINGS_UPCOMING_CACHE_MS,
   meetingsQueryKeys,
   meetingsUpcomingQueryOptions,
   useMeetingsUpcomingQuery,
-  usePostMeetingCaptureMutation,
-  usePostMeetingRetryBotMutation
+  usePostMeetingCaptureMutation
 }

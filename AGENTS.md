@@ -26,17 +26,18 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 
 - Bots are dispatched **automatically** by the worker scheduler. No start-capture button.
 - Calendar sync only creates/updates `Meeting` rows for events with a `meetingUrl` (Meet / Zoom / Teams).
-- Store MeetingBaas bot status on `Meeting.baasStatus` as the `BaasBotStatus` enum (same strings as the v2 API `status` field). Derive UI from one shared mapper in `packages/api-contract` (imported by server and web).
+- Store a small lifecycle on `Meeting.baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `failed`). Map MeetingBaas API codes onto that enum in `@repo/api-contract`. Derive UI from the same mapper.
 
-| UI state               | MeetingBaas `baasStatus`                                                                                                    |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Starting soon          | Our pre-`createBot` state (`baasBotId` null)                                                                                |
-| Joining…               | `queued`, `pickup_delayed`, `joining_call`, `in_waiting_room`, `in_waiting_for_host`                                        |
-| In call — recording    | `in_call_recording`, `recording_resumed`, `in_call_not_recording`                                                           |
-| Call ended, processing | `call_ended`, `recording_succeeded`, `transcribing`                                                                         |
-| Ready                  | `completed`                                                                                                                 |
-| Failed to join         | `bot_rejected`, `invalid_meeting_url`, `meeting_error`, `waiting_room_timeout`, `bot_removed_too_early`, `bot_removed`, `MEET_LOGIN_*` |
-| Failed processing      | `failed`, `transcription_failed`, `recording_failed`                                                                        |
+| UI state               | Stored `baasStatus` / `processingStatus`                                                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Starting soon          | Pre-`createBot` (`baasBotId` null)                                                                                                                 |
+| Joining…               | `joining`                                                                                                                                          |
+| In waiting room…       | `in_waiting_room`                                                                                                                                  |
+| In call — recording    | `in_call_recording`                                                                                                                                |
+| Call ended, processing | `transcribing`, or `processingStatus` `pending` / `processing`. `bot.completed` → `transcribing` + `pending`; transcription webhook → `processing` |
+| Ready                  | `processingStatus: ready`                                                                                                                          |
+| Failed to join         | `failed` and no `recordingStartedAt` (capture again if the meeting has not ended, outside the 2-minute pre-start window) |
+| Failed processing      | `processingStatus: failed`, or `failed` after the bot joined                                                                                       |
 
 **Ongoing call:** active once `createBot` has been called. Poll `GET /bots/{id}/status` every ~5–10s in Joining…; ~60s in In call. Distinct honest labels — never a blank spinner. Failures shown immediately. No live transcript — show elapsed recording time. Highlight click writes `{ meetingId, timestampSec, note? }`. Scratchpad: upsert `ScratchpadEntry` at `{ meetingId, timestampSec, text }` (debounced).
 
@@ -53,7 +54,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 Replace demo `User` / `Post`. Enable `CREATE EXTENSION vector`. Better Auth core tables (`user`, `session`, `account`, `verification`) via generate + adapter.
 
 - `CalendarWatch` — per user: `channelId`, `resourceId`, `expiration`, `syncToken`
-- `Meeting` — `userId`, `googleEventId` (unique), title, start/end, `meetingUrl`, `htmlLink`, `baasBotId`, `baasStatus` (`BaasBotStatus` enum, nullable pre-dispatch), `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, R2 keys, `recordingStartedAt`, summary fields (`@@map("meeting")`). Rows are upserted from calendar sync only when the Google event is in the sync window and has a meeting URL; cancel / loss of URL deletes pre-dispatch rows (`baasBotId` null).
+- `Meeting` — `userId`, `googleEventId` (unique), title, start/end, `meetingUrl`, `htmlLink`, `baasBotId`, `baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `failed`, nullable pre-dispatch), `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, R2 keys, `recordingStartedAt`, summary fields (`@@map("meeting")`). Rows are upserted from calendar sync only when the Google event is in the sync window and has a meeting URL; cancel / loss of URL deletes pre-dispatch rows (`baasBotId` null).
 - `ScratchpadEntry` — `meetingId`, `timestampSec`, `text` (unique per meeting + timestamp; debounced upsert in F6)
 - `Highlight` — `meetingId`, `timestampSec`, `note?`
 - `ActionItem` — `meetingId`, `text`, `timestampSec?`

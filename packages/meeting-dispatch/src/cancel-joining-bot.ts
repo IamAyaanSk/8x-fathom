@@ -26,7 +26,9 @@ async function cancelJoiningBotForDeletedCalendarEvent(params: {
 
   const uiPhase = getMeetingBotUiPhase({
     baasBotId: meeting.baasBotId,
-    baasStatus: meeting.baasStatus
+    baasStatus: meeting.baasStatus,
+    recordingStartedAt: null,
+    processingStatus: 'idle'
   })
 
   if (uiPhase !== 'joining' || !meeting.baasBotId) {

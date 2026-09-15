@@ -1,38 +1,65 @@
-/** MeetingBaas v2 bot `status` strings (aligned with Prisma `BaasBotStatus`). */
+/** Stored bot lifecycle. MeetingBaas API codes are mapped onto these. */
 const BAAS_BOT_STATUSES = [
-  'queued',
-  'pickup_delayed',
-  'awaiting_reconciliation',
-  'joining_call',
+  'joining',
   'in_waiting_room',
-  'in_waiting_for_host',
   'in_call_recording',
-  'recording_paused',
-  'recording_resumed',
-  'in_call_not_recording',
-  'call_ended',
-  'recording_succeeded',
   'transcribing',
-  'completed',
-  'api_request_stop',
-  'bot_rejected',
-  'bot_removed',
-  'bot_removed_too_early',
-  'waiting_room_timeout',
-  'invalid_meeting_url',
-  'meeting_error',
-  'failed',
-  'transcription_failed',
-  'recording_failed',
-  'MEET_LOGIN_UNAVAILABLE',
-  'MEET_LOGIN_REQUIRED',
-  'MEET_LOGIN_FAILED_SAML_REJECTED',
-  'MEET_LOGIN_FAILED_TIMEOUT'
+  'failed'
 ] as const
 
 type BaasBotStatus = (typeof BAAS_BOT_STATUSES)[number]
 
-const baasBotStatusSet = new Set<string>(BAAS_BOT_STATUSES)
+const BAAS_API_STATUS_TO_STORED: Record<string, BaasBotStatus> = {
+  queued: 'joining',
+  pickup_delayed: 'joining',
+  awaiting_reconciliation: 'joining',
+  joining_call: 'joining',
+  joining: 'joining',
+  in_waiting_room: 'in_waiting_room',
+  in_waiting_for_host: 'in_waiting_room',
+  in_call_recording: 'in_call_recording',
+  recording_paused: 'in_call_recording',
+  recording_resumed: 'in_call_recording',
+  in_call_not_recording: 'in_call_recording',
+  call_ended: 'transcribing',
+  recording_succeeded: 'transcribing',
+  transcribing: 'transcribing',
+  completed: 'transcribing',
+  api_request_stop: 'transcribing',
+  failed: 'failed',
+  bot_rejected: 'failed',
+  bot_removed: 'failed',
+  bot_removed_too_early: 'failed',
+  waiting_room_timeout: 'failed',
+  invalid_meeting_url: 'failed',
+  meeting_error: 'failed',
+  transcription_failed: 'failed',
+  recording_failed: 'failed',
+  MEET_LOGIN_UNAVAILABLE: 'failed',
+  MEET_LOGIN_REQUIRED: 'failed',
+  MEET_LOGIN_FAILED_SAML_REJECTED: 'failed',
+  MEET_LOGIN_FAILED_TIMEOUT: 'failed'
+}
+
+const BAAS_STATUS_RANK: Record<BaasBotStatus, number> = {
+  joining: 1,
+  in_waiting_room: 2,
+  in_call_recording: 3,
+  transcribing: 4,
+  failed: 5
+}
+
+const TERMINAL_BAAS_STATUSES: BaasBotStatus[] = ['transcribing', 'failed']
+
+const MEETING_PROCESSING_STATUSES = [
+  'idle',
+  'pending',
+  'processing',
+  'ready',
+  'failed'
+] as const
+
+type MeetingProcessingStatus = (typeof MEETING_PROCESSING_STATUSES)[number]
 
 const MEETING_BOT_UI_PHASES = [
   'starting_soon',
@@ -45,56 +72,6 @@ const MEETING_BOT_UI_PHASES = [
 ] as const
 
 type MeetingBotUiPhase = (typeof MEETING_BOT_UI_PHASES)[number]
-
-const JOINING_STATUSES = new Set<BaasBotStatus>([
-  'queued',
-  'pickup_delayed',
-  'joining_call',
-  'in_waiting_room',
-  'in_waiting_for_host',
-  'awaiting_reconciliation'
-])
-
-const IN_CALL_STATUSES = new Set<BaasBotStatus>([
-  'in_call_recording',
-  'recording_resumed',
-  'recording_paused',
-  'in_call_not_recording'
-])
-
-const PROCESSING_STATUSES = new Set<BaasBotStatus>([
-  'call_ended',
-  'recording_succeeded',
-  'transcribing',
-  'api_request_stop'
-])
-
-const FAILED_JOIN_STATUSES = new Set<BaasBotStatus>([
-  'bot_rejected',
-  'invalid_meeting_url',
-  'meeting_error',
-  'waiting_room_timeout',
-  'bot_removed_too_early',
-  'bot_removed',
-  'MEET_LOGIN_UNAVAILABLE',
-  'MEET_LOGIN_REQUIRED',
-  'MEET_LOGIN_FAILED_SAML_REJECTED',
-  'MEET_LOGIN_FAILED_TIMEOUT'
-])
-
-const FAILED_PROCESSING_STATUSES = new Set<BaasBotStatus>([
-  'failed',
-  'transcription_failed',
-  'recording_failed'
-])
-
-const TERMINAL_BAAS_STATUSES: BaasBotStatus[] = [
-  'completed',
-  ...FAILED_JOIN_STATUSES,
-  ...FAILED_PROCESSING_STATUSES
-]
-
-const terminalBaasStatusSet = new Set<BaasBotStatus>(TERMINAL_BAAS_STATUSES)
 
 const MEETING_BOT_UI_LABELS: Record<MeetingBotUiPhase, string> = {
   starting_soon: 'Starting soon',
@@ -112,100 +89,185 @@ const ACTIVE_BOT_UI_PHASES = new Set<MeetingBotUiPhase>([
   'call_ended_processing'
 ])
 
-function isBaasBotStatus(value: string): value is BaasBotStatus {
-  return baasBotStatusSet.has(value)
-}
-
-function parseBaasApiStatus(status: string): BaasBotStatus {
-  if (isBaasBotStatus(status)) {
-    return status
-  }
-  throw new Error(`Unknown MeetingBaas bot status: ${status}`)
-}
-
-function getMeetingBotUiPhase({
-  baasBotId,
-  baasStatus
-}: {
+type MeetingBotStateFields = {
   baasBotId: string | null
   baasStatus: BaasBotStatus | null
-}): MeetingBotUiPhase {
-  if (!baasBotId) {
-    return 'starting_soon'
+  recordingStartedAt: Date | null
+  processingStatus: MeetingProcessingStatus
+}
+
+type MeetingBaasStatusPatch = {
+  baasStatus?: BaasBotStatus
+  recordingStartedAt?: Date
+  processingStatus?: MeetingProcessingStatus
+}
+
+function mapBaasApiStatus(status: string): BaasBotStatus | null {
+  return BAAS_API_STATUS_TO_STORED[status] ?? null
+}
+
+function shouldApplyBaasStatus(
+  current: BaasBotStatus | null,
+  next: BaasBotStatus
+): boolean {
+  if (current === next) {
+    return false
   }
-  if (!baasStatus || JOINING_STATUSES.has(baasStatus)) {
-    return 'joining'
+  if (current == null) {
+    return true
   }
-  if (IN_CALL_STATUSES.has(baasStatus)) {
-    return 'in_call_recording'
+  if (current === 'failed') {
+    return false
   }
-  if (PROCESSING_STATUSES.has(baasStatus)) {
-    return 'call_ended_processing'
+  if (next === 'failed') {
+    return true
   }
-  if (baasStatus === 'completed') {
+  return BAAS_STATUS_RANK[next] > BAAS_STATUS_RANK[current]
+}
+
+function canDispatchNewBot(meeting: MeetingBotStateFields): boolean {
+  if (meeting.recordingStartedAt != null) {
+    return false
+  }
+  if (
+    meeting.processingStatus === 'pending' ||
+    meeting.processingStatus === 'processing' ||
+    meeting.processingStatus === 'ready'
+  ) {
+    return false
+  }
+  if (!meeting.baasBotId) {
+    return true
+  }
+  return meeting.baasStatus === 'failed'
+}
+
+function getMeetingBotUiPhase(
+  meeting: MeetingBotStateFields
+): MeetingBotUiPhase {
+  if (meeting.processingStatus === 'ready') {
     return 'ready'
   }
-  if (FAILED_JOIN_STATUSES.has(baasStatus)) {
-    return 'failed_to_join'
-  }
-  if (FAILED_PROCESSING_STATUSES.has(baasStatus)) {
+  if (meeting.processingStatus === 'failed') {
     return 'failed_processing'
   }
-
+  if (!meeting.baasBotId) {
+    return 'starting_soon'
+  }
+  if (meeting.baasStatus === 'failed') {
+    return meeting.recordingStartedAt != null
+      ? 'failed_processing'
+      : 'failed_to_join'
+  }
+  if (meeting.baasStatus === 'in_call_recording') {
+    return 'in_call_recording'
+  }
+  if (
+    meeting.baasStatus === 'transcribing' ||
+    meeting.processingStatus === 'pending' ||
+    meeting.processingStatus === 'processing'
+  ) {
+    return 'call_ended_processing'
+  }
   return 'joining'
 }
 
-function getMeetingBotUiLabel(phase: MeetingBotUiPhase): string {
+function getMeetingBotUiLabel(
+  phase: MeetingBotUiPhase,
+  baasStatus?: BaasBotStatus | null
+): string {
+  if (phase === 'joining' && baasStatus === 'in_waiting_room') {
+    return 'In waiting room…'
+  }
   return MEETING_BOT_UI_LABELS[phase]
-}
-
-function isTerminalBaasStatus(
-  status: BaasBotStatus | null
-): status is BaasBotStatus {
-  return status != null && terminalBaasStatusSet.has(status)
-}
-
-function isFailedMeetingBotUiPhase(phase: MeetingBotUiPhase): boolean {
-  return phase === 'failed_to_join' || phase === 'failed_processing'
 }
 
 function isActiveMeetingBotUiPhase(phase: MeetingBotUiPhase): boolean {
   return ACTIVE_BOT_UI_PHASES.has(phase)
 }
 
-function hasMeetingBotJoinedCall(params: {
-  baasStatus: BaasBotStatus | null
-  recordingStartedAt: Date | null
-}): boolean {
-  if (params.recordingStartedAt != null) {
-    return true
+function _processingPatchFromRaw(
+  rawStatus: string,
+  current: MeetingProcessingStatus
+): MeetingProcessingStatus | undefined {
+  if (current === 'ready' || current === 'failed' || current === 'processing') {
+    return undefined
   }
-  if (params.baasStatus == null) {
-    return false
+  if (rawStatus === 'transcribing') {
+    return 'processing'
   }
-  if (JOINING_STATUSES.has(params.baasStatus)) {
-    return false
+  if (rawStatus === 'completed' && current === 'idle') {
+    return 'pending'
   }
-  if (FAILED_JOIN_STATUSES.has(params.baasStatus)) {
-    return false
-  }
-  return true
+  return undefined
 }
 
-const FAILED_JOIN_BAAS_STATUSES = [...FAILED_JOIN_STATUSES] as const
+function patchFromBaasStatusChange(
+  meeting: MeetingBotStateFields,
+  rawStatus: string,
+  recordingStartTimeSec?: number
+): MeetingBaasStatusPatch | null {
+  const nextStatus = mapBaasApiStatus(rawStatus)
+  if (!nextStatus) {
+    return null
+  }
 
-export type { BaasBotStatus, MeetingBotUiPhase }
+  const applyStatus = shouldApplyBaasStatus(meeting.baasStatus, nextStatus)
+  const processingStatus = _processingPatchFromRaw(
+    rawStatus,
+    meeting.processingStatus
+  )
+  const recordingStartedAt =
+    nextStatus === 'in_call_recording' &&
+    recordingStartTimeSec != null &&
+    meeting.recordingStartedAt == null
+      ? new Date(recordingStartTimeSec * 1000)
+      : undefined
+
+  if (!applyStatus && processingStatus == null && recordingStartedAt == null) {
+    return null
+  }
+
+  return {
+    ...(applyStatus ? { baasStatus: nextStatus } : {}),
+    ...(processingStatus ? { processingStatus } : {}),
+    ...(recordingStartedAt ? { recordingStartedAt } : {})
+  }
+}
+
+function patchFromBaasCompleted(
+  meeting: MeetingBotStateFields
+): MeetingBaasStatusPatch | null {
+  return patchFromBaasStatusChange(meeting, 'completed')
+}
+
+function patchFromBaasFailed(
+  meeting: MeetingBotStateFields
+): MeetingBaasStatusPatch | null {
+  if (!shouldApplyBaasStatus(meeting.baasStatus, 'failed')) {
+    return null
+  }
+  return { baasStatus: 'failed' }
+}
+
+export type {
+  BaasBotStatus,
+  MeetingBotUiPhase,
+  MeetingProcessingStatus,
+  MeetingBaasStatusPatch,
+  MeetingBotStateFields
+}
 export {
   BAAS_BOT_STATUSES,
-  FAILED_JOIN_BAAS_STATUSES,
   MEETING_BOT_UI_PHASES,
+  MEETING_PROCESSING_STATUSES,
   TERMINAL_BAAS_STATUSES,
+  canDispatchNewBot,
   getMeetingBotUiLabel,
   getMeetingBotUiPhase,
-  hasMeetingBotJoinedCall,
   isActiveMeetingBotUiPhase,
-  isBaasBotStatus,
-  isFailedMeetingBotUiPhase,
-  isTerminalBaasStatus,
-  parseBaasApiStatus
+  mapBaasApiStatus,
+  patchFromBaasCompleted,
+  patchFromBaasFailed,
+  patchFromBaasStatusChange
 }

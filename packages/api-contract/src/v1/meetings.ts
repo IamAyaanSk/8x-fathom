@@ -35,10 +35,6 @@ const postMeetingCaptureResponseSchema = _createResponseApiZod(
   postMeetingBotDispatchDataSchema
 )
 
-const postMeetingRetryBotResponseSchema = _createResponseApiZod(
-  postMeetingBotDispatchDataSchema
-)
-
 export type GetMeetingsUpcomingResponse = z.infer<
   typeof getMeetingsUpcomingResponseSchema
 >
@@ -54,19 +50,11 @@ export type PostMeetingCaptureSuccessResponse = Extract<
   PostMeetingCaptureResponse,
   { success: true }
 >
-export type PostMeetingRetryBotResponse = z.infer<
-  typeof postMeetingRetryBotResponseSchema
->
-export type PostMeetingRetryBotSuccessResponse = Extract<
-  PostMeetingRetryBotResponse,
-  { success: true }
->
 
 export {
   baasBotStatusSchema,
   getMeetingsUpcomingResponseSchema,
   meetingBotUiPhaseSchema,
   meetingListItemSchema,
-  postMeetingCaptureResponseSchema,
-  postMeetingRetryBotResponseSchema
+  postMeetingCaptureResponseSchema
 }

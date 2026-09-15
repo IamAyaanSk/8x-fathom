@@ -2,7 +2,6 @@ export { cancelJoiningBotForDeletedCalendarEvent } from './cancel-joining-bot.js
 export {
   dispatchBotForMeeting,
   dispatchDueMeetings,
-  retryBotForMeeting,
   DispatchError,
   type DispatchDueResult,
   type DispatchResult

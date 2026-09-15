@@ -1,5 +1,6 @@
 import {
-  parseBaasApiStatus,
+  mapBaasApiStatus,
+  patchFromBaasStatusChange,
   TERMINAL_BAAS_STATUSES
 } from '@repo/api-contract/baas-bot-status'
 import { prisma } from '@repo/db'
@@ -23,7 +24,9 @@ async function runActiveBotStatusSync() {
     select: {
       id: true,
       baasBotId: true,
-      baasStatus: true
+      baasStatus: true,
+      recordingStartedAt: true,
+      processingStatus: true
     },
     take: STATUS_POLL_BATCH_SIZE,
     orderBy: { startTime: 'asc' }
@@ -50,24 +53,30 @@ async function runActiveBotStatusSync() {
       continue
     }
 
-    let nextStatus
-    try {
-      nextStatus = parseBaasApiStatus(statusResult.data.status)
-    } catch (error) {
+    const nextStatus = mapBaasApiStatus(statusResult.data.status)
+    if (!nextStatus) {
       console.error(
-        `Unknown bot status for ${meeting.id}: ${statusResult.data.status}`,
-        error
+        `Unknown bot status for ${meeting.id}: ${statusResult.data.status}`
       )
       continue
     }
 
-    if (nextStatus === meeting.baasStatus) {
+    const patch = patchFromBaasStatusChange(
+      {
+        baasBotId: meeting.baasBotId,
+        baasStatus: meeting.baasStatus,
+        recordingStartedAt: meeting.recordingStartedAt,
+        processingStatus: meeting.processingStatus
+      },
+      statusResult.data.status
+    )
+    if (!patch) {
       continue
     }
 
     await prisma.meeting.update({
       where: { id: meeting.id },
-      data: { baasStatus: nextStatus }
+      data: patch
     })
     updatedCount += 1
   }

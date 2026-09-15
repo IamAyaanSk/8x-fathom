@@ -1,19 +1,17 @@
-import '#src/env'
 import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingsUpcomingSuccessResponse,
-  PostMeetingCaptureResponse,
-  PostMeetingRetryBotResponse
+  PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meetings'
 import { prisma } from '@repo/db'
 import {
   dispatchBotForMeeting,
   DispatchError,
-  retryBotForMeeting,
   type DispatchResult
 } from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 
+import '#src/env'
 import '#src/types/express'
 import { env } from '#src/env'
 import { HttpError } from '#src/v1/errors/http-error'
@@ -34,14 +32,19 @@ function _meetingIdFromRequest(req: Request): string | null {
   return meetingId
 }
 
-function _dispatchResponseData(dispatched: DispatchResult) {
+function _dispatchResponseData(
+  dispatched: DispatchResult,
+  processingStatus: 'idle' | 'pending' | 'processing' | 'ready' | 'failed'
+) {
   return {
     meetingId: dispatched.meetingId,
     baasBotId: dispatched.baasBotId,
     baasStatus: dispatched.baasStatus,
     uiPhase: getMeetingBotUiPhase({
       baasBotId: dispatched.baasBotId,
-      baasStatus: dispatched.baasStatus
+      baasStatus: dispatched.baasStatus,
+      recordingStartedAt: null,
+      processingStatus
     })
   }
 }
@@ -66,7 +69,9 @@ const getMeetingsUpcomingController = async (
         meetingUrl: true,
         htmlLink: true,
         baasBotId: true,
-        baasStatus: true
+        baasStatus: true,
+        recordingStartedAt: true,
+        processingStatus: true
       }
     })
 
@@ -85,7 +90,9 @@ const getMeetingsUpcomingController = async (
           baasStatus: row.baasStatus,
           uiPhase: getMeetingBotUiPhase({
             baasBotId: row.baasBotId,
-            baasStatus: row.baasStatus
+            baasStatus: row.baasStatus,
+            recordingStartedAt: row.recordingStartedAt,
+            processingStatus: row.processingStatus
           })
         }))
       }
@@ -129,55 +136,11 @@ const postMeetingCaptureController = async (
     res.json({
       success: true,
       message: 'Bot dispatched successfully',
-      data: _dispatchResponseData(dispatched)
+      data: _dispatchResponseData(dispatched, 'idle')
     })
   } catch (error) {
     next(error)
   }
 }
 
-const postMeetingRetryBotController = async (
-  req: Request,
-  res: Response<PostMeetingRetryBotResponse>,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.session!.user.id
-    const meetingId = _meetingIdFromRequest(req)
-    if (!meetingId) {
-      res.status(400).json({
-        success: false,
-        message: 'Meeting id is required'
-      })
-      return
-    }
-
-    let dispatched
-    try {
-      dispatched = await retryBotForMeeting({
-        meetingId,
-        userId,
-        ..._dispatchCallbackParams()
-      })
-    } catch (error) {
-      if (error instanceof DispatchError) {
-        throw new HttpError(error.statusCode, error.message)
-      }
-      throw error
-    }
-
-    res.json({
-      success: true,
-      message: 'Bot retried successfully',
-      data: _dispatchResponseData(dispatched)
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export {
-  getMeetingsUpcomingController,
-  postMeetingCaptureController,
-  postMeetingRetryBotController
-}
+export { getMeetingsUpcomingController, postMeetingCaptureController }

@@ -25,7 +25,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 ### Bot dispatch & status
 
 - Bots are dispatched **automatically** by the worker scheduler. No start-capture button.
-- Skip `CalendarEvent` rows with no `meetingUrl` (Meet / Zoom / Teams).
+- Calendar sync only creates/updates `Meeting` rows for events with a `meetingUrl` (Meet / Zoom / Teams).
 - Store MeetingBaas bot status on `Meeting.baasStatus` as the `BaasBotStatus` enum (map unknown `MEET_LOGIN_*` API strings to `meet_login_error` when persisting). Derive UI from one shared mapper in `packages/api-contract` (imported by server and web).
 
 | UI state               | MeetingBaas `baasStatus`                                                                                                    |
@@ -53,8 +53,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 Replace demo `User` / `Post`. Enable `CREATE EXTENSION vector`. Better Auth core tables (`user`, `session`, `account`, `verification`) via generate + adapter.
 
 - `CalendarWatch` — per user: `channelId`, `resourceId`, `expiration`, `syncToken`
-- `CalendarEvent` — `userId`, `googleEventId` (unique), title, start/end, `meetingUrl` (nullable), `htmlLink`
-- `Meeting` — `userId`, `calendarEventId`, `baasBotId`, `baasStatus` (`BaasBotStatus` enum, nullable pre-dispatch), `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, R2 keys, `recordingStartedAt`, summary fields (`@@map("meeting")`)
+- `Meeting` — `userId`, `googleEventId` (unique), title, start/end, `meetingUrl`, `htmlLink`, `baasBotId`, `baasStatus` (`BaasBotStatus` enum, nullable pre-dispatch), `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, R2 keys, `recordingStartedAt`, summary fields (`@@map("meeting")`). Rows are upserted from calendar sync only when the Google event is in the sync window and has a meeting URL; cancel / loss of URL deletes pre-dispatch rows (`baasBotId` null).
 - `ScratchpadEntry` — `meetingId`, `timestampSec`, `text` (unique per meeting + timestamp; debounced upsert in F6)
 - `Highlight` — `meetingId`, `timestampSec`, `note?`
 - `ActionItem` — `meetingId`, `text`, `timestampSec?`
@@ -69,7 +68,7 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | F0  | Context files (this document + cursor rules + README)               | done        |
 | F1  | Schema, pgvector, env, catalog deps                                 | done        |
 | F2  | Google auth, sessions, protected API                                | done        |
-| F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | not started |
+| F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | done        |
 | F4  | Events / library list UI                                            | not started |
 | F5  | Worker dispatch `createBot` at start − buffer                       | not started |
 | F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |

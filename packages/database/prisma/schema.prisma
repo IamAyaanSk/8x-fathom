@@ -19,9 +19,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  calendarWatch  CalendarWatch?
-  calendarEvents CalendarEvent[]
-  meetings       Meeting[]
+  calendarWatch CalendarWatch?
+  meetings      Meeting[]
 
   @@unique([email])
   @@map("user")
@@ -108,43 +107,30 @@ enum BaasBotStatus {
 }
 
 model CalendarWatch {
-  id         String   @id @default(cuid())
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  channelId  String
-  resourceId String
-  expiration DateTime
-  syncToken  String?
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channelId    String
+  resourceId   String
+  channelToken String
+  expiration   DateTime
+  syncToken    String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@map("calendar_watch")
 }
 
-model CalendarEvent {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  googleEventId String   @unique
-  title         String
-  startTime     DateTime
-  endTime       DateTime
-  meetingUrl    String?
-  htmlLink      String?
-  meeting       Meeting?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([userId])
-  @@map("calendar_event")
-}
-
 model Meeting {
   id                 String            @id @default(cuid())
   userId             String
   user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  calendarEventId    String            @unique
-  calendarEvent      CalendarEvent     @relation(fields: [calendarEventId], references: [id], onDelete: Cascade)
+  googleEventId      String            @unique
+  title              String
+  startTime          DateTime
+  endTime            DateTime
+  meetingUrl         String
+  htmlLink           String?
   baasBotId          String?
   baasStatus         BaasBotStatus?
   processingStatus   ProcessingStatus  @default(idle)
@@ -161,6 +147,7 @@ model Meeting {
   updatedAt          DateTime          @updatedAt
 
   @@index([userId])
+  @@index([userId, startTime])
   @@index([processingStatus])
   @@map("meeting")
 }

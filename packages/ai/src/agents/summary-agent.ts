@@ -2,23 +2,32 @@ import { generateText } from 'ai'
 import { z } from 'zod/v4'
 
 import { llmModel } from '../model.js'
+import {
+  buildMeetingSummarySystemPrompt,
+  type SummaryTemplateId,
+  summaryTemplateIdSchema
+} from './summary-templates.js'
 
 export const meetingSummarySchema = z.object({
   summary: z
     .string()
     .min(1)
-    .describe(
-      'Concise meeting summary in markdown: short overview, key decisions, and next steps.'
-    )
+    .describe('Section-based meeting summary in markdown.')
 })
 
 export async function generateMeetingSummary({
   transcript,
-  meetingTitle
+  meetingTitle,
+  template = 'enhanced',
+  additionalDirections
 }: {
   transcript: string
   meetingTitle?: string
+  template?: SummaryTemplateId
+  additionalDirections?: string
 }) {
+  const parsedTemplate = summaryTemplateIdSchema.parse(template)
+
   const trimmedTranscript = transcript.trim()
   if (!trimmedTranscript) {
     throw new Error('Transcript is empty')
@@ -28,13 +37,10 @@ export async function generateMeetingSummary({
 
   const { text, usage } = await generateText({
     model: llmModel,
-    system: [
-      'You are an expert meeting notetaker for async review.',
-      'Produce an accurate, scannable summary grounded only in the transcript.',
-      'Do not invent attendees, decisions, or action items that are not supported by the text.',
-      'Use clear markdown headings and bullet lists where helpful.',
-      'Respond with the summary only — no preamble or meta commentary.'
-    ].join(' '),
+    system: buildMeetingSummarySystemPrompt({
+      template: parsedTemplate,
+      additionalDirections
+    }),
     prompt: `Meeting title: ${title}\n\nTranscript:\n${trimmedTranscript}`
   })
 

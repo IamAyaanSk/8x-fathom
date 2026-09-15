@@ -1,27 +1,31 @@
 import { loadEnvFile } from 'node:process'
-loadEnvFile()
 
 import { unsafeValidateEnv } from '@repo/env'
-import { z } from 'zod'
+import {
+  numericStringSchema,
+  trimmedStringWithMinLengthOneSchema
+} from '@repo/shared-validations'
+import { z } from 'zod/v4'
 
-const trimmedStringWithMinLengthOne = z.string().trim().min(1)
-const numericString = trimmedStringWithMinLengthOne.transform((val, ctx) => {
-  const parsed = parseInt(val)
-  if (isNaN(parsed)) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Not a valid number'
-    })
-    return z.NEVER
-  }
-  return parsed
-})
+loadEnvFile()
 
-// Can be more tightened in future as per need
 const envZodSchema = z.object({
-  PORT: numericString,
+  PORT: numericStringSchema,
   NODE_ENV: z.enum(['production', 'development', 'test']),
-  DATABASE_URL: trimmedStringWithMinLengthOne
+  DATABASE_URL: trimmedStringWithMinLengthOneSchema,
+  BETTER_AUTH_SECRET: trimmedStringWithMinLengthOneSchema,
+  BETTER_AUTH_URL: trimmedStringWithMinLengthOneSchema,
+  GOOGLE_CLIENT_ID: trimmedStringWithMinLengthOneSchema,
+  GOOGLE_CLIENT_SECRET: trimmedStringWithMinLengthOneSchema,
+  WEB_ORIGIN: trimmedStringWithMinLengthOneSchema,
+  MEETINGBAAS_API_KEY: trimmedStringWithMinLengthOneSchema,
+  MEETINGBAAS_WEBHOOK_SECRET: trimmedStringWithMinLengthOneSchema,
+  R2_ACCOUNT_ID: trimmedStringWithMinLengthOneSchema,
+  R2_ACCESS_KEY_ID: trimmedStringWithMinLengthOneSchema,
+  R2_SECRET_ACCESS_KEY: trimmedStringWithMinLengthOneSchema,
+  R2_BUCKET: trimmedStringWithMinLengthOneSchema,
+  R2_ENDPOINT: trimmedStringWithMinLengthOneSchema,
+  OPENAI_API_KEY: trimmedStringWithMinLengthOneSchema
 })
 
 const env = unsafeValidateEnv({

@@ -54,8 +54,31 @@ catalog:
   '@tanstack/react-query': ^5.101.4
   '@tanstack/react-query-devtools': ^5.101.4
   expo-dev-client: ~57.0.9
+  better-auth: ^1.7.5
+  '@better-auth/prisma-adapter': ^1.7.5
+  '@meeting-baas/sdk': ^6.2.9
+  '@aws-sdk/client-s3': ^3.1132.0
+  '@aws-sdk/s3-request-presigner': ^3.1132.0
+  ai: ^7.0.101
+  '@ai-sdk/openai': ^4.0.66
+  googleapis: ^181.0.0
 
 allowBuilds:
   '@prisma/engines': true
   esbuild: true
   prisma: true
+
+minimumReleaseAgeExclude:
+  - '@ai-sdk/gateway@4.0.81'
+  - '@aws-sdk/client-s3@3.1132.0'
+  - '@aws-sdk/s3-request-presigner@3.1132.0'
+  - '@better-auth/core@1.7.5'
+  - '@better-auth/drizzle-adapter@1.7.5'
+  - '@better-auth/kysely-adapter@1.7.5'
+  - '@better-auth/memory-adapter@1.7.5'
+  - '@better-auth/mongo-adapter@1.7.5'
+  - '@better-auth/prisma-adapter@1.7.5'
+  - '@better-auth/telemetry@1.7.5'
+  - ai@7.0.101
+  - better-auth@1.7.5
+  - googleapis@181.0.0

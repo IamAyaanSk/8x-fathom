@@ -1,7 +1,24 @@
 {
   "$schema": "https://v2-10-5.turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": ["DATABASE_URL", "NODE_ENV"],
+  "globalEnv": [
+    "DATABASE_URL",
+    "NODE_ENV",
+    "PORT",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "WEB_ORIGIN",
+    "MEETINGBAAS_API_KEY",
+    "MEETINGBAAS_WEBHOOK_SECRET",
+    "R2_ACCOUNT_ID",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_BUCKET",
+    "R2_ENDPOINT",
+    "OPENAI_API_KEY"
+  ],
   "tasks": {
     "//#lint": {},
     "//#lint:fix": {

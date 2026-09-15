@@ -26,19 +26,19 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 
 - Bots are dispatched **automatically** by the worker scheduler. No start-capture button.
 - Skip `CalendarEvent` rows with no `meetingUrl` (Meet / Zoom / Teams).
-- Store MeetingBaas **raw** status on `Meeting.baasStatus`. Derive UI from one shared mapper in `packages/api-contract` (imported by server and web).
+- Store MeetingBaas bot status on `Meeting.baasStatus` as the `BaasBotStatus` enum (map unknown `MEET_LOGIN_*` API strings to `meet_login_error` when persisting). Derive UI from one shared mapper in `packages/api-contract` (imported by server and web).
 
-| UI state | MeetingBaas `baasStatus` |
-| --- | --- |
-| Starting soon | Our pre-`createBot` state (`baasBotId` null) |
-| Joining… | `queued`, `pickup_delayed`, `joining_call`, `in_waiting_room`, `in_waiting_for_host` |
-| In call — recording | `in_call_recording`, `recording_resumed`, `in_call_not_recording` |
-| Call ended, processing | `call_ended`, `recording_succeeded`, `transcribing` |
-| Ready | `completed` |
-| Failed to join | `bot_rejected`, `invalid_meeting_url`, `meeting_error`, `waiting_room_timeout`, `bot_removed_too_early`, any `MEET_LOGIN_*` |
-| Failed processing | `failed`, `transcription_failed`, `recording_failed` |
+| UI state               | MeetingBaas `baasStatus`                                                                                                    |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Starting soon          | Our pre-`createBot` state (`baasBotId` null)                                                                                |
+| Joining…               | `queued`, `pickup_delayed`, `joining_call`, `in_waiting_room`, `in_waiting_for_host`                                        |
+| In call — recording    | `in_call_recording`, `recording_resumed`, `in_call_not_recording`                                                           |
+| Call ended, processing | `call_ended`, `recording_succeeded`, `transcribing`                                                                         |
+| Ready                  | `completed`                                                                                                                 |
+| Failed to join         | `bot_rejected`, `invalid_meeting_url`, `meeting_error`, `waiting_room_timeout`, `bot_removed_too_early`, any `MEET_LOGIN_*` |
+| Failed processing      | `failed`, `transcription_failed`, `recording_failed`                                                                        |
 
-**Ongoing call:** active once `createBot` has been called. Poll `GET /bots/{id}/status` every ~5–10s in Joining…; ~60s in In call. Distinct honest labels — never a blank spinner. Failures shown immediately. No live transcript — show elapsed recording time. Highlight click writes `{ meetingId, timestampSec, note? }`. Scratchpad: textarea + debounced autosave.
+**Ongoing call:** active once `createBot` has been called. Poll `GET /bots/{id}/status` every ~5–10s in Joining…; ~60s in In call. Distinct honest labels — never a blank spinner. Failures shown immediately. No live transcript — show elapsed recording time. Highlight click writes `{ meetingId, timestampSec, note? }`. Scratchpad: upsert `ScratchpadEntry` at `{ meetingId, timestampSec, text }` (debounced).
 
 ### Integrations
 
@@ -54,7 +54,8 @@ Replace demo `User` / `Post`. Enable `CREATE EXTENSION vector`. Better Auth core
 
 - `CalendarWatch` — per user: `channelId`, `resourceId`, `expiration`, `syncToken`
 - `CalendarEvent` — `userId`, `googleEventId` (unique), title, start/end, `meetingUrl` (nullable), `htmlLink`
-- `Meeting` — `userId`, `calendarEventId`, `baasBotId`, raw `baasStatus`, `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, `scratchpad`, R2 keys, `recordingStartedAt`, summary fields
+- `Meeting` — `userId`, `calendarEventId`, `baasBotId`, `baasStatus` (`BaasBotStatus` enum, nullable pre-dispatch), `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, R2 keys, `recordingStartedAt`, summary fields (`@@map("meeting")`)
+- `ScratchpadEntry` — `meetingId`, `timestampSec`, `text` (unique per meeting + timestamp; debounced upsert in F6)
 - `Highlight` — `meetingId`, `timestampSec`, `note?`
 - `ActionItem` — `meetingId`, `text`, `timestampSec?`
 - `TranscriptChunk` — `meetingId`, times, `speaker?`, `text`, `embedding` (`Unsupported("vector")`; similarity via `$queryRaw`)
@@ -63,18 +64,18 @@ Replace demo `User` / `Post`. Enable `CREATE EXTENSION vector`. Better Auth core
 
 Implement **one slice per task**. Mark done in this list when the vertical slice works.
 
-| ID | Slice | Status |
-| --- | --- | --- |
-| F0 | Context files (this document + cursor rules + README) | done |
-| F1 | Schema, pgvector, env, catalog deps | not started |
-| F2 | Google auth, sessions, protected API | not started |
-| F3 | Calendar connect, list/store events, Better Auth webhook + Sync now | not started |
-| F4 | Events / library list UI | not started |
-| F5 | Worker dispatch `createBot` at start − buffer | not started |
-| F6 | Ongoing call: status poll, highlight, scratchpad | not started |
-| F7 | Baas callback, worker AI, `processingStatus: ready` | not started |
-| F8 | Playback + transcript sync + share | not started |
-| F9 | Q&A RAG chatbot | not started |
+| ID  | Slice                                                               | Status      |
+| --- | ------------------------------------------------------------------- | ----------- |
+| F0  | Context files (this document + cursor rules + README)               | done        |
+| F1  | Schema, pgvector, env, catalog deps                                 | done        |
+| F2  | Google auth, sessions, protected API                                | not started |
+| F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | not started |
+| F4  | Events / library list UI                                            | not started |
+| F5  | Worker dispatch `createBot` at start − buffer                       | not started |
+| F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
+| F7  | Baas callback, worker AI, `processingStatus: ready`                 | not started |
+| F8  | Playback + transcript sync + share                                  | not started |
+| F9  | Q&A RAG chatbot                                                     | not started |
 
 ## Monorepo
 
@@ -85,17 +86,17 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 
 ## Layout
 
-| Path | Role |
-|------|------|
-| `apps/web` | Vite 8, React 19, TanStack Router (file routes), TanStack Query |
-| `apps/server` | Express 5 API at `/api/v1`; Better Auth at `/api/auth`; worker entry `src/worker.ts` |
-| `packages/api-contract` | Zod schemas + inferred types for API payloads |
-| `packages/api-client` | Axios calls + TanStack Query `queryOptions` / hooks |
-| `packages/database` (`@repo/db`) | Prisma 7 + PostgreSQL (`PrismaPg` adapter) |
-| `packages/env` | `unsafeValidateEnv` + `NODE_ENV` helpers |
-| `packages/shared-validations` | Reusable Zod field schemas |
-| `packages/ui-web` | shadcn/ui-style components + `globals.css` |
-| `packages/typescript-config` | Shared `base.json` tsconfig |
+| Path                             | Role                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| `apps/web`                       | Vite 8, React 19, TanStack Router (file routes), TanStack Query                      |
+| `apps/server`                    | Express 5 API at `/api/v1`; Better Auth at `/api/auth`; worker entry `src/worker.ts` |
+| `packages/api-contract`          | Zod schemas + inferred types for API payloads                                        |
+| `packages/api-client`            | Axios calls + TanStack Query `queryOptions` / hooks                                  |
+| `packages/database` (`@repo/db`) | Prisma 7 + PostgreSQL (`PrismaPg` adapter)                                           |
+| `packages/env`                   | `unsafeValidateEnv` + `NODE_ENV` helpers                                             |
+| `packages/shared-validations`    | Reusable Zod field schemas                                                           |
+| `packages/ui-web`                | shadcn/ui-style components + `globals.css`                                           |
+| `packages/typescript-config`     | Shared `base.json` tsconfig                                                          |
 
 ## Package boundaries
 

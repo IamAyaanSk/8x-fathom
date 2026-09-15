@@ -2,20 +2,20 @@
 
 ## 1. Tool and model
 
-| | |
-|---|---|
-| **Tool** | [Cursor](https://cursor.com) (Agent / Composer chat) |
-| **Model** | Composer (Cursor-trained agent model). Same model plans and executes in this session unless a subagent is spawned with an explicit model override. |
-| **Docs checked** | [Cursor Hooks](https://cursor.com/docs/hooks) — lifecycle hooks with JSON on stdin; project config at `.cursor/hooks.json`. |
+|                  |                                                                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Tool**         | [Cursor](https://cursor.com) (Agent / Composer chat)                                                                                               |
+| **Model**        | Composer (Cursor-trained agent model). Same model plans and executes in this session unless a subagent is spawned with an explicit model override. |
+| **Docs checked** | [Cursor Hooks](https://cursor.com/docs/hooks) — lifecycle hooks with JSON on stdin; project config at `.cursor/hooks.json`.                        |
 
 Project rules (`.cursor/rules/*.mdc`) inject context only; they do **not** run commands on prompt/response. Capture uses **hooks**, not rules alone.
 
 ## 2. Mechanism and config
 
-| File | Role |
-|------|------|
-| `.cursor/hooks.json` | Registers `sessionStart`, `beforeSubmitPrompt`, `afterAgentResponse`, and `stop` |
-| `.cursor/hooks/agent-capture.sh` | Wrapper that runs the Python logger |
+| File                             | Role                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| `.cursor/hooks.json`             | Registers `sessionStart`, `beforeSubmitPrompt`, `afterAgentResponse`, and `stop`     |
+| `.cursor/hooks/agent-capture.sh` | Wrapper that runs the Python logger                                                  |
 | `.cursor/hooks/agent-capture.py` | Appends PROMPT/RESPONSE entries to `.agent-logs/YYYY-MM-DD_HH-MM-SS_<session-id>.md` |
 
 Behavior:

@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -12,17 +7,213 @@ datasource db {
   provider = "postgresql"
 }
 
-model User { 
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
-  name  String?
-  posts Post[]
-} 
-model Post { 
-  id        Int     @id @default(autoincrement()) 
-  title     String
-  content   String?
-  published Boolean @default(false) 
-  authorId  Int
-  author    User    @relation(fields: [authorId], references: [id]) 
-} 
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  calendarWatch  CalendarWatch?
+  calendarEvents CalendarEvent[]
+  meetings       Meeting[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+enum ProcessingStatus {
+  idle
+  pending
+  processing
+  ready
+  failed
+}
+
+enum BaasBotStatus {
+  queued
+  pickup_delayed
+  joining_call
+  in_waiting_room
+  in_waiting_for_host
+  in_call_recording
+  recording_resumed
+  in_call_not_recording
+  call_ended
+  recording_succeeded
+  transcribing
+  completed
+  bot_rejected
+  invalid_meeting_url
+  meeting_error
+  waiting_room_timeout
+  bot_removed_too_early
+  meet_login_error
+  failed
+  transcription_failed
+  recording_failed
+}
+
+model CalendarWatch {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channelId  String
+  resourceId String
+  expiration DateTime
+  syncToken  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("calendar_watch")
+}
+
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  googleEventId String   @unique
+  title         String
+  startTime     DateTime
+  endTime       DateTime
+  meetingUrl    String?
+  htmlLink      String?
+  meeting       Meeting?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@map("calendar_event")
+}
+
+model Meeting {
+  id                 String            @id @default(cuid())
+  userId             String
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarEventId    String            @unique
+  calendarEvent      CalendarEvent     @relation(fields: [calendarEventId], references: [id], onDelete: Cascade)
+  baasBotId          String?
+  baasStatus         BaasBotStatus?
+  processingStatus   ProcessingStatus  @default(idle)
+  shareSlug          String?           @unique
+  recordingR2Key     String?
+  transcriptR2Key    String?
+  recordingStartedAt DateTime?
+  summary            String?
+  highlights         Highlight[]
+  scratchpadEntries  ScratchpadEntry[]
+  actionItems        ActionItem[]
+  transcriptChunks   TranscriptChunk[]
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([processingStatus])
+  @@map("meeting")
+}
+
+model Highlight {
+  id           String   @id @default(cuid())
+  meetingId    String
+  meeting      Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  timestampSec Int
+  note         String?
+  createdAt    DateTime @default(now())
+
+  @@index([meetingId])
+  @@map("highlight")
+}
+
+model ScratchpadEntry {
+  id           String   @id @default(cuid())
+  meetingId    String
+  meeting      Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  timestampSec Int
+  text         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([meetingId, timestampSec])
+  @@index([meetingId])
+  @@map("scratchpad_entry")
+}
+
+model ActionItem {
+  id           String   @id @default(cuid())
+  meetingId    String
+  meeting      Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  text         String
+  timestampSec Int?
+  createdAt    DateTime @default(now())
+
+  @@index([meetingId])
+  @@map("action_item")
+}
+
+model TranscriptChunk {
+  id        String                       @id @default(cuid())
+  meetingId String
+  meeting   Meeting                      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  startSec  Int
+  endSec    Int
+  speaker   String?
+  text      String
+  embedding Unsupported("vector")
+  createdAt DateTime                     @default(now())
+
+  @@index([meetingId])
+  @@map("transcript_chunk")
+}

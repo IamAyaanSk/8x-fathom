@@ -20,13 +20,22 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/openai": "catalog:",
+    "@aws-sdk/client-s3": "catalog:",
+    "@aws-sdk/s3-request-presigner": "catalog:",
+    "@better-auth/prisma-adapter": "catalog:",
+    "@meeting-baas/sdk": "catalog:",
     "@repo/api-contract": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
+    "@repo/shared-validations": "workspace:*",
+    "ai": "catalog:",
+    "better-auth": "catalog:",
     "body-parser": "catalog:",
     "cookie-parser": "catalog:",
     "cors": "catalog:",
     "express": "catalog:",
+    "googleapis": "catalog:",
     "helmet": "catalog:",
     "morgan": "catalog:",
     "zod": "catalog:"

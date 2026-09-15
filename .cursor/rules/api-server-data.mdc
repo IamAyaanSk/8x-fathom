@@ -42,4 +42,4 @@ Type controllers with `*SuccessResponse` from the contract.
 ## Prisma
 
 - Migrations and schema live in `packages/database`. Run generate before dev/build (`db:generate`).
-- Domain: Better Auth tables + `CalendarWatch`, `CalendarEvent`, `Meeting`, `Highlight`, `ActionItem`, `TranscriptChunk` (pgvector). Replace demo `User`/`Post`. Details in `AGENTS.md` § Data model.
+- Domain: Better Auth tables + `CalendarWatch`, `CalendarEvent`, `Meeting`, `Highlight`, `ScratchpadEntry`, `ActionItem`, `TranscriptChunk` (pgvector). Domain tables use `@@map` snake_case (`meeting`, `calendar_event`, …). `Meeting.baasStatus` is `BaasBotStatus` enum. Details in `AGENTS.md` § Data model.

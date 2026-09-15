@@ -18,7 +18,7 @@ alwaysApply: false
 ## Product UX (Fathom slice)
 
 - **List first**, then ongoing call, then **playback as the polish target** (video + synced transcript + summary + timestamped action items + highlight markers + share). Q&A last.
-- Ongoing: map `baasStatus` with the shared contract mapper. Honest labels (`Starting soon`, `Joining…`, `In call — recording`, `Call ended, processing…`). Poll ~5–10s while joining, ~60s in call. Never a generic spinner across transitions. Failures immediately. Elapsed time, not live transcript. Highlight = POST `{ timestampSec, note? }`. Scratchpad = debounced autosave.
+- Ongoing: map `baasStatus` with the shared contract mapper. Honest labels (`Starting soon`, `Joining…`, `In call — recording`, `Call ended, processing…`). Poll ~5–10s while joining, ~60s in call. Never a generic spinner across transitions. Failures immediately. Elapsed time, not live transcript. Highlight = POST `{ timestampSec, note? }`. Scratchpad = upsert `ScratchpadEntry` at `{ timestampSec, text }` (debounced).
 - No manual start-capture control. Semantic tokens only (see Theming).
 
 ## API wiring

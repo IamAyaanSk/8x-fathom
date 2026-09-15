@@ -4,6 +4,19 @@ Hackathon slice of [fathom.video](https://fathom.video): Google-only login, Cale
 
 See `AGENTS.md` for product rules, data model, bot status mapping, and the F0–F9 feature tracker.
 
+## Database and env
+
+Use a local PostgreSQL instance with the **pgvector** extension (`CREATE EXTENSION vector`).
+
+Copy `apps/server/.env.example` to `apps/server/.env` and set `DATABASE_URL`. Prisma CLI loads that file from `packages/database/prisma.config.ts` (optional `packages/database/.env` fallback).
+
+```bash
+pnpm --filter @repo/db db:generate
+pnpm --filter @repo/db db:migrate
+```
+
+`db:migrate` is interactive (`prisma migrate dev`). Apply existing migrations with `pnpm --filter @repo/db db:deploy`.
+
 ## Tech Stack
 
 | Layer           | Technology                                     |
@@ -48,4 +61,3 @@ See `AGENTS.md` for product rules, data model, bot status mapping, and the F0–
 ├── .oxfmtrc.json             # oxfmt configuration
 └── package.json              # Root scripts and devDependencies
 ```
-

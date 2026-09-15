@@ -25,7 +25,7 @@ const BAAS_API_STATUS_TO_STORED: Record<string, BaasBotStatus> = {
   call_ended: 'transcribing',
   recording_succeeded: 'transcribing',
   transcribing: 'transcribing',
-  completed: 'transcribing',
+  completed: 'completed',
   api_request_stop: 'transcribing',
   failed: 'failed',
   bot_rejected: 'failed',

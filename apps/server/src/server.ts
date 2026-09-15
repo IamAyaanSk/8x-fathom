@@ -27,6 +27,8 @@ app.use(
   })
 )
 
+app.use(morgan(isDevelopmentEnvironment(env.NODE_ENV) ? 'dev' : 'combined'))
+
 app.all('/api/auth/*splat', toNodeHandler(auth))
 
 app.post(
@@ -44,8 +46,6 @@ app.use(json())
 app.use(cookieParser())
 
 app.use(helmet())
-
-app.use(morgan(isDevelopmentEnvironment(env.NODE_ENV) ? 'dev' : 'combined'))
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).send('OK')

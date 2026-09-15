@@ -1,7 +1,7 @@
 import type { IncomingHttpHeaders } from 'node:http'
 
 import {
-  mapBaasApiStatus,  
+  mapBaasApiStatus,
   patchFromBaasFailed,
   patchFromBaasStatusChange,
   type BaasBotStatus,
@@ -99,6 +99,32 @@ async function _findMeetingForWebhook(params: {
   return byExtraId
 }
 
+function _r2KeyFromSignedUrl(value: string | null | undefined): string | undefined {
+  if (!value) {
+    return undefined
+  }
+
+  let pathname: string
+  try {
+    pathname = decodeURIComponent(new URL(value).pathname)
+  } catch {
+    return undefined
+  }
+
+  const withoutSlash = pathname.startsWith('/') ? pathname.slice(1) : pathname
+  if (withoutSlash.length === 0) {
+    return undefined
+  }
+
+  const bucketPrefix = `${env.R2_BUCKET}/`
+  if (withoutSlash.startsWith(bucketPrefix)) {
+    const key = withoutSlash.slice(bucketPrefix.length)
+    return key.length > 0 ? key : undefined
+  }
+
+  return withoutSlash
+}
+
 function _meetingBotState(meeting: {
   baasBotId: string | null
   baasStatus: BaasBotStatus | null
@@ -151,8 +177,22 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
   }
 
   if (event.event === 'bot.completed') {
-    // TODO: handle storing keys
+    if (meeting.baasStatus === 'failed') {
+      return
+    }
 
+    const recordingR2Key = _r2KeyFromSignedUrl(event.data.video)
+    const transcriptR2Key = _r2KeyFromSignedUrl(event.data.transcription)
+
+    await prisma.meeting.update({
+      where: { id: meeting.id },
+      data: {
+        baasStatus: 'completed',
+        processingStatus: 'pending',
+        ...(recordingR2Key ? { recordingR2Key } : {}),
+        ...(transcriptR2Key ? { transcriptR2Key } : {})
+      }
+    })
     return
   }
 

@@ -15,6 +15,10 @@
       "types": "./src/meeting-baas-webhook.ts",
       "default": "./dist/meeting-baas-webhook.js"
     },
+    "./meeting-baas-transcript": {
+      "types": "./src/meeting-baas-transcript.ts",
+      "default": "./dist/meeting-baas-transcript.js"
+    },
     "./v1/*": {
       "types": "./src/v1/*.ts",
       "default": "./dist/v1/*.js"

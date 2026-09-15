@@ -394,6 +394,12 @@ importers:
 
   apps/worker:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: 'catalog:'
+        version: 3.1132.0
+      '@repo/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@repo/api-contract':
         specifier: workspace:*
         version: link:../../packages/api-contract

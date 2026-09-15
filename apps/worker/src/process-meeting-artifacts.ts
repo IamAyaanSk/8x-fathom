@@ -8,6 +8,7 @@ import {
 import { formatMeetingBaasTranscriptTextFromJson } from '@repo/api-contract/meeting-baas-transcript'
 import { prisma } from '@repo/db'
 
+import { ingestMeetingChatMessages } from '#src/ingest-meeting-chat-messages'
 import { getR2ObjectUtf8 } from '#src/r2-client'
 
 function _errorMessage(error: unknown): string {
@@ -99,7 +100,7 @@ async function _runActionItemsStep({
   }
 }
 
-async function processMeetingArtifacts(meetingId: string): Promise<void> {
+async function _runTranscriptArtifactSteps(meetingId: string): Promise<void> {
   const meeting = await prisma.meeting.findUnique({
     where: { id: meetingId },
     select: {
@@ -124,7 +125,7 @@ async function processMeetingArtifacts(meetingId: string): Promise<void> {
 
   if (!meeting.transcriptR2Key) {
     console.error(
-      `Meeting artifacts skipped for ${meetingId}: missing transcriptR2Key`
+      `Transcript artifacts skipped for ${meetingId}: missing transcriptR2Key`
     )
     return
   }
@@ -167,6 +168,11 @@ async function processMeetingArtifacts(meetingId: string): Promise<void> {
     meetingTitle: afterSummary.title,
     transcript
   })
+}
+
+async function processMeetingArtifacts(meetingId: string): Promise<void> {
+  await ingestMeetingChatMessages(meetingId)
+  await _runTranscriptArtifactSteps(meetingId)
 }
 
 export { processMeetingArtifacts }

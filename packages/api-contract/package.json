@@ -19,6 +19,10 @@
       "types": "./src/meeting-baas-transcript.ts",
       "default": "./dist/meeting-baas-transcript.js"
     },
+    "./meeting-baas-chat-messages": {
+      "types": "./src/meeting-baas-chat-messages.ts",
+      "default": "./dist/meeting-baas-chat-messages.js"
+    },
     "./v1/*": {
       "types": "./src/v1/*.ts",
       "default": "./dist/v1/*.js"

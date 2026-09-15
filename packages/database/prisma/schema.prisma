@@ -126,6 +126,7 @@ model Meeting {
   recordingStartedAt     DateTime?
   summary                String?
   actionItemsExtractedAt DateTime?
+  chatMessagesIngestedAt DateTime?
   highlights             Highlight[]
   scratchpadEntries  ScratchpadEntry[]
   actionItems        ActionItem[]

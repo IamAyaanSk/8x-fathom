@@ -7,7 +7,7 @@ Google-only Better Auth, session cookies via the Vite `/api` proxy, `/login`, an
 1. Add `apps/server/src/auth.ts`: Prisma adapter, Google `accessType: 'offline'` + `prompt: 'select_account consent'`, `trustedOrigins: [WEB_ORIGIN]`.
 2. Mount `toNodeHandler(auth)` at `/api/auth/*splat` **before** `json()`. CORS origin = `WEB_ORIGIN`, `credentials: true`.
 3. `requireSession` on all `/api/v1` routes; `GET /users` scoped to the session user.
-4. Vite proxy `/api` → `http://localhost:3000`. Web `better-auth/react` client + axios `withCredentials`.
+4. Vite proxy `/api` → `https://8d16-2400-1f00-b-2c85-89c7-4cf9-eec5-f666.ngrok-free.app/api/auth/callback/google`. Web `better-auth/react` client + axios `withCredentials`.
 5. Auth UI: dark `AuthShell`, Card, Google-only CTA. Pathless `_authenticated` layout guards `/` and `/users`.
 
 ## Files

@@ -1,14 +1,10 @@
-import { useCalendarStatusQuery } from '@repo/api-client/v1/calendar/hooks'
-import { Button } from '@repo/ui-web/components/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@repo/ui-web/components/card'
+  useCalendarStatusQuery,
+  useCalendarSyncMutation
+} from '@repo/api-client/v1/calendar/hooks'
+import { Button } from '@repo/ui-web/components/button'
 import { getRouteApi } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
+import { CalendarDays, Loader2, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 
 import { GoogleMark } from '#components/auth/google-mark'
@@ -22,6 +18,7 @@ const authenticatedRoute = getRouteApi('/_authenticated')
 function HomePage() {
   const { session } = authenticatedRoute.useRouteContext()
   const { data, isPending, isError, refetch } = useCalendarStatusQuery()
+  const syncMutation = useCalendarSyncMutation()
   const [isConnecting, setIsConnecting] = useState(false)
   const [connectError, setConnectError] = useState<string | null>(null)
 
@@ -43,51 +40,74 @@ function HomePage() {
     }
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-xl font-semibold">Meetings</h1>
-        <p className="text-muted-foreground">
-          Signed in as {session.user.email}. Connect Google Calendar to sync
-          upcoming events for the next 7 days.
-        </p>
+  if (isPending) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pb-16">
+        <Loader2
+          aria-hidden
+          className="text-muted-foreground size-8 animate-spin"
+        />
+        <p className="text-muted-foreground text-sm">Checking calendar…</p>
       </div>
+    )
+  }
 
-      <Card className="max-w-lg">
-        <CardHeader>
-          <CardTitle>Google Calendar</CardTitle>
-          <CardDescription>
-            Calendar access is requested separately after sign-in. Your event
-            list UI arrives in the next slice.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          {isPending ? (
-            <p className="text-muted-foreground text-sm">Checking connection…</p>
-          ) : null}
-          {isError || (data && !data.success) ? (
-            <p className="text-destructive text-sm">
-              Could not load calendar status.
+  if (isError || (data && !data.success)) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 pb-16 text-center">
+        <p className="text-destructive text-sm">
+          Could not load calendar status.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            void refetch()
+          }}
+        >
+          Try again
+        </Button>
+      </div>
+    )
+  }
+
+  if (!connected) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-20">
+        <div className="flex w-full max-w-md flex-col items-center gap-6 text-center">
+          <div
+            className="bg-card text-muted-foreground ring-border flex size-20 items-center justify-center rounded-3xl shadow-sm ring-1"
+            aria-hidden
+          >
+            <CalendarDays className="size-9" strokeWidth={1.5} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              Connect your calendar to continue
+            </h1>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Link Google Calendar so we can find upcoming calls with video
+              links. Signed in as{' '}
+              <span className="text-foreground">{session.user.email}</span>.
             </p>
-          ) : null}
-          {connected ? (
-            <p className="text-sm">Calendar connected. Events sync after connect.</p>
-          ) : (
-            <Button
-              type="button"
-              disabled={isConnecting || isPending}
-              onClick={() => {
-                void handleConnectCalendar()
-              }}
-            >
-              {isConnecting ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <GoogleMark />
-              )}
-              Connect Google Calendar
-            </Button>
-          )}
+          </div>
+          <Button
+            type="button"
+            size="lg"
+            disabled={isConnecting}
+            className="min-w-56"
+            onClick={() => {
+              void handleConnectCalendar()
+            }}
+          >
+            {isConnecting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <GoogleMark />
+            )}
+            Connect Google Calendar
+          </Button>
           {connectError ? (
             <p className="text-destructive text-sm">{connectError}</p>
           ) : null}
@@ -95,15 +115,71 @@ function HomePage() {
             type="button"
             variant="outline"
             size="sm"
-            className="w-fit"
             onClick={() => {
               void refetch()
             }}
           >
             Refresh status
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+    )
+  }
+
+  const syncMessage =
+    syncMutation.data?.success === true
+      ? `Synced ${syncMutation.data.data.syncedCount} meeting${
+          syncMutation.data.data.syncedCount === 1 ? '' : 's'
+        }.`
+      : syncMutation.data && !syncMutation.data.success
+        ? 'Sync failed. Try again.'
+        : null
+
+      console.error(syncMutation.error)
+
+  return (
+    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6">
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-muted-foreground text-xs font-medium tracking-widest uppercase">
+            Upcoming
+          </h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={syncMutation.isPending}
+            onClick={() => {
+              syncMutation.reset()
+              syncMutation.mutate()
+            }}
+          >
+            {syncMutation.isPending ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <RefreshCw />
+            )}
+            Sync now
+          </Button>
+        </div>
+        {syncMutation.isError ? (
+          <p className="text-destructive text-sm">Could not sync calendar.</p>
+        ) : null}
+        {syncMessage ? (
+          <p className="text-muted-foreground text-sm">{syncMessage}</p>
+        ) : null}
+        <div
+          className="bg-card border-border flex min-h-48 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed px-6 py-12 text-center"
+        >
+          <p className="text-foreground text-sm font-medium">
+            Your meeting list is on the way
+          </p>
+          <p className="text-muted-foreground max-w-sm text-sm">
+            Calendar is connected. Recordable meetings from the next 7 days will
+            show up here after sync.
+          </p>
+        </div>
+      </section>
     </div>
   )
 }

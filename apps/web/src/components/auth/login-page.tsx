@@ -10,7 +10,7 @@ import { useState } from 'react'
 
 import { AuthShell } from '#components/auth/auth-shell'
 import { GoogleMark } from '#components/auth/google-mark'
-import { authClient } from '#lib/auth-client'
+import { startGoogleSignIn } from '#lib/auth-oauth'
 
 function LoginPage() {
   const [isPending, setIsPending] = useState(false)
@@ -20,14 +20,10 @@ function LoginPage() {
     setIsPending(true)
     setErrorMessage(null)
 
-    const { error } = await authClient.signIn.social({
-      provider: 'google',
-      callbackURL: '/'
-    })
+    const { error } = await startGoogleSignIn()
 
     if (error) {
-      console.error(error)
-      setErrorMessage(error.message ?? 'Could not start Google sign-in.')
+      setErrorMessage(error.message)
       setIsPending(false)
     }
   }

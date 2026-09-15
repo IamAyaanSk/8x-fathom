@@ -15,6 +15,7 @@ const envZodSchema = z.object({
   DATABASE_URL: trimmedStringWithMinLengthOneSchema,
   BETTER_AUTH_SECRET: trimmedStringWithMinLengthOneSchema,
   BETTER_AUTH_URL: trimmedStringWithMinLengthOneSchema,
+  BASE_URL: trimmedStringWithMinLengthOneSchema,
   GOOGLE_CLIENT_ID: trimmedStringWithMinLengthOneSchema,
   GOOGLE_CLIENT_SECRET: trimmedStringWithMinLengthOneSchema,
   WEB_ORIGIN: trimmedStringWithMinLengthOneSchema,

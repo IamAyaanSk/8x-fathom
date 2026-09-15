@@ -2,6 +2,7 @@ import type { AxiosInstance } from 'axios'
 
 export type _HttpRequestOptions = {
   signal?: AbortSignal
+  timeout?: number
 }
 
 let client: AxiosInstance | null = null

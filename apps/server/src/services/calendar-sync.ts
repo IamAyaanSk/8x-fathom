@@ -62,12 +62,12 @@ function createGoogleCalendarClient(accessToken: string): calendar_v3.Calendar {
 }
 
 function getCalendarWebhookUrl(): string {
-  const base = env.BETTER_AUTH_URL.replace(/\/$/, '')
+  const base = env.BASE_URL.replace(/\/$/, '')
   return `${base}/api/auth${CALENDAR_WEBHOOK_PATH}`
 }
 
 function canRegisterCalendarWatch(): boolean {
-  return env.BETTER_AUTH_URL.startsWith('https://')
+  return env.BASE_URL.startsWith('https://')
 }
 
 async function deletePreDispatchMeetingsForGoogleEvent(

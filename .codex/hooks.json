@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/ayaan/Documents/Projects/8x-fathom/.codex/hooks/agent-capture.sh'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/ayaan/Documents/Projects/8x-fathom/.codex/hooks/agent-capture.sh'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/ayaan/Documents/Projects/8x-fathom/.codex/hooks/agent-capture.sh'"
+          }
+        ]
+      }
+    ]
+  }
+}

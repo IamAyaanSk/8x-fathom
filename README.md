@@ -16,6 +16,8 @@ Copy `apps/web/.env.example` to `apps/web/.env`. In local dev the Vite app proxi
 - `VITE_API_URL` = `http://localhost:5173`
 - Google OAuth authorized redirect URI = `http://localhost:5173/api/auth/callback/google`
 
+**Calendar webhooks:** Google `events.watch` needs a public HTTPS URL. Use ngrok (or similar), point `BETTER_AUTH_URL` and the browser at that origin, and add the ngrok callback URL to Google OAuth redirect URIs. See `docs/features/F3/DECISIONS.md`.
+
 ```bash
 pnpm --filter @repo/db db:generate
 pnpm --filter @repo/db db:migrate

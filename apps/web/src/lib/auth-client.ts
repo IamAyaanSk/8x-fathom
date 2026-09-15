@@ -5,7 +5,10 @@ import { env } from '#src/env'
 const authClient = createAuthClient({
   baseURL: env.VITE_API_URL,
   fetchOptions: {
-    credentials: 'include'
+    credentials: 'include',
+    headers: {
+      'ngrok-skip-browser-warning': 'true'
+    }
   }
 })
 

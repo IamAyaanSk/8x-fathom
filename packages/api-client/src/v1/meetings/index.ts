@@ -1,6 +1,7 @@
 import {
   getMeetingsUpcomingResponseSchema,
   postMeetingCaptureResponseSchema,
+  postMeetingRetryBotResponseSchema,
   type MeetingListItem
 } from '@repo/api-contract/v1/meetings'
 
@@ -27,4 +28,17 @@ async function postMeetingCapture(
   return postMeetingCaptureResponseSchema.parse(response.data)
 }
 
-export { getMeetingsUpcoming, postMeetingCapture }
+async function postMeetingRetryBot(
+  meetingId: string,
+  options: _HttpRequestOptions = {}
+) {
+  const client = _getApiClient()
+  const response = await client.post(
+    `/meetings/${meetingId}/retry-bot`,
+    undefined,
+    options
+  )
+  return postMeetingRetryBotResponseSchema.parse(response.data)
+}
+
+export { getMeetingsUpcoming, postMeetingCapture, postMeetingRetryBot }

@@ -2,15 +2,49 @@ import '#src/env'
 import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingsUpcomingSuccessResponse,
-  PostMeetingCaptureResponse
+  PostMeetingCaptureResponse,
+  PostMeetingRetryBotResponse
 } from '@repo/api-contract/v1/meetings'
 import { prisma } from '@repo/db'
-import { dispatchBotForMeeting, DispatchError } from '@repo/meeting-dispatch'
+import {
+  dispatchBotForMeeting,
+  DispatchError,
+  retryBotForMeeting,
+  type DispatchResult
+} from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
 import { env } from '#src/env'
 import { HttpError } from '#src/v1/errors/http-error'
+
+function _dispatchCallbackParams() {
+  return {
+    meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
+    callbackBaseUrl: env.BASE_URL,
+    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET
+  }
+}
+
+function _meetingIdFromRequest(req: Request): string | null {
+  const meetingId = req.params.meetingId
+  if (typeof meetingId !== 'string' || meetingId.length === 0) {
+    return null
+  }
+  return meetingId
+}
+
+function _dispatchResponseData(dispatched: DispatchResult) {
+  return {
+    meetingId: dispatched.meetingId,
+    baasBotId: dispatched.baasBotId,
+    baasStatus: dispatched.baasStatus,
+    uiPhase: getMeetingBotUiPhase({
+      baasBotId: dispatched.baasBotId,
+      baasStatus: dispatched.baasStatus
+    })
+  }
+}
 
 const getMeetingsUpcomingController = async (
   req: Request,
@@ -48,7 +82,11 @@ const getMeetingsUpcomingController = async (
           meetingUrl: row.meetingUrl,
           htmlLink: row.htmlLink,
           baasBotId: row.baasBotId,
-          baasStatus: row.baasStatus
+          baasStatus: row.baasStatus,
+          uiPhase: getMeetingBotUiPhase({
+            baasBotId: row.baasBotId,
+            baasStatus: row.baasStatus
+          })
         }))
       }
     })
@@ -64,8 +102,8 @@ const postMeetingCaptureController = async (
 ) => {
   try {
     const userId = req.session!.user.id
-    const meetingId = req.params.meetingId
-    if (typeof meetingId !== 'string' || meetingId.length === 0) {
+    const meetingId = _meetingIdFromRequest(req)
+    if (!meetingId) {
       res.status(400).json({
         success: false,
         message: 'Meeting id is required'
@@ -75,15 +113,13 @@ const postMeetingCaptureController = async (
 
     let dispatched
     try {
-      
       dispatched = await dispatchBotForMeeting({
         meetingId,
         userId,
         mode: 'capture',
-        meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
+        ..._dispatchCallbackParams()
       })
     } catch (error) {
-      
       if (error instanceof DispatchError) {
         throw new HttpError(error.statusCode, error.message)
       }
@@ -93,19 +129,55 @@ const postMeetingCaptureController = async (
     res.json({
       success: true,
       message: 'Bot dispatched successfully',
-      data: {
-        meetingId: dispatched.meetingId,
-        baasBotId: dispatched.baasBotId,
-        baasStatus: dispatched.baasStatus,
-        uiPhase: getMeetingBotUiPhase({
-          baasBotId: dispatched.baasBotId,
-          baasStatus: dispatched.baasStatus
-        })
-      }
+      data: _dispatchResponseData(dispatched)
     })
   } catch (error) {
     next(error)
   }
 }
 
-export { getMeetingsUpcomingController, postMeetingCaptureController }
+const postMeetingRetryBotController = async (
+  req: Request,
+  res: Response<PostMeetingRetryBotResponse>,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.session!.user.id
+    const meetingId = _meetingIdFromRequest(req)
+    if (!meetingId) {
+      res.status(400).json({
+        success: false,
+        message: 'Meeting id is required'
+      })
+      return
+    }
+
+    let dispatched
+    try {
+      dispatched = await retryBotForMeeting({
+        meetingId,
+        userId,
+        ..._dispatchCallbackParams()
+      })
+    } catch (error) {
+      if (error instanceof DispatchError) {
+        throw new HttpError(error.statusCode, error.message)
+      }
+      throw error
+    }
+
+    res.json({
+      success: true,
+      message: 'Bot retried successfully',
+      data: _dispatchResponseData(dispatched)
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export {
+  getMeetingsUpcomingController,
+  postMeetingCaptureController,
+  postMeetingRetryBotController
+}

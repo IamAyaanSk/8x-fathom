@@ -88,6 +88,30 @@ const FAILED_PROCESSING_STATUSES = new Set<BaasBotStatus>([
   'recording_failed'
 ])
 
+const TERMINAL_BAAS_STATUSES: BaasBotStatus[] = [
+  'completed',
+  ...FAILED_JOIN_STATUSES,
+  ...FAILED_PROCESSING_STATUSES
+]
+
+const terminalBaasStatusSet = new Set<BaasBotStatus>(TERMINAL_BAAS_STATUSES)
+
+const MEETING_BOT_UI_LABELS: Record<MeetingBotUiPhase, string> = {
+  starting_soon: 'Starting soon',
+  joining: 'Joining…',
+  in_call_recording: 'In call — recording',
+  call_ended_processing: 'Call ended, processing…',
+  ready: 'Ready',
+  failed_to_join: 'Failed to join',
+  failed_processing: 'Failed processing'
+}
+
+const ACTIVE_BOT_UI_PHASES = new Set<MeetingBotUiPhase>([
+  'joining',
+  'in_call_recording',
+  'call_ended_processing'
+])
+
 function isBaasBotStatus(value: string): value is BaasBotStatus {
   return baasBotStatusSet.has(value)
 }
@@ -131,11 +155,34 @@ function getMeetingBotUiPhase({
   return 'joining'
 }
 
+function getMeetingBotUiLabel(phase: MeetingBotUiPhase): string {
+  return MEETING_BOT_UI_LABELS[phase]
+}
+
+function isTerminalBaasStatus(
+  status: BaasBotStatus | null
+): status is BaasBotStatus {
+  return status != null && terminalBaasStatusSet.has(status)
+}
+
+function isFailedMeetingBotUiPhase(phase: MeetingBotUiPhase): boolean {
+  return phase === 'failed_to_join' || phase === 'failed_processing'
+}
+
+function isActiveMeetingBotUiPhase(phase: MeetingBotUiPhase): boolean {
+  return ACTIVE_BOT_UI_PHASES.has(phase)
+}
+
 export type { BaasBotStatus, MeetingBotUiPhase }
 export {
   BAAS_BOT_STATUSES,
   MEETING_BOT_UI_PHASES,
+  TERMINAL_BAAS_STATUSES,
+  getMeetingBotUiLabel,
   getMeetingBotUiPhase,
+  isActiveMeetingBotUiPhase,
   isBaasBotStatus,
+  isFailedMeetingBotUiPhase,
+  isTerminalBaasStatus,
   parseBaasApiStatus
 }

@@ -20,6 +20,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/api-contract": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
     "@repo/meeting-dispatch": "workspace:*",

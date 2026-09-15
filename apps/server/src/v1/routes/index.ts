@@ -6,7 +6,8 @@ import {
 } from '#src/v1/controllers/calendar'
 import {
   getMeetingsUpcomingController,
-  postMeetingCaptureController
+  postMeetingCaptureController,
+  postMeetingRetryBotController
 } from '#src/v1/controllers/meetings'
 import { getUsersController } from '#src/v1/controllers/users'
 import { requireSession } from '#src/v1/middlewares/require-session'
@@ -19,5 +20,6 @@ router.get('/calendar/status', getCalendarStatusController)
 router.post('/calendar/sync', postCalendarSyncController)
 router.get('/meetings/upcoming', getMeetingsUpcomingController)
 router.post('/meetings/:meetingId/capture', postMeetingCaptureController)
+router.post('/meetings/:meetingId/retry-bot', postMeetingRetryBotController)
 
 export default router

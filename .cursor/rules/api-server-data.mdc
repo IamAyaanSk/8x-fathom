@@ -29,7 +29,7 @@ Type controllers with `*SuccessResponse` from the contract.
 - Imports: `#src/*` per `apps/server/package.json`.
 - **Better Auth:** `toNodeHandler(auth)` on `/api/auth/*splat` (Express 5) **before** `json()` / `body-parser`. Session via `fromNodeHeaders` + `auth.api.getSession`. Google-only; `accessType: 'offline'`. Calendar tokens: `auth.api.getAccessToken`.
 - **Calendar inbound webhook:** Better Auth plugin + `createAuthEndpoint` (not a one-off Express route). After Calendar scopes, Google `events.watch` → that endpoint. Incremental sync with `syncToken`. Sync now / page load remain required fallbacks. MeetingBaas calendar APIs are forbidden.
-- **MeetingBaas:** `@meeting-baas/sdk` v2 **bots only** (`createBot`, `getBotStatus`). Callbacks on a dedicated public path (verify secret). BYO storage is R2; we presign reads.
+- **MeetingBaas:** `@meeting-baas/sdk` v2 **bots only** (`createBot`, `getBotStatus`). Callbacks on a dedicated public path; verify Svix (`svix-id`, `svix-timestamp`, `svix-signature`) with `MEETINGBAAS_WEBHOOK_SECRET`. BYO storage is R2; we presign reads.
 - **Worker:** `apps/worker` (separate Express deploy). Cron + `@repo/meeting-dispatch`: due `Meeting`s via `FOR UPDATE SKIP LOCKED` → `createBot`. Server capture uses the same package. Processor: poll `Meeting.processingStatus` — no jobs table.
 - Shared bot UI mapping lives in `api-contract` (see `AGENTS.md` § Bot dispatch & status).
 

@@ -5,9 +5,12 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import cron from 'node-cron'
 
-import { DISPATCH_CRON_EXPRESSION } from '#src/constants'
+import {
+  DISPATCH_CRON_EXPRESSION,
+  STATUS_POLL_CRON_EXPRESSION
+} from '#src/constants'
 import { env } from '#src/env'
-import { runDispatchTick } from '#src/scheduler'
+import { runDispatchTick, runStatusPollTick } from '#src/scheduler'
 
 const app: Express = express()
 const port = env.PORT
@@ -24,6 +27,8 @@ const server = app.listen(port, () => {
 })
 
 void runDispatchTick()
+void runStatusPollTick()
+
 const dispatchTask = cron.schedule(
   DISPATCH_CRON_EXPRESSION,
   () => {
@@ -32,12 +37,22 @@ const dispatchTask = cron.schedule(
   { noOverlap: true }
 )
 
+const statusPollTask = cron.schedule(
+  STATUS_POLL_CRON_EXPRESSION,
+  () => {
+    void runStatusPollTick()
+  },
+  { noOverlap: true }
+)
+
 function shutdown() {
-  void Promise.resolve(dispatchTask.stop()).finally(() => {
-    server.close(() => {
-      process.exit(0)
+  void Promise.resolve(dispatchTask.stop())
+    .then(() => statusPollTask.stop())
+    .finally(() => {
+      server.close(() => {
+        process.exit(0)
+      })
     })
-  })
 }
 
 process.on('SIGINT', shutdown)

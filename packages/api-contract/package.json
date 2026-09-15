@@ -11,6 +11,10 @@
       "types": "./src/baas-bot-status.ts",
       "default": "./dist/baas-bot-status.js"
     },
+    "./meeting-baas-webhook": {
+      "types": "./src/meeting-baas-webhook.ts",
+      "default": "./dist/meeting-baas-webhook.js"
+    },
     "./v1/*": {
       "types": "./src/v1/*.ts",
       "default": "./dist/v1/*.js"

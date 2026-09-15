@@ -1,11 +1,20 @@
 import { dispatchDueMeetings } from '@repo/meeting-dispatch'
 
 import { env } from '#src/env'
+import { runActiveBotStatusSync } from '#src/sync-active-bot-status'
+
+function _dispatchCallbackParams() {
+  return {
+    meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
+    callbackBaseUrl: env.BASE_URL,
+    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET
+  }
+}
 
 async function runDispatchTick() {
   try {
     const { dispatchedCount, errors } = await dispatchDueMeetings(
-      env.MEETINGBAAS_API_KEY
+      _dispatchCallbackParams()
     )
     console.log(
       `Dispatch tick: dispatched ${dispatchedCount} meeting${dispatchedCount === 1 ? '' : 's'}`
@@ -18,4 +27,18 @@ async function runDispatchTick() {
   }
 }
 
-export { runDispatchTick }
+async function runStatusPollTick() {
+  try {
+    const { checkedCount, updatedCount } = await runActiveBotStatusSync()
+    if (checkedCount === 0) {
+      return
+    }
+    console.log(
+      `Status poll: checked ${checkedCount}, updated ${updatedCount}`
+    )
+  } catch (error) {
+    console.error('Status poll failed', error)
+  }
+}
+
+export { runDispatchTick, runStatusPollTick }

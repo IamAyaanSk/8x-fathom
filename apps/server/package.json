@@ -38,6 +38,7 @@
     "googleapis": "catalog:",
     "helmet": "catalog:",
     "morgan": "catalog:",
+    "svix": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -14,7 +14,8 @@ const meetingListItemSchema = z.object({
   meetingUrl: z.url(),
   htmlLink: z.url().nullable(),
   baasBotId: z.string().nullable(),
-  baasStatus: baasBotStatusSchema.nullable()
+  baasStatus: baasBotStatusSchema.nullable(),
+  uiPhase: meetingBotUiPhaseSchema
 })
 
 const getMeetingsUpcomingResponseSchema = _createResponseApiZod(
@@ -23,13 +24,19 @@ const getMeetingsUpcomingResponseSchema = _createResponseApiZod(
   })
 )
 
+const postMeetingBotDispatchDataSchema = z.object({
+  meetingId: z.string(),
+  baasBotId: z.string(),
+  baasStatus: baasBotStatusSchema.nullable(),
+  uiPhase: meetingBotUiPhaseSchema
+})
+
 const postMeetingCaptureResponseSchema = _createResponseApiZod(
-  z.object({
-    meetingId: z.string(),
-    baasBotId: z.string(),
-    baasStatus: baasBotStatusSchema.nullable(),
-    uiPhase: meetingBotUiPhaseSchema
-  })
+  postMeetingBotDispatchDataSchema
+)
+
+const postMeetingRetryBotResponseSchema = _createResponseApiZod(
+  postMeetingBotDispatchDataSchema
 )
 
 export type GetMeetingsUpcomingResponse = z.infer<
@@ -47,11 +54,19 @@ export type PostMeetingCaptureSuccessResponse = Extract<
   PostMeetingCaptureResponse,
   { success: true }
 >
+export type PostMeetingRetryBotResponse = z.infer<
+  typeof postMeetingRetryBotResponseSchema
+>
+export type PostMeetingRetryBotSuccessResponse = Extract<
+  PostMeetingRetryBotResponse,
+  { success: true }
+>
 
 export {
   baasBotStatusSchema,
   getMeetingsUpcomingResponseSchema,
   meetingBotUiPhaseSchema,
   meetingListItemSchema,
-  postMeetingCaptureResponseSchema
+  postMeetingCaptureResponseSchema,
+  postMeetingRetryBotResponseSchema
 }

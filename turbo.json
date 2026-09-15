@@ -63,6 +63,9 @@
     "db:migrate": {
       "cache": false
     },
+    "db:reset": {
+      "cache": false
+    },
     "db:deploy": {
       "cache": false
     },

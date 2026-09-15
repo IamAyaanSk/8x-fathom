@@ -63,6 +63,7 @@ catalog:
   '@ai-sdk/openai': ^4.0.66
   googleapis: ^181.0.0
   node-cron: ^4.6.0
+  svix: ^2.5.0
 
 allowBuilds:
   '@prisma/engines': true

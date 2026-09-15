@@ -13,7 +13,9 @@ const envZodSchema = z.object({
   PORT: numericStringSchema,
   NODE_ENV: z.enum(['production', 'development', 'test']),
   DATABASE_URL: trimmedStringWithMinLengthOneSchema,
-  MEETINGBAAS_API_KEY: trimmedStringWithMinLengthOneSchema
+  MEETINGBAAS_API_KEY: trimmedStringWithMinLengthOneSchema,
+  MEETINGBAAS_WEBHOOK_SECRET: trimmedStringWithMinLengthOneSchema,
+  BASE_URL: trimmedStringWithMinLengthOneSchema
 })
 
 const env = unsafeValidateEnv({

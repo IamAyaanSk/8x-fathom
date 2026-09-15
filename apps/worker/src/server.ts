@@ -7,10 +7,15 @@ import cron from 'node-cron'
 
 import {
   DISPATCH_CRON_EXPRESSION,
+  PENDING_PROCESSING_CRON_EXPRESSION,
   STATUS_POLL_CRON_EXPRESSION
 } from '#src/constants'
 import { env } from '#src/env'
-import { runDispatchTick, runStatusPollTick } from '#src/scheduler'
+import {
+  runDispatchTick,
+  runPendingProcessingTick,
+  runStatusPollTick
+} from '#src/scheduler'
 
 const app: Express = express()
 const port = env.PORT
@@ -28,6 +33,7 @@ const server = app.listen(port, () => {
 
 void runDispatchTick()
 void runStatusPollTick()
+void runPendingProcessingTick()
 
 const dispatchTask = cron.schedule(
   DISPATCH_CRON_EXPRESSION,
@@ -45,9 +51,18 @@ const statusPollTask = cron.schedule(
   { noOverlap: true }
 )
 
+const pendingProcessingTask = cron.schedule(
+  PENDING_PROCESSING_CRON_EXPRESSION,
+  () => {
+    void runPendingProcessingTick()
+  },
+  { noOverlap: true }
+)
+
 function shutdown() {
   void Promise.resolve(dispatchTask.stop())
     .then(() => statusPollTask.stop())
+    .then(() => pendingProcessingTask.stop())
     .finally(() => {
       server.close(() => {
         process.exit(0)

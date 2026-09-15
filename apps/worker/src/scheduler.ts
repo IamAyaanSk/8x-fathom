@@ -1,6 +1,7 @@
 import { dispatchDueMeetings } from '@repo/meeting-dispatch'
 
 import { env } from '#src/env'
+import { runPendingMeetingProcessing } from '#src/process-pending-meetings'
 import { runActiveBotStatusSync } from '#src/sync-active-bot-status'
 
 function _dispatchCallbackParams() {
@@ -41,4 +42,22 @@ async function runStatusPollTick() {
   }
 }
 
-export { runDispatchTick, runStatusPollTick }
+async function runPendingProcessingTick() {
+  try {
+    const { pickedCount } = await runPendingMeetingProcessing()
+    if (pickedCount === 0) {
+      return
+    }
+    console.log(
+      `Pending processing: picked ${pickedCount} meeting${pickedCount === 1 ? '' : 's'}`
+    )
+  } catch (error) {
+    console.error('Pending processing tick failed', error)
+  }
+}
+
+export {
+  runDispatchTick,
+  runPendingProcessingTick,
+  runStatusPollTick
+}

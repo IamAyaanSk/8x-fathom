@@ -6,7 +6,7 @@ Use this file for repo-wide architecture, boundaries, product domain, and workfl
 
 Rebuild a **working** slice of [fathom.video](https://fathom.video): AI meeting notetaker. A smaller fully-wired path beats a half-wired larger one. Do not expand scope without flagging the tradeoff.
 
-**Shipped path:** Google sign-in → connect Calendar scopes → store upcoming events → auto-dispatch a MeetingBaas **bot** at `event.startTime - 1–2 min` → ongoing-call tab (status, highlight, scratchpad) → MeetingBaas callback into **our** R2 (BYO storage) → worker summary / action items / embeddings → library playback + share. **Q&A chatbot last.**
+**Shipped path:** Google sign-in → connect Calendar scopes → store upcoming events → auto-dispatch a MeetingBaas **bot** at `event.startTime - 1–2 min` → MeetingBaas callback into **our** R2 (BYO storage) → worker summary / action items / embeddings → library playback + share → ongoing-call tab (status, highlight, scratchpad) → **Q&A chatbot last.**
 
 **Auth:** Google-only (no email/password). Calendar is incremental Google scopes (`calendar.events.readonly` / watch-capable readonly) via `linkSocial` after login.
 
@@ -16,8 +16,8 @@ Rebuild a **working** slice of [fathom.video](https://fathom.video): AI meeting 
 
 1. Auth + Connect Calendar
 2. Events / meetings list (upcoming + processed past)
-3. Ongoing call tab — highlight + scratchpad (entire live-capture UX)
-4. Meeting detail / playback — **highest UX leverage** (video, synced transcript, summary, timestamped action items, highlight markers, share via `shareSlug`)
+3. Meeting detail / playback — **highest UX leverage** (video, synced transcript, summary, timestamped action items, highlight markers, share via `shareSlug`); depends on F5 bot dispatch + F7 ingest/AI
+4. Ongoing call tab — highlight + scratchpad (entire live-capture UX; **F6**, second-to-last slice)
 5. Q&A chatbot — RAG over `TranscriptChunk` embeddings (Vercel AI SDK) — **last**
 
 Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Recording), `/share/$shareSlug` (public).
@@ -63,17 +63,19 @@ Replace demo `User` / `Post`. Enable `CREATE EXTENSION vector`. Better Auth core
 
 Implement **one slice per task**. Mark done in this list when the vertical slice works.
 
+**Priority after F4:** table order below (not numeric ID order). Ship bot join (F5) and post-processing (F7) before live-call UX; **F6 is second-to-last** (before F9).
+
 | ID  | Slice                                                               | Status      |
 | --- | ------------------------------------------------------------------- | ----------- |
 | F0  | Context files (this document + cursor rules + README)               | done        |
 | F1  | Schema, pgvector, env, catalog deps                                 | done        |
 | F2  | Google auth, sessions, protected API                                | done        |
 | F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | done        |
-| F4  | Events / library list UI                                            | done |
+| F4  | Events / library list UI                                            | done        |
 | F5  | Worker dispatch `createBot` at start − buffer                       | not started |
-| F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
 | F7  | Baas callback, worker AI, `processingStatus: ready`                 | not started |
 | F8  | Playback + transcript sync + share                                  | not started |
+| F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
 | F9  | Q&A RAG chatbot                                                     | not started |
 
 ## Monorepo

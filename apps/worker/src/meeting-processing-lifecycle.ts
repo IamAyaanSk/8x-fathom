@@ -3,17 +3,20 @@ import { prisma } from '@repo/db'
 
 import { MEETING_PROCESSING_LEASE_MS } from '#src/constants'
 
-function _leaseExpiresAt(): Date {
-  return new Date(Date.now() + MEETING_PROCESSING_LEASE_MS)
+function _leaseExpiresAt(leaseMs: number): Date {
+  return new Date(Date.now() + leaseMs)
 }
 
-async function extendMeetingProcessingLease(meetingId: string): Promise<void> {
+async function extendMeetingProcessingLease(
+  meetingId: string,
+  leaseMs: number = MEETING_PROCESSING_LEASE_MS
+): Promise<void> {
   await prisma.meeting.updateMany({
     where: {
       id: meetingId,
-      processingStatus: 'processing'
+      processingStatus: { in: ['processing', 'importing'] }
     },
-    data: { processingLeaseExpiresAt: _leaseExpiresAt() }
+    data: { processingLeaseExpiresAt: _leaseExpiresAt(leaseMs) }
   })
 }
 
@@ -24,7 +27,7 @@ async function failMeetingProcessing(
   const result = await prisma.meeting.updateMany({
     where: {
       id: meetingId,
-      processingStatus: { in: ['pending', 'processing'] }
+      processingStatus: { in: ['pending', 'processing', 'importing'] }
     },
     data: {
       processingStatus: 'failed',

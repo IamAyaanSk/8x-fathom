@@ -6,12 +6,14 @@ import morgan from 'morgan'
 import cron from 'node-cron'
 
 import {
+  ARTIFACT_IMPORT_CRON_EXPRESSION,
   DISPATCH_CRON_EXPRESSION,
   PENDING_PROCESSING_CRON_EXPRESSION,
   STATUS_POLL_CRON_EXPRESSION
 } from '#src/constants'
 import { env } from '#src/env'
 import {
+  runArtifactImportTick,
   runDispatchTick,
   runPendingProcessingTick,
   runStatusPollTick
@@ -33,6 +35,7 @@ const server = app.listen(port, () => {
 
 void runDispatchTick()
 void runStatusPollTick()
+void runArtifactImportTick()
 void runPendingProcessingTick()
 
 const dispatchTask = cron.schedule(
@@ -51,6 +54,14 @@ const statusPollTask = cron.schedule(
   { noOverlap: true }
 )
 
+const artifactImportTask = cron.schedule(
+  ARTIFACT_IMPORT_CRON_EXPRESSION,
+  () => {
+    void runArtifactImportTick()
+  },
+  { noOverlap: true }
+)
+
 const pendingProcessingTask = cron.schedule(
   PENDING_PROCESSING_CRON_EXPRESSION,
   () => {
@@ -62,6 +73,7 @@ const pendingProcessingTask = cron.schedule(
 function shutdown() {
   void Promise.resolve(dispatchTask.stop())
     .then(() => statusPollTask.stop())
+    .then(() => artifactImportTask.stop())
     .then(() => pendingProcessingTask.stop())
     .finally(() => {
       server.close(() => {

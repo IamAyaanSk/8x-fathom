@@ -7,6 +7,10 @@ import {
   type BaasBotStatus,
   type MeetingProcessingStatus
 } from '@repo/api-contract/baas-bot-status'
+import {
+  mergeBaasSignedArtifactUrls,
+  signedArtifactUrlsFromCompletedData
+} from '@repo/api-contract/meeting-baas-artifacts'
 import type { MeetingBaasWebhookEvent } from '@repo/api-contract/meeting-baas-webhook'
 import { prisma } from '@repo/db'
 import { Webhook, WebhookVerificationError } from 'svix'
@@ -69,7 +73,9 @@ async function _findMeetingForWebhook(params: {
       baasBotId: true,
       baasStatus: true,
       recordingStartedAt: true,
-      processingStatus: true
+      processingStatus: true,
+      baasSignedArtifactUrls: true,
+      _count: { select: { participants: true } }
     }
   })
   if (byBotId) {
@@ -87,7 +93,9 @@ async function _findMeetingForWebhook(params: {
       baasBotId: true,
       baasStatus: true,
       recordingStartedAt: true,
-      processingStatus: true
+      processingStatus: true,
+      baasSignedArtifactUrls: true,
+      _count: { select: { participants: true } }
     }
   })
   if (!byExtraId) {
@@ -97,34 +105,6 @@ async function _findMeetingForWebhook(params: {
     return null
   }
   return byExtraId
-}
-
-function _r2KeyFromSignedUrl(
-  value: string | null | undefined
-): string | undefined {
-  if (!value) {
-    return undefined
-  }
-
-  let pathname: string
-  try {
-    pathname = decodeURIComponent(new URL(value).pathname)
-  } catch {
-    return undefined
-  }
-
-  const withoutSlash = pathname.startsWith('/') ? pathname.slice(1) : pathname
-  if (withoutSlash.length === 0) {
-    return undefined
-  }
-
-  const bucketPrefix = `${env.R2_BUCKET}/`
-  if (withoutSlash.startsWith(bucketPrefix)) {
-    const key = withoutSlash.slice(bucketPrefix.length)
-    return key.length > 0 ? key : undefined
-  }
-
-  return withoutSlash
 }
 
 function _meetingBotState(meeting: {
@@ -139,6 +119,16 @@ function _meetingBotState(meeting: {
     recordingStartedAt: meeting.recordingStartedAt,
     processingStatus: meeting.processingStatus
   }
+}
+
+function _shouldSkipCompletedArtifactImport(
+  processingStatus: MeetingProcessingStatus
+) {
+  return (
+    processingStatus === 'pending' ||
+    processingStatus === 'processing' ||
+    processingStatus === 'ready'
+  )
 }
 
 async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
@@ -183,20 +173,34 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
       return
     }
 
-    const recordingR2Key = _r2KeyFromSignedUrl(event.data.video)
-    const transcriptR2Key = _r2KeyFromSignedUrl(event.data.transcription)
-    const chatMessagesR2Key = _r2KeyFromSignedUrl(event.data.chat_messages)
+    if (_shouldSkipCompletedArtifactImport(meeting.processingStatus)) {
+      return
+    }
+
+    const incomingUrls = signedArtifactUrlsFromCompletedData(event.data)
     const participants = event.data.participants
+
+    if (meeting.processingStatus === 'importing') {
+      await prisma.meeting.update({
+        where: { id: meeting.id },
+        data: {
+          baasStatus: 'completed',
+          baasSignedArtifactUrls: mergeBaasSignedArtifactUrls(
+            meeting.baasSignedArtifactUrls,
+            incomingUrls
+          )
+        }
+      })
+      return
+    }
 
     await prisma.meeting.update({
       where: { id: meeting.id },
       data: {
         baasStatus: 'completed',
-        processingStatus: 'pending',
-        ...(recordingR2Key ? { recordingR2Key } : {}),
-        ...(transcriptR2Key ? { transcriptR2Key } : {}),
-        ...(chatMessagesR2Key ? { chatMessagesR2Key } : {}),
-        ...(participants
+        processingStatus: 'importing',
+        baasSignedArtifactUrls: incomingUrls,
+        ...(participants && meeting._count.participants === 0
           ? {
               participants: {
                 create: participants.map((participant) => ({

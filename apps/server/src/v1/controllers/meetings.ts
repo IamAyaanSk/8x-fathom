@@ -1,4 +1,7 @@
-import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
+import {
+  getMeetingBotUiPhase,
+  type MeetingProcessingStatus
+} from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingsCompletedSuccessResponse,
   GetMeetingsUpcomingSuccessResponse,
@@ -73,7 +76,7 @@ function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
 
 function _dispatchResponseData(
   dispatched: DispatchResult,
-  processingStatus: 'idle' | 'pending' | 'processing' | 'ready' | 'failed'
+  processingStatus: MeetingProcessingStatus
 ) {
   return {
     meetingId: dispatched.meetingId,

@@ -1,6 +1,6 @@
 # 8x fathom AI
 
-Hackathon slice of [fathom.video](https://fathom.video): Google-only login, Calendar sync (Better Auth webhook endpoint + Sync now), auto-dispatch MeetingBaas recording bots, R2 (BYO storage), worker-generated summary/action items, playback + share. Q&A chatbot last.
+Hackathon slice of [fathom.video](https://fathom.video): Google-only login, Calendar sync (Better Auth webhook endpoint + Sync now), auto-dispatch MeetingBaas recording bots, copy completed artifacts into R2, worker-generated summary/action items, playback + share. Q&A chatbot last.
 
 See `AGENTS.md` for product rules, data model, bot status mapping, and the F0–F9 feature tracker.
 

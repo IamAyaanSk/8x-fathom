@@ -1,11 +1,12 @@
 import {
   canDispatchNewBot,
-  mapBaasApiStatus
+  mapBaasApiStatus,
+  type MeetingProcessingStatus
 } from '@repo/api-contract/baas-bot-status'
 import { Prisma, prisma, type BaasBotStatus } from '@repo/db'
 
 import { MEETING_CAPTURE_LEAD_MS } from './capture-window.js'
-import { DISPATCH_BATCH_SIZE, MEETING_BAAS_WEBHOOK_PATH } from './constants.js'
+import { DISPATCH_BATCH_SIZE } from './constants.js'
 import { DispatchError } from './errors.js'
 import { createMeetingBaasClient } from './meeting-baas-client.js'
 
@@ -78,7 +79,7 @@ function _assertCanDispatchNewBot(meeting: {
   baasBotId: string | null
   baasStatus: BaasBotStatus | null
   recordingStartedAt: Date | null
-  processingStatus: 'idle' | 'pending' | 'processing' | 'ready' | 'failed'
+  processingStatus: MeetingProcessingStatus
 }) {
   if (!canDispatchNewBot(meeting)) {
     throw new DispatchError(
@@ -176,7 +177,10 @@ async function _lockNextDueMeetingRow(
 async function _dispatchLockedMeeting(
   tx: Prisma.TransactionClient,
   row: LockedMeetingRow,
-  params: { meetingBaasApiKey: string, transcriptionApiKey: string } & MeetingBaasCallbackParams
+  params: {
+    meetingBaasApiKey: string
+    transcriptionApiKey: string
+  } & MeetingBaasCallbackParams
 ): Promise<DispatchResult> {
   if (row.baasBotId) {
     await tx.meeting.update({
@@ -205,12 +209,12 @@ async function _dispatchLockedMeeting(
     // bot_image:
     //   'https://sdmntprnortheu.oaiusercontent.com/files/00000000-7c30-81f4-8051-01ee58d6142d/raw?se=2026-09-15T16%3A07%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=e4a73326-1d7b-49f6-ba7b-acd74fe5aea6&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-14T20%3A20%3A21Z&ske=2026-09-15T20%3A20%3A21Z&sks=b&skv=2026-02-06&sig=8QrblDuze1/mk5t8qTnBki4dORGsJ8oT9srlRkb6q4k%3D',
     transcription_config: {
-  provider: 'deepgram',
-  api_key: params.transcriptionApiKey,
-  custom_params: {    
-    detect_language: true
-  }
-}
+      provider: 'deepgram',
+      api_key: params.transcriptionApiKey,
+      custom_params: {
+        detect_language: true
+      }
+    }
   })
 
   if (!createResult.success) {

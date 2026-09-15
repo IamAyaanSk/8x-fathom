@@ -59,6 +59,7 @@ const TERMINAL_BAAS_STATUSES: BaasBotStatus[] = [
 
 const MEETING_PROCESSING_STATUSES = [
   'idle',
+  'importing',
   'pending',
   'processing',
   'ready',
@@ -139,6 +140,7 @@ function canDispatchNewBot(meeting: MeetingBotStateFields): boolean {
     return false
   }
   if (
+    meeting.processingStatus === 'importing' ||
     meeting.processingStatus === 'pending' ||
     meeting.processingStatus === 'processing' ||
     meeting.processingStatus === 'ready'
@@ -176,6 +178,7 @@ function getMeetingBotUiPhase(
   }
   if (
     meeting.baasStatus === 'completed' ||
+    meeting.processingStatus === 'importing' ||
     meeting.processingStatus === 'pending' ||
     meeting.processingStatus === 'processing'
   ) {

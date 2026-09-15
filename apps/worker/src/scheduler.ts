@@ -1,6 +1,7 @@
 import { dispatchDueMeetings } from '@repo/meeting-dispatch'
 
 import { env } from '#src/env'
+import { runImportingMeetingArtifacts } from '#src/process-importing-meetings'
 import { runPendingMeetingProcessing } from '#src/process-pending-meetings'
 import { runActiveBotStatusSync } from '#src/sync-active-bot-status'
 
@@ -41,6 +42,20 @@ async function runStatusPollTick() {
   }
 }
 
+async function runArtifactImportTick() {
+  try {
+    const { pickedCount } = await runImportingMeetingArtifacts()
+    if (pickedCount === 0) {
+      return
+    }
+    console.log(
+      `Artifact import: picked ${pickedCount} meeting${pickedCount === 1 ? '' : 's'}`
+    )
+  } catch (error) {
+    console.error('Artifact import tick failed', error)
+  }
+}
+
 async function runPendingProcessingTick() {
   try {
     const { pickedCount } = await runPendingMeetingProcessing()
@@ -55,4 +70,9 @@ async function runPendingProcessingTick() {
   }
 }
 
-export { runDispatchTick, runPendingProcessingTick, runStatusPollTick }
+export {
+  runArtifactImportTick,
+  runDispatchTick,
+  runPendingProcessingTick,
+  runStatusPollTick
+}

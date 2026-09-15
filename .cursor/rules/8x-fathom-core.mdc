@@ -5,13 +5,13 @@ alwaysApply: true
 
 # Core project rules
 
-Read `AGENTS.md` for full architecture. Follow these on every task:
+Read `AGENTS.md` for architecture **and product/domain** (Fathom slice, feature tracker F0–F9). Follow these on every task:
 
 - **Monorepo**: pnpm workspaces + Turborepo. Shared versions via `catalog:` in `pnpm-workspace.yaml`.
 - **Packages**: `@repo/*` names. Apps must not be imported from packages.
 - **ESM + NodeNext**: `"type": "module"`, strict TypeScript from `@repo/typescript-config/base.json`.
 - **Quality**: oxlint (`pnpm lint`) and oxfmt (`pnpm format`). Match existing style: no semicolons, single quotes, named exports, `import type` where applicable.
 - **Env**: Validate with `@repo/env` `unsafeValidateEnv`. Declare new Turbo task env vars in `turbo.json`.
-- **Scope**: Smallest correct change; extend existing patterns (users flow is the reference implementation).
-- **Conventions**: See `code-conventions.mdc` and `AGENTS.md` § Code conventions (strict).
+- **Scope**: Smallest correct change; one feature-tracker slice at a time. API wiring still follows the existing users flow until domain routes exist.
+- **Conventions**: See `code-conventions.mdc` and `AGENTS.md` § Code conventions (strict). Do not weaken them for speed.
 - **Secrets**: Never commit `.env` or credentials.

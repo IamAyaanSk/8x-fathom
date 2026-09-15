@@ -27,6 +27,11 @@ Type controllers with `*SuccessResponse` from the contract.
 - Controllers: async, `try/catch`, `next(error)` on failure.
 - DB: `import { prisma } from '@repo/db'` only here (or server-local services).
 - Imports: `#src/*` per `apps/server/package.json`.
+- **Better Auth:** `toNodeHandler(auth)` on `/api/auth/*splat` (Express 5) **before** `json()` / `body-parser`. Session via `fromNodeHeaders` + `auth.api.getSession`. Google-only; `accessType: 'offline'`. Calendar tokens: `auth.api.getAccessToken`.
+- **Calendar inbound webhook:** Better Auth plugin + `createAuthEndpoint` (not a one-off Express route). After Calendar scopes, Google `events.watch` → that endpoint. Incremental sync with `syncToken`. Sync now / page load remain required fallbacks. MeetingBaas calendar APIs are forbidden.
+- **MeetingBaas:** `@meeting-baas/sdk` v2 **bots only** (`createBot`, `getBotStatus`). Callbacks on a dedicated public path (verify secret). BYO storage is R2; we presign reads.
+- **Worker:** second entry `apps/server/src/worker.ts` (Turbo/process separate from HTTP). Scheduler: due `CalendarEvent`s → Meeting row → `createBot`. Processor: poll `Meeting.processingStatus` — no jobs table.
+- Shared bot UI mapping lives in `api-contract` (see `AGENTS.md` § Bot dispatch & status).
 
 ## api-client
 
@@ -37,3 +42,4 @@ Type controllers with `*SuccessResponse` from the contract.
 ## Prisma
 
 - Migrations and schema live in `packages/database`. Run generate before dev/build (`db:generate`).
+- Domain: Better Auth tables + `CalendarWatch`, `CalendarEvent`, `Meeting`, `Highlight`, `ActionItem`, `TranscriptChunk` (pgvector). Replace demo `User`/`Post`. Details in `AGENTS.md` § Data model.

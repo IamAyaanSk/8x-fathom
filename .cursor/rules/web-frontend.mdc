@@ -9,9 +9,17 @@ alwaysApply: false
 ## Router & data
 
 - File routes in `apps/web/src/routes/`. Do not edit `routeTree.gen.ts`.
+- Product routes: `/login` (Google-only), `/` (upcoming events + library), `/meetings/$id` (Ongoing | Recording tabs), `/share/$shareSlug` (public, no auth).
 - Root route provides `queryClient` context (`__root.tsx`).
 - Prefetch in route `loader` with `queryClient.ensureQueryData(xxxQueryOptions())`; read data with hooks from `@repo/api-client`.
 - Honor `@tanstack/router/create-route-property-order` (oxlint).
+- Auth client: `better-auth/react` (or `/client`) against `/api/auth`. Connect Calendar = `linkSocial` extra Google Calendar scopes.
+
+## Product UX (Fathom slice)
+
+- **List first**, then ongoing call, then **playback as the polish target** (video + synced transcript + summary + timestamped action items + highlight markers + share). Q&A last.
+- Ongoing: map `baasStatus` with the shared contract mapper. Honest labels (`Starting soon`, `Joining…`, `In call — recording`, `Call ended, processing…`). Poll ~5–10s while joining, ~60s in call. Never a generic spinner across transitions. Failures immediately. Elapsed time, not live transcript. Highlight = POST `{ timestampSec, note? }`. Scratchpad = debounced autosave.
+- No manual start-capture control. Semantic tokens only (see Theming).
 
 ## API wiring
 

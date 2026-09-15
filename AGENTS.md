@@ -1,6 +1,80 @@
 # Agent context — 8x fathom AI
 
-Use this file for repo-wide architecture, boundaries, and workflows. Product description and domain rules will be added later.
+Use this file for repo-wide architecture, boundaries, product domain, and workflows. Coding conventions in this file stay in force; product scope is below.
+
+## Product — Fathom slice (hackathon)
+
+Rebuild a **working** slice of [fathom.video](https://fathom.video): AI meeting notetaker. A smaller fully-wired path beats a half-wired larger one. Do not expand scope without flagging the tradeoff.
+
+**Shipped path:** Google sign-in → connect Calendar scopes → store upcoming events → auto-dispatch a MeetingBaas **bot** at `event.startTime - 1–2 min` → ongoing-call tab (status, highlight, scratchpad) → MeetingBaas callback into **our** R2 (BYO storage) → worker summary / action items / embeddings → library playback + share. **Q&A chatbot last.**
+
+**Auth:** Google-only (no email/password). Calendar is incremental Google scopes (`calendar.events.readonly` / watch-capable readonly) via `linkSocial` after login.
+
+**Out of scope:** MeetingBaas calendar-connection APIs; live/partial transcript; manual “start capture”; a jobs/queue table; extra surfaces beyond the list below.
+
+### Frontend surfaces (build order)
+
+1. Auth + Connect Calendar
+2. Events / meetings list (upcoming + processed past)
+3. Ongoing call tab — highlight + scratchpad (entire live-capture UX)
+4. Meeting detail / playback — **highest UX leverage** (video, synced transcript, summary, timestamped action items, highlight markers, share via `shareSlug`)
+5. Q&A chatbot — RAG over `TranscriptChunk` embeddings (Vercel AI SDK) — **last**
+
+Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Recording), `/share/$shareSlug` (public).
+
+### Bot dispatch & status
+
+- Bots are dispatched **automatically** by the worker scheduler. No start-capture button.
+- Skip `CalendarEvent` rows with no `meetingUrl` (Meet / Zoom / Teams).
+- Store MeetingBaas **raw** status on `Meeting.baasStatus`. Derive UI from one shared mapper in `packages/api-contract` (imported by server and web).
+
+| UI state | MeetingBaas `baasStatus` |
+| --- | --- |
+| Starting soon | Our pre-`createBot` state (`baasBotId` null) |
+| Joining… | `queued`, `pickup_delayed`, `joining_call`, `in_waiting_room`, `in_waiting_for_host` |
+| In call — recording | `in_call_recording`, `recording_resumed`, `in_call_not_recording` |
+| Call ended, processing | `call_ended`, `recording_succeeded`, `transcribing` |
+| Ready | `completed` |
+| Failed to join | `bot_rejected`, `invalid_meeting_url`, `meeting_error`, `waiting_room_timeout`, `bot_removed_too_early`, any `MEET_LOGIN_*` |
+| Failed processing | `failed`, `transcription_failed`, `recording_failed` |
+
+**Ongoing call:** active once `createBot` has been called. Poll `GET /bots/{id}/status` every ~5–10s in Joining…; ~60s in In call. Distinct honest labels — never a blank spinner. Failures shown immediately. No live transcript — show elapsed recording time. Highlight click writes `{ meetingId, timestampSec, note? }`. Scratchpad: textarea + debounced autosave.
+
+### Integrations
+
+- **Better Auth** on Express: mount `toNodeHandler(auth)` at `/api/auth/*splat` (**Express 5**) **before** `express.json()`. Prisma adapter against `@repo/db`. `accessType: 'offline'` + consent so we keep a refresh token. Use `auth.api.getAccessToken({ providerId: 'google' })` for Calendar API calls. Docs: [Express](https://better-auth.com/docs/integrations/express), [Google](https://better-auth.com/docs/authentication/google), [Prisma](https://better-auth.com/docs/adapters/prisma), [extra scopes](https://better-auth.com/docs/concepts/oauth). Prefer Better Auth MCP when available.
+- **Calendar webhooks via Better Auth:** register an inbound webhook as a Better Auth **plugin endpoint** (`createAuthEndpoint`, e.g. `/calendar/webhook` under `/api/auth`). After Calendar scopes are granted, call Google Calendar `events.watch` with `address` = that Better Auth URL. On ping, incremental `events.list` with `syncToken`. Also support **Sync now** and sync on list page load (needed locally without a public HTTPS URL). Do **not** use MeetingBaas calendar webhooks.
+- **MeetingBaas v2 Bot API only** (`@meeting-baas/sdk`, `api_version: 'v2'`): `createBot`, `getBotStatus`. Per-bot `callback_config` to our public URL; `extra.meetingId` for correlation; transcription on. [BYO storage](https://docs.meetingbaas.com/bring-your-own-storage) configured once (dashboard or `PUT /v2/storage-config`) to **our R2**. R2 CORS must allow **our** web origin (GET/HEAD). Playback via `@aws-sdk/client-s3` + presigner.
+- **AI:** Vercel AI SDK in the worker after artifacts exist. Chat is F9.
+- **Worker:** `apps/server/src/worker.ts` — **second process** (not in-process with Express). Polls `Meeting.processingStatus` (no jobs table). Same process runs the **dispatch scheduler** (due events → `createBot`).
+
+### Data model (Prisma)
+
+Replace demo `User` / `Post`. Enable `CREATE EXTENSION vector`. Better Auth core tables (`user`, `session`, `account`, `verification`) via generate + adapter.
+
+- `CalendarWatch` — per user: `channelId`, `resourceId`, `expiration`, `syncToken`
+- `CalendarEvent` — `userId`, `googleEventId` (unique), title, start/end, `meetingUrl` (nullable), `htmlLink`
+- `Meeting` — `userId`, `calendarEventId`, `baasBotId`, raw `baasStatus`, `processingStatus` (`idle` \| `pending` \| `processing` \| `ready` \| `failed`), `shareSlug`, `scratchpad`, R2 keys, `recordingStartedAt`, summary fields
+- `Highlight` — `meetingId`, `timestampSec`, `note?`
+- `ActionItem` — `meetingId`, `text`, `timestampSec?`
+- `TranscriptChunk` — `meetingId`, times, `speaker?`, `text`, `embedding` (`Unsupported("vector")`; similarity via `$queryRaw`)
+
+### Feature tracker
+
+Implement **one slice per task**. Mark done in this list when the vertical slice works.
+
+| ID | Slice | Status |
+| --- | --- | --- |
+| F0 | Context files (this document + cursor rules + README) | done |
+| F1 | Schema, pgvector, env, catalog deps | not started |
+| F2 | Google auth, sessions, protected API | not started |
+| F3 | Calendar connect, list/store events, Better Auth webhook + Sync now | not started |
+| F4 | Events / library list UI | not started |
+| F5 | Worker dispatch `createBot` at start − buffer | not started |
+| F6 | Ongoing call: status poll, highlight, scratchpad | not started |
+| F7 | Baas callback, worker AI, `processingStatus: ready` | not started |
+| F8 | Playback + transcript sync + share | not started |
+| F9 | Q&A RAG chatbot | not started |
 
 ## Monorepo
 
@@ -14,7 +88,7 @@ Use this file for repo-wide architecture, boundaries, and workflows. Product des
 | Path | Role |
 |------|------|
 | `apps/web` | Vite 8, React 19, TanStack Router (file routes), TanStack Query |
-| `apps/server` | Express 5 API at `/api/v1` |
+| `apps/server` | Express 5 API at `/api/v1`; Better Auth at `/api/auth`; worker entry `src/worker.ts` |
 | `packages/api-contract` | Zod schemas + inferred types for API payloads |
 | `packages/api-client` | Axios calls + TanStack Query `queryOptions` / hooks |
 | `packages/database` (`@repo/db`) | Prisma 7 + PostgreSQL (`PrismaPg` adapter) |

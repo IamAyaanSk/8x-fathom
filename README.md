@@ -1,5 +1,8 @@
 # 8x fathom AI
 
+Hackathon slice of [fathom.video](https://fathom.video): Google-only login, Calendar sync (Better Auth webhook endpoint + Sync now), auto-dispatch MeetingBaas recording bots, R2 (BYO storage), worker-generated summary/action items, playback + share. Q&A chatbot last.
+
+See `AGENTS.md` for product rules, data model, bot status mapping, and the F0–F9 feature tracker.
 
 ## Tech Stack
 
@@ -9,8 +12,11 @@
 | Web Frontend    | Vite 8, React 19, Tailwind CSS 4, shadcn/ui    |
 | Routing (Web)   | TanStack Router (file-based, code-split)       |
 | Data Fetching   | TanStack Query (React Query)                   |
-| API Server      | Express 5, helmet, cors, morgan                |
-| Database        | Prisma 7, PostgreSQL (via `pg` driver adapter) |
+| API Server      | Express 5, Better Auth, helmet, cors, morgan   |
+| Auth            | Better Auth (Google OAuth + Calendar scopes)   |
+| Meetings        | MeetingBaas Bot API v2 + Cloudflare R2         |
+| AI              | Vercel AI SDK (worker; chat last)              |
+| Database        | Prisma 7, PostgreSQL + pgvector                |
 | Validation      | Zod 4                                          |
 | Language        | TypeScript 6 (ESM, `NodeNext`)                 |
 | Linting         | oxlint (with React, TS, import, Turbo plugins) |
@@ -25,7 +31,7 @@
 ```
 ├── apps/
 │   ├── web/                  # Vite + React web app
-│   ├── server/               # Express API server
+│   ├── server/               # Express API + Better Auth; worker in src/worker.ts
 │
 ├── packages/
 │   ├── ui-web/               # shadcn/ui components + styles (shared UI library)

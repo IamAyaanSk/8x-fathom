@@ -49,11 +49,6 @@
       "persistent": true,
       "dependsOn": ["^db:generate"]
     },
-    "dev:worker": {
-      "cache": false,
-      "persistent": true,
-      "dependsOn": ["^db:generate"]
-    },
 
     "start": {
       "persistent": true

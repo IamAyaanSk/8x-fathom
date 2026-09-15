@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "dev:worker": "tsx watch --conditions=development ./src/server.ts",
+    "dev": "tsx watch --conditions=development ./src/server.ts",
     "clean": "rimraf dist",
     "build": "tsc",
     "start": "node ./dist/server.js",

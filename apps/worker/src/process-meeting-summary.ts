@@ -1,10 +1,14 @@
 import '#src/env'
 
-import { generateMeetingSummary } from '@repo/ai'
+import {
+  formatMeetingActionItemText,
+  generateMeetingActionItems,
+  generateMeetingSummary
+} from '@repo/ai'
 import { prisma } from '@repo/db'
 
-import { transcriptTextFromMeetingBaasJson } from '#src/meeting-transcript'
 import { getR2ObjectUtf8 } from '#src/r2-client'
+import { formatMeetingBaasTranscriptTextFromJson } from '@repo/api-contract/meeting-baas-transcript'
 
 async function processMeetingSummary(meetingId: string): Promise<void> {
   const meeting = await prisma.meeting.findUnique({
@@ -31,7 +35,7 @@ async function processMeetingSummary(meetingId: string): Promise<void> {
   }
 
   const rawTranscript = await getR2ObjectUtf8(meeting.transcriptR2Key)
-  const transcript = transcriptTextFromMeetingBaasJson(rawTranscript)
+  const transcript = formatMeetingBaasTranscriptTextFromJson(rawTranscript)
 
   const { summary } = await generateMeetingSummary({
     transcript,
@@ -39,9 +43,32 @@ async function processMeetingSummary(meetingId: string): Promise<void> {
     template: 'enhanced'
   })
 
-  await prisma.meeting.update({
-    where: { id: meeting.id },
-    data: { summary }
+  const { actionItems } = await generateMeetingActionItems({
+    transcript,
+    meetingTitle: meeting.title
+  })
+
+  await prisma.$transaction(async (tx) => {
+    await tx.meeting.update({
+      where: { id: meeting.id },
+      data: { summary }
+    })
+
+    await tx.actionItem.deleteMany({
+      where: { meetingId: meeting.id }
+    })
+
+    if (actionItems.length === 0) {
+      return
+    }
+
+    await tx.actionItem.createMany({
+      data: actionItems.map((item) => ({
+        meetingId: meeting.id,
+        text: formatMeetingActionItemText(item),
+        timestampSec: item.timestampSec
+      }))
+    })
   })
 }
 

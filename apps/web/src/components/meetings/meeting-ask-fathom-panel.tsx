@@ -1,6 +1,5 @@
 import { useChat } from '@ai-sdk/react'
 import type { MeetingAssistantUIMessage } from '@repo/ai'
-import type { MeetingAssistantScope } from '@repo/api-contract/v1/meeting-assistant'
 import { Bubble, BubbleContent } from '@repo/ui-web/components/bubble'
 import { Button } from '@repo/ui-web/components/button'
 import { Marker, MarkerContent } from '@repo/ui-web/components/marker'
@@ -17,13 +16,6 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport
 } from '@repo/ui-web/components/message-scroller'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@repo/ui-web/components/select'
 import { Textarea } from '@repo/ui-web/components/textarea'
 import { cn } from '@repo/ui-web/lib/utils'
 import { DefaultChatTransport } from 'ai'
@@ -66,9 +58,10 @@ const STARTER_QUESTIONS = [
 ] as const
 
 type MeetingAskFathomPanelProps = {
-  meetingId: string
-  meetingTitle: string
+  assistantApiUrl: string
   disabledReason?: string
+  className?: string
+  showIntro?: boolean
 }
 
 function getMessageText(message: MeetingAssistantUIMessage) {
@@ -146,10 +139,7 @@ function AssistantMessage({ message }: { message: MeetingAssistantUIMessage }) {
             )
           }
 
-          if (
-            part.type === 'tool-searchSingleMeetBase' ||
-            part.type === 'tool-searchAllMeetBase'
-          ) {
+          if (part.type === 'tool-searchAllMeetBase') {
             if (
               part.state === 'input-streaming' ||
               part.state === 'input-available'
@@ -181,23 +171,23 @@ function AssistantMessage({ message }: { message: MeetingAssistantUIMessage }) {
 }
 
 function MeetingAskFathomPanel({
-  meetingId,
-  meetingTitle,
-  disabledReason
+  assistantApiUrl,
+  disabledReason,
+  className,
+  showIntro = true
 }: MeetingAskFathomPanelProps) {
   const [input, setInput] = useState('')
-  const [scope, setScope] = useState<MeetingAssistantScope>('single')
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport<MeetingAssistantUIMessage>({
-        api: `/api/v1/meetings/${meetingId}/assistant`,
+        api: assistantApiUrl,
         credentials: 'include',
         headers: {
           'ngrok-skip-browser-warning': 'true'
         }
       }),
-    [meetingId]
+    [assistantApiUrl]
   )
 
   const { error, messages, regenerate, sendMessage, status, stop } =
@@ -206,8 +196,6 @@ function MeetingAskFathomPanel({
     })
 
   const busy = status === 'submitted' || status === 'streaming'
-  const title =
-    meetingTitle.trim().length > 0 ? meetingTitle : 'Untitled meeting'
 
   let activity: string | null = null
   if (error) {
@@ -223,7 +211,7 @@ function MeetingAskFathomPanel({
     if (!message || message.length > MAX_MESSAGE_LENGTH || busy) {
       return
     }
-    void sendMessage({ text: message }, { body: { scope } })
+    void sendMessage({ text: message })
     setInput('')
   }
 
@@ -231,7 +219,7 @@ function MeetingAskFathomPanel({
     if (busy) {
       return
     }
-    void sendMessage({ text: question }, { body: { scope } })
+    void sendMessage({ text: question })
   }
 
   if (disabledReason) {
@@ -243,29 +231,14 @@ function MeetingAskFathomPanel({
   }
 
   return (
-    <div className="flex min-h-[32rem] flex-col">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted-foreground text-sm">
-          Ask about {title} or all of your processed calls.
+    <div
+      className={cn('flex min-h-[32rem] flex-col', className)}
+    >
+      {showIntro ? (
+        <p className="text-muted-foreground mb-4 text-sm">
+          Ask about your processed calls — answers search across your library.
         </p>
-        <Select
-          value={scope}
-          onValueChange={(value) => {
-            if (value === 'single' || value === 'all') {
-              setScope(value)
-            }
-          }}
-          disabled={busy}
-        >
-          <SelectTrigger aria-label="Answer scope" size="sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="single">This call</SelectItem>
-            <SelectItem value="all">All calls</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      ) : null}
 
       <MessageScrollerProvider
         autoScroll
@@ -285,7 +258,7 @@ function MeetingAskFathomPanel({
                       What would you like to know?
                     </p>
                     <p className="text-muted-foreground mt-1 max-w-64 text-xs leading-5">
-                      Pick a question or ask anything about this meeting.
+                      Pick a question or ask anything about your meetings.
                     </p>
                   </div>
                   <div className="mt-6 grid w-full grid-cols-2 gap-2.5">
@@ -351,7 +324,7 @@ function MeetingAskFathomPanel({
                       <Button
                         variant="destructive"
                         onClick={() => {
-                          void regenerate({ body: { scope } })
+                          void regenerate()
                         }}
                         size="icon-xs"
                         aria-label="Retry"
@@ -392,7 +365,7 @@ function MeetingAskFathomPanel({
           }}
           maxLength={MAX_MESSAGE_LENGTH}
           disabled={busy}
-          placeholder="Ask about this meeting…"
+          placeholder="Ask about your meetings…"
           aria-label="Message Ask Fathom"
           className="min-h-16 resize-none border-0 bg-transparent px-2 py-1 shadow-none focus-visible:ring-0"
         />

@@ -59,38 +59,6 @@ async function _queryVector(query: string): Promise<Prisma.Sql> {
   return Prisma.raw(`'${vectorLiteral}'::vector`)
 }
 
-async function searchSingleMeetingTranscripts({
-  userId,
-  meetingId,
-  query,
-  topK
-}: {
-  userId: string
-  meetingId: string
-  query: string
-  topK?: number
-}): Promise<MeetingRagSearchResult> {
-  const limit = _resolveTopK(topK)
-  const queryVector = await _queryVector(query)
-
-  const rows = await prisma.$queryRaw<TranscriptSearchRow[]>`
-    SELECT
-      m.title AS "meetingTitle",
-      tc."startSec" AS "startSec",
-      tc."endSec" AS "endSec",
-      tc.speaker AS speaker,
-      tc.text AS text
-    FROM transcript_chunk tc
-    INNER JOIN meeting m ON m.id = tc."meetingId"
-    WHERE m."userId" = ${userId}
-      AND tc."meetingId" = ${meetingId}
-    ORDER BY tc.embedding <=> ${queryVector}
-    LIMIT ${limit}
-  `
-
-  return _rowsToSearchResult(rows)
-}
-
 async function searchAllMeetingTranscripts({
   userId,
   query,
@@ -121,28 +89,12 @@ async function searchAllMeetingTranscripts({
   return _rowsToSearchResult(rows)
 }
 
-function createMeetingRagSearchDeps({
-  userId,
-  meetingId
-}: {
-  userId: string
-  meetingId: string
-}): {
-  searchSingleMeetBase: (
-    input: MeetingRagSearchInput
-  ) => Promise<MeetingRagSearchResult>
+function createMeetingRagSearchDeps({ userId }: { userId: string }): {
   searchAllMeetBase: (
     input: MeetingRagSearchInput
   ) => Promise<MeetingRagSearchResult>
 } {
   return {
-    searchSingleMeetBase: (input) =>
-      searchSingleMeetingTranscripts({
-        userId,
-        meetingId,
-        query: input.query,
-        topK: input.topK
-      }),
     searchAllMeetBase: (input) =>
       searchAllMeetingTranscripts({
         userId,

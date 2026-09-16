@@ -11,9 +11,11 @@ import {
   type MeetingRagSearchDeps,
   type MeetingRagTools
 } from '../tools/meeting-rag-tools.js'
-import { buildMeetingAssistantInstructions } from './meeting-assistant-prompt.js'
+import {
+  buildMeetingAssistantInstructions,
+  type MeetingAssistantContext
+} from './meeting-assistant-prompt.js'
 
-type MeetingAssistantScope = 'single' | 'all'
 type MeetingAssistantUIMessage = UIMessage<
   never,
   never,
@@ -21,11 +23,11 @@ type MeetingAssistantUIMessage = UIMessage<
 >
 
 function createMeetingAssistantAgent({
-  scope,
+  context,
   meetingTitle,
   deps
 }: {
-  scope: MeetingAssistantScope
+  context: MeetingAssistantContext
   meetingTitle: string
   deps: MeetingRagSearchDeps
 }): ToolLoopAgent<never, MeetingRagTools> {
@@ -35,15 +37,14 @@ function createMeetingAssistantAgent({
     id: 'ask-8x-fathom',
     model: llmModel,
     instructions: buildMeetingAssistantInstructions({
-      scope,
+      context,
       meetingTitle
     }),
     tools,
-    activeTools:
-      scope === 'single' ? ['searchSingleMeetBase'] : ['searchAllMeetBase'],
+    activeTools: ['searchAllMeetBase'],
     stopWhen: stepCountIs(5)
   })
 }
 
 export { createMeetingAssistantAgent }
-export type { MeetingAssistantScope, MeetingAssistantUIMessage }
+export type { MeetingAssistantContext, MeetingAssistantUIMessage }

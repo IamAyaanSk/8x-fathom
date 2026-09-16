@@ -9,7 +9,7 @@ export {
 } from './agents/action-items-agent.js'
 export {
   createMeetingAssistantAgent,
-  type MeetingAssistantScope,
+  type MeetingAssistantContext,
   type MeetingAssistantUIMessage
 } from './agents/meeting-assistant-agent.js'
 export {

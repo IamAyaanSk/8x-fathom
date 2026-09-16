@@ -89,7 +89,7 @@ function MeetingCallsTabs({
       <div className="flex flex-wrap items-end justify-between gap-4 gap-y-3">
         <MeetingCallsTabBar />
         {toolbarEnd ? (
-          <div className="flex shrink-0 items-center pb-1">{toolbarEnd}</div>
+          <div className="flex shrink-0 items-center gap-2 pb-1">{toolbarEnd}</div>
         ) : null}
       </div>
 

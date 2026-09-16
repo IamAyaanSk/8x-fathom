@@ -1,7 +1,7 @@
 const GOOGLE_CALENDAR_EVENTS_READONLY_SCOPE =
   'https://www.googleapis.com/auth/calendar.events.readonly'
 
-const CALENDAR_SYNC_WINDOW_DAYS = 1
+const CALENDAR_SYNC_WINDOW_DAYS = 2
 
 const PRIMARY_CALENDAR_ID = 'primary'
 

@@ -14,10 +14,12 @@ import { CalendarDays, Loader2, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 
 import { GoogleMark } from '#components/auth/google-mark'
+import { MeetingAskFathomSheet } from '#components/meetings/meeting-ask-fathom-sheet'
 import { MeetingCallsTabs } from '#components/meetings/meeting-calls-tabs'
 import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
-import { categorizeMeetingsForTabs } from '#lib/meeting-call-tabs'
+import { categorizeMeetingsForTabs, isReadyCall } from '#lib/meeting-call-tabs'
+import { LIBRARY_MEETING_ASSISTANT_API } from '#lib/meeting-assistant-api'
 
 const GOOGLE_CALENDAR_EVENTS_READONLY_SCOPE =
   'https://www.googleapis.com/auth/calendar.events.readonly'
@@ -179,6 +181,13 @@ function HomePage() {
     completedError ||
     (upcomingData != null && !upcomingData.success) ||
     (completedData != null && !completedData.success)
+  const hasReadyCallsForAssistant = categories.myCalls.some(isReadyCall)
+  const askFathomDisabledReason =
+    meetingsLoading || meetingsError
+      ? 'Ask Fathom is available after your calls load.'
+      : hasReadyCallsForAssistant
+        ? undefined
+        : 'Ask Fathom is available after at least one call is processed.'
 
   function handleRefetchMeetings() {
     void refetchUpcoming()
@@ -205,6 +214,16 @@ function HomePage() {
     </Button>
   )
 
+  const toolbarEnd = (
+    <>
+      <MeetingAskFathomSheet
+        assistantApiUrl={LIBRARY_MEETING_ASSISTANT_API}
+        disabledReason={askFathomDisabledReason}
+      />
+      {syncButton}
+    </>
+  )
+
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-4 pb-8 sm:px-6 sm:pt-5">
       <section className="flex flex-col gap-4">
@@ -214,7 +233,7 @@ function HomePage() {
           isError={meetingsError}
           nowMs={now}
           onRetry={handleRefetchMeetings}
-          toolbarEnd={syncButton}
+          toolbarEnd={toolbarEnd}
         />
         {syncMutation.isError ? (
           <p className="text-destructive text-sm">Could not sync calendar.</p>

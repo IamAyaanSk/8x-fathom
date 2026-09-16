@@ -36,9 +36,6 @@ type MeetingRagSearchInput = z.infer<typeof meetingRagSearchInputSchema>
 type MeetingRagSearchResult = z.infer<typeof meetingRagSearchResultSchema>
 
 type MeetingRagSearchDeps = {
-  searchSingleMeetBase: (
-    input: MeetingRagSearchInput
-  ) => Promise<MeetingRagSearchResult>
   searchAllMeetBase: (
     input: MeetingRagSearchInput
   ) => Promise<MeetingRagSearchResult>
@@ -46,7 +43,6 @@ type MeetingRagSearchDeps = {
 
 type MeetingRagTool = Tool<MeetingRagSearchInput, MeetingRagSearchResult>
 type MeetingRagTools = {
-  searchSingleMeetBase: MeetingRagTool
   searchAllMeetBase: MeetingRagTool
 }
 
@@ -58,22 +54,14 @@ function _withDefaultTopK(input: MeetingRagSearchInput): MeetingRagSearchInput {
 }
 
 function createMeetingRagTools(deps: MeetingRagSearchDeps): MeetingRagTools {
-  const searchSingleMeetBase = tool({
-    description:
-      'Search the current meeting transcript for passages relevant to the question. Use this before answering questions about this call.',
-    inputSchema: meetingRagSearchInputSchema,
-    execute: async (input) => deps.searchSingleMeetBase(_withDefaultTopK(input))
-  })
-
   const searchAllMeetBase = tool({
     description:
-      'Search transcripts across the user processed meetings for passages relevant to the question. Use this before answering questions about all calls.',
+      'Search transcripts across the user processed meetings for passages relevant to the question. Call this before any factual answer about meeting content.',
     inputSchema: meetingRagSearchInputSchema,
     execute: async (input) => deps.searchAllMeetBase(_withDefaultTopK(input))
   })
 
   return {
-    searchSingleMeetBase,
     searchAllMeetBase
   }
 }

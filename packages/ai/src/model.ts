@@ -2,18 +2,11 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import type { EmbeddingModel, LanguageModel } from 'ai'
 import { createWorkersAI } from 'workers-ai-provider'
 
+// Use the Workers AI REST API directly. The AI Gateway response shape does not
+// match what workers-ai-provider expects (embeddings miss `result`; chat misses
+// OpenAI-style `choices`), which surfaces as "Cannot read properties of
+// undefined (reading 'choices')".
 const cloudflareAI = createWorkersAI({
-  apiKey: `${process.env.CLOUDFLARE_API_TOKEN}`,
-  gateway: {
-    id: `${process.env.CLOUDFLARE_API_GATEWAY}`
-  },
-  accountId: `${process.env.CLOUDFLARE_ACCOUNT_ID}`
-})
-
-// Separate instance without gateway for embeddings — the gateway endpoint
-// returns a different response shape that workers-ai-provider doesn't handle
-// correctly for embedding calls (missing `result` wrapper).
-const cloudflareAIDirect = createWorkersAI({
   apiKey: `${process.env.CLOUDFLARE_API_TOKEN}`,
   accountId: `${process.env.CLOUDFLARE_ACCOUNT_ID}`
 })
@@ -31,5 +24,5 @@ export const llmModel: LanguageModel =
 
 export const embeddingModel: EmbeddingModel =
   process.env.NODE_ENV === 'production'
-    ? cloudflareAIDirect.textEmbeddingModel('@cf/qwen/qwen3-embedding-0.6b')
+    ? cloudflareAI.textEmbeddingModel('@cf/qwen/qwen3-embedding-0.6b')
     : lmstudio.embeddingModel('text-embedding-qwen3-embedding-0.6b')

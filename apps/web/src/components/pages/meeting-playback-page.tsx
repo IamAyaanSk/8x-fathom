@@ -145,7 +145,10 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
                     : null}
                 </p>
               </div>
-              <MeetingLiveCapturePanel meeting={meeting} meetingId={meetingId} />
+              <MeetingLiveCapturePanel
+                meeting={meeting}
+                meetingId={meetingId}
+              />
             </div>
             <div className="hidden min-w-0 flex-col gap-4 lg:flex">
               {recordingColumn}

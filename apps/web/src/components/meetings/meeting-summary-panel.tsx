@@ -1,15 +1,14 @@
 import { usePostMeetingSummaryGenerateMutation } from '@repo/api-client/v1/meetings/hooks'
+import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
 import { Copy, Loader2, Sparkles } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 
-import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
-
-import { MeetingSummaryCaptureSections } from '#components/meetings/meeting-summary-capture-sections'
 import {
   MeetingRecreateSummaryDialog,
   type MeetingRecreateSummarySubmit
 } from '#components/meetings/meeting-recreate-summary-dialog'
+import { MeetingSummaryCaptureSections } from '#components/meetings/meeting-summary-capture-sections'
 
 type MeetingSummaryPanelProps = {
   meeting: MeetingDetail

@@ -1,0 +1,438 @@
+import { useChat } from '@ai-sdk/react'
+import type { MeetingAssistantUIMessage } from '@repo/ai'
+import type { MeetingAssistantScope } from '@repo/api-contract/v1/meeting-assistant'
+import { Bubble, BubbleContent } from '@repo/ui-web/components/bubble'
+import { Button } from '@repo/ui-web/components/button'
+import { Marker, MarkerContent } from '@repo/ui-web/components/marker'
+import {
+  Message,
+  MessageContent,
+  MessageHeader
+} from '@repo/ui-web/components/message'
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport
+} from '@repo/ui-web/components/message-scroller'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@repo/ui-web/components/select'
+import { Textarea } from '@repo/ui-web/components/textarea'
+import { cn } from '@repo/ui-web/lib/utils'
+import { DefaultChatTransport } from 'ai'
+import {
+  ArrowUp,
+  ArrowUpRight,
+  CheckSquare,
+  ListTree,
+  RotateCcw,
+  Sparkles,
+  Square,
+  Users
+} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+
+const MAX_MESSAGE_LENGTH = 300
+
+const STARTER_QUESTIONS = [
+  {
+    icon: ListTree,
+    title: 'Decisions',
+    question: 'What were the main decisions?'
+  },
+  {
+    icon: CheckSquare,
+    title: 'Actions',
+    question: 'Summarize the action items'
+  },
+  {
+    icon: Sparkles,
+    title: 'Topics',
+    question: 'What topics were covered?'
+  },
+  {
+    icon: Users,
+    title: 'People',
+    question: 'Who committed to follow-ups?'
+  }
+] as const
+
+type MeetingAskFathomPanelProps = {
+  meetingId: string
+  meetingTitle: string
+  disabledReason?: string
+}
+
+function getMessageText(message: MeetingAssistantUIMessage) {
+  return message.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('')
+}
+
+function AssistantMessage({ message }: { message: MeetingAssistantUIMessage }) {
+  return (
+    <Message align="start">
+      <MessageContent>
+        <MessageHeader>Ask Fathom</MessageHeader>
+        {message.parts.map((part, index) => {
+          if (part.type === 'text') {
+            if (!part.text.trim()) {
+              return null
+            }
+            return (
+              <Bubble key={index} variant="muted">
+                <BubbleContent>
+                  <ReactMarkdown
+                    components={{
+                      a: ({ href, children }) => (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-foreground underline decoration-dotted underline-offset-4"
+                        >
+                          {children}
+                        </a>
+                      ),
+                      code: ({ className, children, ...props }) => (
+                        <code
+                          className={cn(
+                            'bg-muted rounded px-1.5 py-0.5 font-mono text-[0.85em]',
+                            className
+                          )}
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      ),
+                      pre: ({ children }) => (
+                        <pre className="bg-muted my-3 overflow-x-auto rounded-lg p-3 text-xs">
+                          {children}
+                        </pre>
+                      ),
+                      p: ({ children }) => (
+                        <p className="mb-3 last:mb-0">{children}</p>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="mb-3 list-disc space-y-1 pl-5 last:mb-0">
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="mb-3 list-decimal space-y-1 pl-5 last:mb-0">
+                          {children}
+                        </ol>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-border text-muted-foreground mb-3 border-l-2 pl-3 last:mb-0">
+                          {children}
+                        </blockquote>
+                      )
+                    }}
+                  >
+                    {part.text}
+                  </ReactMarkdown>
+                </BubbleContent>
+              </Bubble>
+            )
+          }
+
+          if (
+            part.type === 'tool-searchSingleMeetBase' ||
+            part.type === 'tool-searchAllMeetBase'
+          ) {
+            if (
+              part.state === 'input-streaming' ||
+              part.state === 'input-available'
+            ) {
+              return (
+                <Marker key={part.toolCallId} role="status">
+                  <MarkerContent>Searching transcripts…</MarkerContent>
+                </Marker>
+              )
+            }
+            if (part.state === 'output-error') {
+              return (
+                <Marker
+                  key={part.toolCallId}
+                  role="alert"
+                  className="text-destructive"
+                >
+                  <MarkerContent>Search failed. Try again.</MarkerContent>
+                </Marker>
+              )
+            }
+          }
+
+          return null
+        })}
+      </MessageContent>
+    </Message>
+  )
+}
+
+function MeetingAskFathomPanel({
+  meetingId,
+  meetingTitle,
+  disabledReason
+}: MeetingAskFathomPanelProps) {
+  const [input, setInput] = useState('')
+  const [scope, setScope] = useState<MeetingAssistantScope>('single')
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport<MeetingAssistantUIMessage>({
+        api: `/api/v1/meetings/${meetingId}/assistant`,
+        credentials: 'include',
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      }),
+    [meetingId]
+  )
+
+  const { error, messages, regenerate, sendMessage, status, stop } =
+    useChat<MeetingAssistantUIMessage>({
+      transport
+    })
+
+  const busy = status === 'submitted' || status === 'streaming'
+  const title =
+    meetingTitle.trim().length > 0 ? meetingTitle : 'Untitled meeting'
+
+  let activity: string | null = null
+  if (error) {
+    activity = 'Something went wrong processing the request.'
+  } else if (status === 'submitted') {
+    activity = 'Thinking…'
+  } else if (status === 'streaming') {
+    activity = 'Writing…'
+  }
+
+  function submit() {
+    const message = input.trim()
+    if (!message || message.length > MAX_MESSAGE_LENGTH || busy) {
+      return
+    }
+    void sendMessage({ text: message }, { body: { scope } })
+    setInput('')
+  }
+
+  function handleSelectStarter(question: string) {
+    if (busy) {
+      return
+    }
+    void sendMessage({ text: question }, { body: { scope } })
+  }
+
+  if (disabledReason) {
+    return (
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        {disabledReason}
+      </p>
+    )
+  }
+
+  return (
+    <div className="flex min-h-[32rem] flex-col">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          Ask about {title} or all of your processed calls.
+        </p>
+        <Select
+          value={scope}
+          onValueChange={(value) => {
+            if (value === 'single' || value === 'all') {
+              setScope(value)
+            }
+          }}
+          disabled={busy}
+        >
+          <SelectTrigger aria-label="Answer scope" size="sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="single">This call</SelectItem>
+            <SelectItem value="all">All calls</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <MessageScrollerProvider
+        autoScroll
+        defaultScrollPosition="end"
+        scrollPreviousItemPeek={48}
+      >
+        <MessageScroller className="min-h-0 flex-1">
+          <MessageScrollerViewport>
+            <MessageScrollerContent aria-busy={busy} className="px-1">
+              {messages.length === 0 ? (
+                <MessageScrollerItem className="my-auto py-4">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="bg-muted text-muted-foreground mb-3 flex size-10 items-center justify-center rounded-xl">
+                      <Sparkles className="size-5" aria-hidden />
+                    </div>
+                    <p className="text-foreground text-sm font-semibold">
+                      What would you like to know?
+                    </p>
+                    <p className="text-muted-foreground mt-1 max-w-64 text-xs leading-5">
+                      Pick a question or ask anything about this meeting.
+                    </p>
+                  </div>
+                  <div className="mt-6 grid w-full grid-cols-2 gap-2.5">
+                    {STARTER_QUESTIONS.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <button
+                          key={item.question}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => handleSelectStarter(item.question)}
+                          className="border-border hover:bg-muted group relative flex flex-col items-start justify-between rounded-xl border p-3 text-left"
+                        >
+                          <div className="text-muted-foreground mb-2 flex w-full items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <Icon className="size-3.5 shrink-0" aria-hidden />
+                              <span className="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
+                                {item.title}
+                              </span>
+                            </div>
+                            <ArrowUpRight
+                              className="text-muted-foreground size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                              aria-hidden
+                            />
+                          </div>
+                          <span className="text-foreground/90 group-hover:text-foreground text-xs font-normal transition-colors">
+                            {item.question}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </MessageScrollerItem>
+              ) : null}
+
+              {messages.map((message) => (
+                <MessageScrollerItem
+                  key={message.id}
+                  messageId={message.id}
+                  scrollAnchor={message.role === 'user'}
+                >
+                  {message.role === 'user' ? (
+                    <Message align="end">
+                      <MessageContent>
+                        <Bubble>
+                          <BubbleContent>
+                            {getMessageText(message)}
+                          </BubbleContent>
+                        </Bubble>
+                      </MessageContent>
+                    </Message>
+                  ) : (
+                    <AssistantMessage message={message} />
+                  )}
+                </MessageScrollerItem>
+              ))}
+
+              {activity ? (
+                <MessageScrollerItem messageId="assistant-activity">
+                  {error ? (
+                    <Marker role="alert" className="text-destructive">
+                      <MarkerContent>{activity}</MarkerContent>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          void regenerate({ body: { scope } })
+                        }}
+                        size="icon-xs"
+                        aria-label="Retry"
+                      >
+                        <RotateCcw />
+                      </Button>
+                    </Marker>
+                  ) : (
+                    <Marker role="status">
+                      <MarkerContent>{activity}</MarkerContent>
+                    </Marker>
+                  )}
+                </MessageScrollerItem>
+              ) : null}
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton />
+        </MessageScroller>
+      </MessageScrollerProvider>
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          submit()
+        }}
+        className="border-border bg-muted/40 mt-4 flex flex-col rounded-3xl border p-3"
+      >
+        <Textarea
+          value={input}
+          onChange={(event) =>
+            setInput(event.target.value.slice(0, MAX_MESSAGE_LENGTH))
+          }
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault()
+              submit()
+            }
+          }}
+          maxLength={MAX_MESSAGE_LENGTH}
+          disabled={busy}
+          placeholder="Ask about this meeting…"
+          aria-label="Message Ask Fathom"
+          className="min-h-16 resize-none border-0 bg-transparent px-2 py-1 shadow-none focus-visible:ring-0"
+        />
+        <div className="flex items-center justify-between pt-1 pr-0.5 pl-2">
+          <span
+            className={cn(
+              'text-[11px] transition-opacity',
+              input.length === 0 ? 'opacity-0' : 'opacity-100',
+              input.length === MAX_MESSAGE_LENGTH
+                ? 'text-destructive'
+                : 'text-muted-foreground'
+            )}
+          >
+            {input.length}/{MAX_MESSAGE_LENGTH}
+          </span>
+          {busy ? (
+            <Button
+              type="button"
+              size="icon-sm"
+              onClick={() => {
+                void stop()
+              }}
+              aria-label="Stop generation"
+            >
+              <Square className="size-3 fill-current" aria-hidden />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              size="icon-sm"
+              disabled={!input.trim()}
+              aria-label="Send message"
+            >
+              <ArrowUp className="size-4" aria-hidden />
+            </Button>
+          )}
+        </div>
+      </form>
+    </div>
+  )
+}
+
+export { MeetingAskFathomPanel }

@@ -6,6 +6,7 @@ import {
   TabsTrigger
 } from '@repo/ui-web/components/tabs'
 
+import { MeetingAskFathomPanel } from '#components/meetings/meeting-ask-fathom-panel'
 import { MeetingSummaryPanel } from '#components/meetings/meeting-summary-panel'
 import { MeetingTranscriptPanel } from '#components/meetings/meeting-transcript-panel'
 
@@ -20,6 +21,8 @@ function MeetingRecordingTabs({
   currentTimeSec,
   onSeek
 }: MeetingRecordingTabsProps) {
+  const askReady = meeting.processingStatus === 'ready'
+
   return (
     <Tabs defaultValue="summary" className="gap-0">
       <div className="border-border border-b">
@@ -41,8 +44,7 @@ function MeetingRecordingTabs({
           </TabsTrigger>
           <TabsTrigger
             value="ask"
-            disabled
-            className="text-muted-foreground/60 h-11 cursor-not-allowed rounded-none px-0 text-[11px] font-semibold tracking-[0.12em] uppercase"
+            className="text-muted-foreground data-active:text-foreground h-11 rounded-none px-0 text-[11px] font-semibold tracking-[0.12em] uppercase"
           >
             Ask Fathom
           </TabsTrigger>
@@ -60,6 +62,17 @@ function MeetingRecordingTabs({
           meetingId={meeting.id}
           currentTimeSec={currentTimeSec}
           onSeek={onSeek}
+        />
+      </TabsContent>
+      <TabsContent value="ask" className="pt-6">
+        <MeetingAskFathomPanel
+          meetingId={meeting.id}
+          meetingTitle={meeting.title}
+          disabledReason={
+            askReady
+              ? undefined
+              : 'Ask Fathom is available after this call is processed.'
+          }
         />
       </TabsContent>
     </Tabs>

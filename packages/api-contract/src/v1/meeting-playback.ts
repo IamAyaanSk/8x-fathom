@@ -102,21 +102,22 @@ const postMeetingHighlightBodySchema = z.object({
   timestampSec: meetingTimestampSecSchema
 })
 
-const postMeetingHighlightResponseSchema =
-  _createResponseApiZod(meetingHighlightSchema)
+const postMeetingHighlightResponseSchema = _createResponseApiZod(
+  meetingHighlightSchema
+)
 
 const patchMeetingHighlightBodySchema = z
   .object({
     endTimestampSec: meetingTimestampSecSchema.optional(),
     note: meetingHighlightNoteSchema.nullable().optional()
   })
-  .refine(
-    (body) => body.endTimestampSec != null || body.note !== undefined,
-    { message: 'Highlight update must include end time or note' }
-  )
+  .refine((body) => body.endTimestampSec != null || body.note !== undefined, {
+    message: 'Highlight update must include end time or note'
+  })
 
-const patchMeetingHighlightResponseSchema =
-  _createResponseApiZod(meetingHighlightSchema)
+const patchMeetingHighlightResponseSchema = _createResponseApiZod(
+  meetingHighlightSchema
+)
 
 const putMeetingScratchpadEntryBodySchema = z.object({
   timestampSec: meetingTimestampSecSchema,
@@ -183,7 +184,9 @@ export type PutMeetingScratchpadEntrySuccessResponse = Extract<
   PutMeetingScratchpadEntryResponse,
   { success: true }
 >
-export type MeetingScratchpadEntry = z.infer<typeof meetingScratchpadEntrySchema>
+export type MeetingScratchpadEntry = z.infer<
+  typeof meetingScratchpadEntrySchema
+>
 
 export {
   getMeetingDetailResponseSchema,

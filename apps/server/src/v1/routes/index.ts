@@ -5,6 +5,7 @@ import {
   postCalendarSyncController
 } from '#src/v1/controllers/calendar'
 import { patchMeetingActionItemController } from '#src/v1/controllers/meeting-action-items'
+import { postMeetingAssistantController } from '#src/v1/controllers/meeting-assistant'
 import {
   patchMeetingHighlightController,
   postMeetingHighlightController,
@@ -51,5 +52,6 @@ router.post(
   '/meetings/:meetingId/summary/generate',
   postMeetingSummaryGenerateController
 )
+router.post('/meetings/:meetingId/assistant', postMeetingAssistantController)
 
 export default router

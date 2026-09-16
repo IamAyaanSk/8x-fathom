@@ -29,7 +29,10 @@ function _highlightIdFromRequest(req: Request): string | null {
   return highlightId
 }
 
-async function _loadOwnedMeetingForLiveCapture(userId: string, meetingId: string) {
+async function _loadOwnedMeetingForLiveCapture(
+  userId: string,
+  meetingId: string
+) {
   const meeting = await prisma.meeting.findFirst({
     where: { id: meetingId, userId },
     select: {
@@ -53,7 +56,10 @@ async function _loadOwnedMeetingForLiveCapture(userId: string, meetingId: string
   })
 
   if (uiPhase !== 'in_call_recording') {
-    throw new HttpError(409, 'Highlights and scratchpad are only available during a live recording')
+    throw new HttpError(
+      409,
+      'Highlights and scratchpad are only available during a live recording'
+    )
   }
 
   return meeting
@@ -98,7 +104,10 @@ const postMeetingHighlightController = async (
     })
 
     if (openHighlight) {
-      throw new HttpError(409, 'End the current highlight before starting a new one')
+      throw new HttpError(
+        409,
+        'End the current highlight before starting a new one'
+      )
     }
 
     const created = await prisma.highlight.create({
@@ -213,11 +222,13 @@ const patchMeetingHighlightController = async (
     }
 
     if (endTimestampSec < existing.timestampSec) {
-      throw new HttpError(400, 'Highlight end time must be after the start time')
+      throw new HttpError(
+        400,
+        'Highlight end time must be after the start time'
+      )
     }
 
-    const note =
-      noteUpdate !== undefined ? noteUpdate : existing.note
+    const note = noteUpdate !== undefined ? noteUpdate : existing.note
 
     const updated = await prisma.highlight.update({
       where: { id: existing.id },

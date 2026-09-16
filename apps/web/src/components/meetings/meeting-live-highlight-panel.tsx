@@ -1,8 +1,8 @@
-import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import {
   usePatchMeetingHighlightMutation,
   usePostMeetingHighlightMutation
 } from '@repo/api-client/v1/meetings/hooks'
+import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
 import { Textarea } from '@repo/ui-web/components/textarea'
 import { cn } from '@repo/ui-web/lib/utils'
@@ -21,7 +21,9 @@ type MeetingLiveHighlightPanelProps = {
 }
 
 function _activeHighlight(meeting: MeetingDetail) {
-  return meeting.highlights.find((highlight) => highlight.endTimestampSec == null)
+  return meeting.highlights.find(
+    (highlight) => highlight.endTimestampSec == null
+  )
 }
 
 function MeetingLiveHighlightPanel({
@@ -82,8 +84,7 @@ function MeetingLiveHighlightPanel({
     : 0
 
   const isStarting =
-    startMutation.isPending &&
-    startMutation.variables?.meetingId === meetingId
+    startMutation.isPending && startMutation.variables?.meetingId === meetingId
   const isEnding =
     patchMutation.isPending &&
     patchMutation.variables?.meetingId === meetingId &&
@@ -161,7 +162,7 @@ function MeetingLiveHighlightPanel({
 
           <div
             aria-hidden
-            className="flex h-10 items-center justify-center gap-0.5 overflow-hidden rounded-lg bg-muted/50 px-2"
+            className="bg-muted/50 flex h-10 items-center justify-center gap-0.5 overflow-hidden rounded-lg px-2"
           >
             {Array.from({ length: 32 }, (_, index) => (
               <span
@@ -202,8 +203,8 @@ function MeetingLiveHighlightPanel({
         </div>
       ) : (
         <p className="text-muted-foreground text-sm leading-relaxed">
-          Mark an important moment while the call is recording. Highlights appear
-          on the recording timeline after the call ends.
+          Mark an important moment while the call is recording. Highlights
+          appear on the recording timeline after the call ends.
         </p>
       )}
 

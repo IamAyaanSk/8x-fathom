@@ -80,7 +80,7 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | F7  | Baas callback, worker AI, `processingStatus: ready`                 | done        |
 | F8  | Playback + transcript sync + share                                  | not started |
 | F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
-| F9  | Q&A RAG chatbot                                                     | not started |
+| F9  | Q&A RAG chatbot                                                     | done        |
 
 ## Monorepo
 

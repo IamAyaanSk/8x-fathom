@@ -1,5 +1,5 @@
-import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { usePutMeetingScratchpadEntryMutation } from '@repo/api-client/v1/meetings/hooks'
+import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { Textarea } from '@repo/ui-web/components/textarea'
 import { StickyNote } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'

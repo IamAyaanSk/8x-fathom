@@ -316,8 +316,7 @@ function _mergeMeetingDetailScratchpadEntry(
   const byIdIndex = detail.data.scratchpadEntries.findIndex(
     (item) => item.id === entry.id
   )
-  const existingIndex =
-    byTimestampIndex >= 0 ? byTimestampIndex : byIdIndex
+  const existingIndex = byTimestampIndex >= 0 ? byTimestampIndex : byIdIndex
 
   const scratchpadEntries =
     existingIndex >= 0

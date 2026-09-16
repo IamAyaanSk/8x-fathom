@@ -230,8 +230,7 @@ function MeetingVideoPlayer({
               100,
               Math.max(0, (highlight.timestampSec / scrubDuration) * 100)
             )
-            const endSec =
-              highlight.endTimestampSec ?? highlight.timestampSec
+            const endSec = highlight.endTimestampSec ?? highlight.timestampSec
             const endPercent = Math.min(
               100,
               Math.max(0, (endSec / scrubDuration) * 100)

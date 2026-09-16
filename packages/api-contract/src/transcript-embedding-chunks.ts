@@ -142,4 +142,24 @@ function buildTranscriptEmbeddingChunks({
   return chunks
 }
 
-export { buildTranscriptEmbeddingChunks, type TranscriptEmbeddingChunkDraft }
+function embeddingToPgVectorLiteral(embedding: readonly number[]): string {
+  if (embedding.length !== TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS) {
+    throw new Error(
+      `Expected embedding length ${TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS}, received ${embedding.length}`
+    )
+  }
+
+  for (const value of embedding) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw new Error('Embedding contains a non-finite number')
+    }
+  }
+
+  return `[${embedding.join(',')}]`
+}
+
+export {
+  buildTranscriptEmbeddingChunks,
+  embeddingToPgVectorLiteral,
+  type TranscriptEmbeddingChunkDraft
+}

@@ -20,6 +20,8 @@
     "clean": "rimraf dist node_modules/.tmp"
   },
   "dependencies": {
+    "@ai-sdk/react": "catalog:",
+    "@repo/ai": "workspace:*",
     "@repo/api-client": "workspace:*",
     "@repo/api-contract": "workspace:*",
     "@repo/env": "workspace:*",
@@ -30,11 +32,13 @@
     "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
+    "ai": "catalog:",
     "axios": "catalog:",
     "better-auth": "catalog:",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-markdown": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

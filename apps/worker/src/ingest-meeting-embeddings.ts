@@ -5,7 +5,7 @@ import { generateEmbeddings } from '@repo/ai'
 import { parseMeetingBaasOutputTranscriptionFromJson } from '@repo/api-contract/meeting-baas-transcript'
 import {
   buildTranscriptEmbeddingChunks,
-  TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS
+  embeddingToPgVectorLiteral
 } from '@repo/api-contract/transcript-embedding-chunks'
 import { prisma } from '@repo/db'
 
@@ -18,16 +18,6 @@ import { getR2ObjectUtf8 } from '#src/r2-storage'
 
 function _errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Unknown error'
-}
-
-function _embeddingToPgVectorLiteral(embedding: readonly number[]): string {
-  if (embedding.length !== TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS) {
-    throw new Error(
-      `Expected embedding length ${TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS}, received ${embedding.length}`
-    )
-  }
-
-  return `[${embedding.join(',')}]`
 }
 
 async function ingestMeetingEmbeddings(meetingId: string): Promise<void> {
@@ -86,7 +76,7 @@ async function ingestMeetingEmbeddings(meetingId: string): Promise<void> {
         }
 
         const id = randomUUID()
-        const vectorLiteral = _embeddingToPgVectorLiteral(embedding)
+        const vectorLiteral = embeddingToPgVectorLiteral(embedding)
 
         await tx.$executeRawUnsafe(
           `INSERT INTO "transcript_chunk" ("id", "meetingId", "startSec", "endSec", "speaker", "text", "embedding", "createdAt")

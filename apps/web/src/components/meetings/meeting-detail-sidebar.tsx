@@ -109,7 +109,7 @@ function MeetingDetailSidebar({
                 >
                   {participant.profilePicture ? (
                     <img
-                      src={participant.profilePicture}                      
+                      src={participant.profilePicture}
                       className="border-border size-10 rounded-full border object-cover"
                     />
                   ) : (

@@ -23,6 +23,7 @@
     "@fontsource-variable/geist": "catalog:",
     "@fontsource-variable/inter": "catalog:",
     "@fontsource-variable/outfit": "catalog:",
+    "@shadcn/react": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cn": "catalog:",

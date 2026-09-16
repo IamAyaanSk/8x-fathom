@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react'
-import type { MeetingAssistantUIMessage } from '@repo/ai'
+import type { MeetingAssistantUIMessage } from '#lib/meeting-assistant-api'
 import { Bubble, BubbleContent } from '@repo/ui-web/components/bubble'
 import { Button } from '@repo/ui-web/components/button'
 import { Marker, MarkerContent } from '@repo/ui-web/components/marker'

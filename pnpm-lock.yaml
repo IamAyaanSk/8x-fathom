@@ -321,9 +321,6 @@ importers:
       '@ai-sdk/react':
         specifier: 'catalog:'
         version: 4.0.105(react@19.2.8)(zod@4.4.3)
-      '@repo/ai':
-        specifier: workspace:*
-        version: link:../../packages/ai
       '@repo/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client

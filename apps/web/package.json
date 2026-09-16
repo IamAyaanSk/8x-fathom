@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@ai-sdk/react": "catalog:",
-    "@repo/ai": "workspace:*",
     "@repo/api-client": "workspace:*",
     "@repo/api-contract": "workspace:*",
     "@repo/env": "workspace:*",

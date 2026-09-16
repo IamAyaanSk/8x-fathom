@@ -1,5 +1,5 @@
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
-import { isMeetingEnded } from '@repo/meeting-dispatch/capture-window'
+import { isMeetingEnded } from '@repo/shared-validations'
 
 type MeetingCallTab = 'upcoming' | 'live' | 'my-calls'
 

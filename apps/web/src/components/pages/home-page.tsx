@@ -18,8 +18,8 @@ import { MeetingAskFathomSheet } from '#components/meetings/meeting-ask-fathom-s
 import { MeetingCallsTabs } from '#components/meetings/meeting-calls-tabs'
 import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
-import { categorizeMeetingsForTabs, isReadyCall } from '#lib/meeting-call-tabs'
 import { LIBRARY_MEETING_ASSISTANT_API } from '#lib/meeting-assistant-api'
+import { categorizeMeetingsForTabs, isReadyCall } from '#lib/meeting-call-tabs'
 
 const GOOGLE_CALENDAR_EVENTS_READONLY_SCOPE =
   'https://www.googleapis.com/auth/calendar.events.readonly'

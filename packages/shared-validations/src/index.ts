@@ -36,6 +36,12 @@ export {
   meetingTimestampSecSchema
 } from './meeting-timestamp-sec.js'
 export {
+  MEETING_CAPTURE_LEAD_MS,
+  isInBotJoiningSoonWindow,
+  isManualCaptureAllowed,
+  isMeetingEnded
+} from './meeting-capture-window.js'
+export {
   createNameSchema,
   emailSchema,
   trimmedStringWithMinLengthOneSchema,

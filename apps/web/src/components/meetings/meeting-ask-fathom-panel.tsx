@@ -1,5 +1,4 @@
 import { useChat } from '@ai-sdk/react'
-import type { MeetingAssistantUIMessage } from '#lib/meeting-assistant-api'
 import { Bubble, BubbleContent } from '@repo/ui-web/components/bubble'
 import { Button } from '@repo/ui-web/components/button'
 import { Marker, MarkerContent } from '@repo/ui-web/components/marker'
@@ -31,6 +30,8 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+
+import type { MeetingAssistantUIMessage } from '#lib/meeting-assistant-api'
 
 const MAX_MESSAGE_LENGTH = 300
 
@@ -231,9 +232,7 @@ function MeetingAskFathomPanel({
   }
 
   return (
-    <div
-      className={cn('flex min-h-[32rem] flex-col', className)}
-    >
+    <div className={cn('flex min-h-[32rem] flex-col', className)}>
       {showIntro ? (
         <p className="text-muted-foreground mb-4 text-sm">
           Ask about your processed calls — answers search across your library.

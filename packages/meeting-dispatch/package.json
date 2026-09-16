@@ -7,10 +7,6 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
-    },
-    "./capture-window": {
-      "types": "./src/capture-window.ts",
-      "default": "./dist/capture-window.js"
     }
   },
   "scripts": {
@@ -22,7 +18,8 @@
   "dependencies": {
     "@meeting-baas/sdk": "catalog:",
     "@repo/api-contract": "workspace:*",
-    "@repo/db": "workspace:*"
+    "@repo/db": "workspace:*",
+    "@repo/shared-validations": "workspace:*"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

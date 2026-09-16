@@ -48,7 +48,7 @@ function AuthShell({ children }: AuthShellProps) {
             </blockquote>
           </div>
         </main>
-        <footer className="pb-2 pt-4">
+        <footer className="pt-4 pb-2">
           <MadeWithLoveByAyaan />
         </footer>
       </div>

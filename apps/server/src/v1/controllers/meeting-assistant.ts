@@ -1,4 +1,7 @@
-import { createMeetingAssistantAgent, type MeetingAssistantContext } from '@repo/ai'
+import {
+  createMeetingAssistantAgent,
+  type MeetingAssistantContext
+} from '@repo/ai'
 import { postMeetingAssistantBodySchema } from '@repo/api-contract/v1/meeting-assistant'
 import { prisma } from '@repo/db'
 import { pipeAgentUIStreamToResponse, validateUIMessages } from 'ai'
@@ -158,4 +161,7 @@ const postMeetingAssistantController = async (
   }
 }
 
-export { postMeetingAssistantController, postMeetingsLibraryAssistantController }
+export {
+  postMeetingAssistantController,
+  postMeetingsLibraryAssistantController
+}

@@ -4,8 +4,8 @@ import {
   type MeetingProcessingStatus
 } from '@repo/api-contract/baas-bot-status'
 import { Prisma, prisma, type BaasBotStatus } from '@repo/db'
+import { MEETING_CAPTURE_LEAD_MS } from '@repo/shared-validations'
 
-import { MEETING_CAPTURE_LEAD_MS } from './capture-window.js'
 import { DISPATCH_BATCH_SIZE } from './constants.js'
 import { DispatchError } from './errors.js'
 import { createMeetingBaasClient } from './meeting-baas-client.js'

@@ -330,9 +330,6 @@ importers:
       '@repo/env':
         specifier: workspace:*
         version: link:../../packages/env
-      '@repo/meeting-dispatch':
-        specifier: workspace:*
-        version: link:../../packages/meeting-dispatch
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -625,6 +622,9 @@ importers:
       '@repo/db':
         specifier: workspace:*
         version: link:../database
+      '@repo/shared-validations':
+        specifier: workspace:*
+        version: link:../shared-validations
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

@@ -22,10 +22,7 @@ function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
-function SheetOverlay({
-  className,
-  ...props
-}: SheetPrimitive.Backdrop.Props) {
+function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
   return (
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
@@ -45,8 +42,7 @@ const sheetContentVariants = cva(
       side: {
         right:
           'inset-y-0 right-0 h-dvh w-full max-w-[min(100%,32rem)] border-l data-open:slide-in-from-right data-closed:slide-out-to-right data-closed:fade-out-0 data-open:fade-in-0',
-        left:
-          'inset-y-0 left-0 h-dvh w-full max-w-[min(100%,32rem)] border-r data-open:slide-in-from-left data-closed:slide-out-to-left data-closed:fade-out-0 data-open:fade-in-0',
+        left: 'inset-y-0 left-0 h-dvh w-full max-w-[min(100%,32rem)] border-r data-open:slide-in-from-left data-closed:slide-out-to-left data-closed:fade-out-0 data-open:fade-in-0',
         top: 'inset-x-0 top-0 max-h-[85dvh] border-b data-open:slide-in-from-top data-closed:slide-out-to-top',
         bottom:
           'inset-x-0 bottom-0 max-h-[85dvh] border-t data-open:slide-in-from-bottom data-closed:slide-out-to-bottom'

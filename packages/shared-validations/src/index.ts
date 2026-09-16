@@ -31,6 +31,11 @@ export {
   summaryTemplateLabel
 } from './summary-template-labels.js'
 export {
+  meetingHighlightNoteSchema,
+  meetingScratchpadTextSchema,
+  meetingTimestampSecSchema
+} from './meeting-timestamp-sec.js'
+export {
   createNameSchema,
   emailSchema,
   trimmedStringWithMinLengthOneSchema,

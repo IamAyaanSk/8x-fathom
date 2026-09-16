@@ -50,8 +50,8 @@ function MeetingRecordingTabs({
       </div>
       <TabsContent value="summary" className="pt-6">
         <MeetingSummaryPanel
-          meetingId={meeting.id}
-          summary={meeting.summary}
+          meeting={meeting}
+          onSeek={onSeek}
           canRecreateSummary={meeting.processingStatus === 'ready'}
         />
       </TabsContent>

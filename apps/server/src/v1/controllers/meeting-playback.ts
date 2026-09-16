@@ -14,6 +14,7 @@ import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
 import { getR2ObjectUtf8, presignR2GetObjectUrl } from '#src/r2-storage'
+import { dateToIsoStringOrNull } from '#src/utils/date-to-iso'
 import { HttpError } from '#src/v1/errors/http-error'
 
 const RECORDING_PLAYBACK_PRESIGN_SECONDS = 3600
@@ -85,7 +86,18 @@ const getMeetingDetailController = async (
           select: {
             id: true,
             timestampSec: true,
+            endTimestampSec: true,
             note: true
+          }
+        },
+        scratchpadEntries: {
+          orderBy: { timestampSec: 'asc' },
+          select: {
+            id: true,
+            timestampSec: true,
+            text: true,
+            createdAt: true,
+            updatedAt: true
           }
         },
         actionItems: {
@@ -156,12 +168,30 @@ const getMeetingDetailController = async (
         summary: meeting.summary,
         shareSlug: meeting.shareSlug,
         recordingDurationSec,
+        recordingStartedAt: dateToIsoStringOrNull(meeting.recordingStartedAt),
         recordingPlayback,
         highlights: meeting.highlights.map((highlight) => ({
           id: highlight.id,
           timestampSec: highlight.timestampSec,
+          endTimestampSec: highlight.endTimestampSec,
           note: highlight.note
         })),
+        scratchpadEntries: meeting.scratchpadEntries.flatMap((entry) => {
+          const updatedAt =
+            dateToIsoStringOrNull(entry.updatedAt) ??
+            dateToIsoStringOrNull(entry.createdAt)
+          if (!updatedAt) {
+            return []
+          }
+          return [
+            {
+              id: entry.id,
+              timestampSec: entry.timestampSec,
+              text: entry.text,
+              updatedAt
+            }
+          ]
+        }),
         actionItems: meeting.actionItems.map((item) => ({
           id: item.id,
           text: item.text,

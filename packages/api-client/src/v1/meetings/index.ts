@@ -2,9 +2,16 @@ import {
   getMeetingDetailResponseSchema,
   getMeetingTranscriptResponseSchema,
   patchMeetingActionItemResponseSchema,
+  patchMeetingHighlightResponseSchema,
+  postMeetingHighlightResponseSchema,
+  putMeetingScratchpadEntryResponseSchema,
   type MeetingDetail,
+  type MeetingScratchpadEntry,
   type MeetingTranscriptData,
-  type PatchMeetingActionItemBody
+  type PatchMeetingActionItemBody,
+  type PatchMeetingHighlightBody,
+  type PostMeetingHighlightBody,
+  type PutMeetingScratchpadEntryBody
 } from '@repo/api-contract/v1/meeting-playback'
 import {
   getMeetingsCompletedResponseSchema,
@@ -20,9 +27,13 @@ import { _getApiClient, type _HttpRequestOptions } from '#src/index'
 export type {
   MeetingDetail,
   MeetingListItem,
+  MeetingScratchpadEntry,
   MeetingTranscriptData,
   PatchMeetingActionItemBody,
-  PostMeetingSummaryGenerateBody
+  PatchMeetingHighlightBody,
+  PostMeetingHighlightBody,
+  PostMeetingSummaryGenerateBody,
+  PutMeetingScratchpadEntryBody
 }
 
 async function getMeetingsUpcoming(options: _HttpRequestOptions = {}) {
@@ -86,6 +97,49 @@ async function postMeetingCapture(
   return postMeetingCaptureResponseSchema.parse(response.data)
 }
 
+async function postMeetingHighlight(
+  meetingId: string,
+  body: PostMeetingHighlightBody,
+  options: _HttpRequestOptions = {}
+) {
+  const client = _getApiClient()
+  const response = await client.post(
+    `/meetings/${meetingId}/highlights`,
+    body,
+    options
+  )
+  return postMeetingHighlightResponseSchema.parse(response.data)
+}
+
+async function patchMeetingHighlight(
+  meetingId: string,
+  highlightId: string,
+  body: PatchMeetingHighlightBody,
+  options: _HttpRequestOptions = {}
+) {
+  const client = _getApiClient()
+  const response = await client.patch(
+    `/meetings/${meetingId}/highlights/${highlightId}`,
+    body,
+    options
+  )
+  return patchMeetingHighlightResponseSchema.parse(response.data)
+}
+
+async function putMeetingScratchpadEntry(
+  meetingId: string,
+  body: PutMeetingScratchpadEntryBody,
+  options: _HttpRequestOptions = {}
+) {
+  const client = _getApiClient()
+  const response = await client.put(
+    `/meetings/${meetingId}/scratchpad`,
+    body,
+    options
+  )
+  return putMeetingScratchpadEntryResponseSchema.parse(response.data)
+}
+
 async function postMeetingSummaryGenerate(
   meetingId: string,
   body: PostMeetingSummaryGenerateBody,
@@ -106,6 +160,9 @@ export {
   getMeetingsCompleted,
   getMeetingsUpcoming,
   patchMeetingActionItem,
+  patchMeetingHighlight,
   postMeetingCapture,
-  postMeetingSummaryGenerate
+  postMeetingHighlight,
+  postMeetingSummaryGenerate,
+  putMeetingScratchpadEntry
 }

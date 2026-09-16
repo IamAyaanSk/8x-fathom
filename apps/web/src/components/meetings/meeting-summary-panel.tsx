@@ -3,14 +3,17 @@ import { Button } from '@repo/ui-web/components/button'
 import { Copy, Loader2, Sparkles } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 
+import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
+
+import { MeetingSummaryCaptureSections } from '#components/meetings/meeting-summary-capture-sections'
 import {
   MeetingRecreateSummaryDialog,
   type MeetingRecreateSummarySubmit
 } from '#components/meetings/meeting-recreate-summary-dialog'
 
 type MeetingSummaryPanelProps = {
-  meetingId: string
-  summary: string | null
+  meeting: MeetingDetail
+  onSeek: (timestampSec: number) => void
   canRecreateSummary: boolean
 }
 
@@ -111,10 +114,12 @@ function _summaryGenerateErrorMessage(error: Error): string {
 }
 
 function MeetingSummaryPanel({
-  meetingId,
-  summary,
+  meeting,
+  onSeek,
   canRecreateSummary
 }: MeetingSummaryPanelProps) {
+  const meetingId = meeting.id
+  const summary = meeting.summary
   const [copied, setCopied] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
@@ -204,6 +209,12 @@ function MeetingSummaryPanel({
             Recreating summary…
           </div>
         ) : null}
+
+        <MeetingSummaryCaptureSections
+          meeting={meeting}
+          onSeek={onSeek}
+          className="border-border border-b pb-8"
+        />
 
         {!summary ? (
           <p className="text-muted-foreground text-sm leading-relaxed">

@@ -2,7 +2,12 @@ import { isActiveMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingDetailResponse,
   GetMeetingTranscriptResponse,
-  PatchMeetingActionItemResponse
+  PatchMeetingActionItemResponse,
+  PatchMeetingHighlightResponse,
+  PostMeetingHighlightBody,
+  PostMeetingHighlightResponse,
+  PutMeetingScratchpadEntryBody,
+  PutMeetingScratchpadEntryResponse
 } from '@repo/api-contract/v1/meeting-playback'
 import type {
   GetMeetingsCompletedResponse,
@@ -26,8 +31,11 @@ import {
   getMeetingsCompleted,
   getMeetingsUpcoming,
   patchMeetingActionItem,
+  patchMeetingHighlight,
   postMeetingCapture,
-  postMeetingSummaryGenerate
+  postMeetingHighlight,
+  postMeetingSummaryGenerate,
+  putMeetingScratchpadEntry
 } from '#src/v1/meetings/index'
 
 type UseMeetingsUpcomingOptions = Omit<
@@ -54,7 +62,11 @@ const meetingsQueryKeys = {
   summaryGenerate: () =>
     [...meetingsQueryKeys.all, 'summary-generate'] as const,
   actionItemPatch: () =>
-    [...meetingsQueryKeys.all, 'action-item-patch'] as const
+    [...meetingsQueryKeys.all, 'action-item-patch'] as const,
+  highlightCreate: () =>
+    [...meetingsQueryKeys.all, 'highlight-create'] as const,
+  highlightPatch: () => [...meetingsQueryKeys.all, 'highlight-patch'] as const,
+  scratchpadPut: () => [...meetingsQueryKeys.all, 'scratchpad-put'] as const
 } as const
 
 function _upcomingRefetchInterval(query: {
@@ -139,6 +151,9 @@ function _meetingDetailRefetchInterval(query: {
   }
   if (data.data.recordingPlayback) {
     return MEETING_PLAYBACK_URL_REFRESH_MS
+  }
+  if (data.data.uiPhase === 'in_call_recording') {
+    return MEETINGS_UPCOMING_ACTIVE_REFETCH_MS
   }
   if (
     data.data.uiPhase === 'call_ended_processing' ||
@@ -321,6 +336,109 @@ function usePatchMeetingActionItemMutation(
   })
 }
 
+type PostMeetingHighlightVariables = {
+  meetingId: string
+  body: PostMeetingHighlightBody
+}
+
+type UsePostMeetingHighlightMutationOptions = Omit<
+  UseMutationOptions<
+    PostMeetingHighlightResponse,
+    Error,
+    PostMeetingHighlightVariables
+  >,
+  'mutationFn'
+>
+
+function usePostMeetingHighlightMutation(
+  options?: UsePostMeetingHighlightMutationOptions
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: meetingsQueryKeys.highlightCreate(),
+    mutationFn: ({ meetingId, body }) => postMeetingHighlight(meetingId, body),
+    ...options,
+    onSuccess: async (data, variables, onMutateResult, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: meetingsQueryKeys.detail(variables.meetingId)
+      })
+      await options?.onSuccess?.(data, variables, onMutateResult, context)
+    }
+  })
+}
+
+type PatchMeetingHighlightVariables = {
+  meetingId: string
+  highlightId: string
+  endTimestampSec?: number
+  note?: string | null
+}
+
+type UsePatchMeetingHighlightMutationOptions = Omit<
+  UseMutationOptions<
+    PatchMeetingHighlightResponse,
+    Error,
+    PatchMeetingHighlightVariables
+  >,
+  'mutationFn'
+>
+
+function usePatchMeetingHighlightMutation(
+  options?: UsePatchMeetingHighlightMutationOptions
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: meetingsQueryKeys.highlightPatch(),
+    mutationFn: ({ meetingId, highlightId, endTimestampSec, note }) =>
+      patchMeetingHighlight(meetingId, highlightId, {
+        ...(endTimestampSec !== undefined ? { endTimestampSec } : {}),
+        ...(note !== undefined ? { note } : {})
+      }),
+    ...options,
+    onSuccess: async (data, variables, onMutateResult, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: meetingsQueryKeys.detail(variables.meetingId)
+      })
+      await options?.onSuccess?.(data, variables, onMutateResult, context)
+    }
+  })
+}
+
+type PutMeetingScratchpadEntryVariables = {
+  meetingId: string
+  body: PutMeetingScratchpadEntryBody
+}
+
+type UsePutMeetingScratchpadEntryMutationOptions = Omit<
+  UseMutationOptions<
+    PutMeetingScratchpadEntryResponse,
+    Error,
+    PutMeetingScratchpadEntryVariables
+  >,
+  'mutationFn'
+>
+
+function usePutMeetingScratchpadEntryMutation(
+  options?: UsePutMeetingScratchpadEntryMutationOptions
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: meetingsQueryKeys.scratchpadPut(),
+    mutationFn: ({ meetingId, body }) =>
+      putMeetingScratchpadEntry(meetingId, body),
+    ...options,
+    onSuccess: async (data, variables, onMutateResult, context) => {
+      await queryClient.invalidateQueries({
+        queryKey: meetingsQueryKeys.detail(variables.meetingId)
+      })
+      await options?.onSuccess?.(data, variables, onMutateResult, context)
+    }
+  })
+}
+
 function usePostMeetingSummaryGenerateMutation(
   options?: UsePostMeetingSummaryGenerateMutationOptions
 ) {
@@ -355,6 +473,9 @@ export {
   useMeetingsCompletedQuery,
   useMeetingsUpcomingQuery,
   usePatchMeetingActionItemMutation,
+  usePatchMeetingHighlightMutation,
   usePostMeetingCaptureMutation,
-  usePostMeetingSummaryGenerateMutation
+  usePostMeetingHighlightMutation,
+  usePostMeetingSummaryGenerateMutation,
+  usePutMeetingScratchpadEntryMutation
 }

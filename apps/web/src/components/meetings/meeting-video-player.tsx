@@ -30,7 +30,9 @@ function MeetingVideoPlayer({
   const [playbackRateIndex, setPlaybackRateIndex] = useState(0)
 
   const playbackUrl = meeting.recordingPlayback?.url ?? null
-  const highlightMarkers = meeting.highlights
+  const highlightMarkers = meeting.highlights.filter(
+    (highlight) => highlight.endTimestampSec != null
+  )
 
   useEffect(() => {
     const video = videoRef.current
@@ -224,20 +226,44 @@ function MeetingVideoPlayer({
             style={{ width: `${progressPercent}%` }}
           />
           {highlightMarkers.map((highlight) => {
-            const leftPercent = Math.min(
+            const startPercent = Math.min(
               100,
               Math.max(0, (highlight.timestampSec / scrubDuration) * 100)
             )
+            const endSec =
+              highlight.endTimestampSec ?? highlight.timestampSec
+            const endPercent = Math.min(
+              100,
+              Math.max(0, (endSec / scrubDuration) * 100)
+            )
+            const rangeWidth = Math.max(endPercent - startPercent, 0.35)
+            const isRange = highlight.endTimestampSec != null
+            const titleLabel = highlight.note
+              ? `${formatPlaybackTimestamp(highlight.timestampSec)} — ${highlight.note}`
+              : isRange
+                ? `${formatPlaybackTimestamp(highlight.timestampSec)} – ${formatPlaybackTimestamp(endSec)}`
+                : formatPlaybackTimestamp(highlight.timestampSec)
+
+            if (isRange) {
+              return (
+                <span
+                  key={highlight.id}
+                  className="bg-primary/35 absolute top-1/2 z-10 h-2 -translate-y-1/2 rounded-sm"
+                  style={{
+                    left: `${startPercent}%`,
+                    width: `${rangeWidth}%`
+                  }}
+                  title={titleLabel}
+                />
+              )
+            }
+
             return (
               <span
                 key={highlight.id}
                 className="bg-foreground/90 absolute top-1/2 z-10 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                style={{ left: `${leftPercent}%` }}
-                title={
-                  highlight.note
-                    ? `${formatPlaybackTimestamp(highlight.timestampSec)} — ${highlight.note}`
-                    : formatPlaybackTimestamp(highlight.timestampSec)
-                }
+                style={{ left: `${startPercent}%` }}
+                title={titleLabel}
               />
             )
           })}

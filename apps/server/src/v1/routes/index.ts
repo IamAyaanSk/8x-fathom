@@ -6,6 +6,11 @@ import {
 } from '#src/v1/controllers/calendar'
 import { patchMeetingActionItemController } from '#src/v1/controllers/meeting-action-items'
 import {
+  patchMeetingHighlightController,
+  postMeetingHighlightController,
+  putMeetingScratchpadEntryController
+} from '#src/v1/controllers/meeting-live-capture'
+import {
   getMeetingDetailController,
   getMeetingTranscriptController
 } from '#src/v1/controllers/meeting-playback'
@@ -31,6 +36,15 @@ router.get('/meetings/:meetingId/transcript', getMeetingTranscriptController)
 router.patch(
   '/meetings/:meetingId/action-items/:actionItemId',
   patchMeetingActionItemController
+)
+router.post('/meetings/:meetingId/highlights', postMeetingHighlightController)
+router.patch(
+  '/meetings/:meetingId/highlights/:highlightId',
+  patchMeetingHighlightController
+)
+router.put(
+  '/meetings/:meetingId/scratchpad',
+  putMeetingScratchpadEntryController
 )
 router.post('/meetings/:meetingId/capture', postMeetingCaptureController)
 router.post(

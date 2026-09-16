@@ -4,10 +4,12 @@ import { getMeetingBotUiLabel } from '@repo/api-contract/baas-bot-status'
 import { Button, buttonVariants } from '@repo/ui-web/components/button'
 import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { cn } from '@repo/ui-web/lib/utils'
+import { Link } from '@tanstack/react-router'
 import { CircleDot, Loader2 } from 'lucide-react'
 
 import { useNow } from '#hooks/use-now'
 import { formatMeetingStartTime } from '#lib/format-meeting-time'
+import { isLiveCall } from '#lib/meeting-call-tabs'
 import { getUpcomingMeetingCaptureUi } from '#lib/upcoming-meeting-capture'
 
 type UpcomingMeetingRowProps = {
@@ -28,6 +30,7 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
   })
   const statusLabel = getMeetingBotUiLabel(meeting.uiPhase, meeting.baasStatus)
   const failedJoin = meeting.uiPhase === 'failed_to_join'
+  const liveCall = isLiveCall(meeting)
   const actionError =
     captureMutation.isError && captureMutation.variables === meeting.id
 
@@ -43,6 +46,18 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
         <p className="text-muted-foreground mt-1 text-sm">{statusLabel}</p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
+        {liveCall ? (
+          <Link
+            to="/meetings/$meetingId"
+            params={{ meetingId: meeting.id }}
+            className={cn(
+              buttonVariants({ variant: 'default', size: 'sm' }),
+              'rounded-full'
+            )}
+          >
+            Live call
+          </Link>
+        ) : null}
         <a
           href={meeting.meetingUrl}
           target="_blank"

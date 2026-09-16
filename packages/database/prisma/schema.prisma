@@ -179,12 +179,13 @@ model MeetingChatMessage {
 }
 
 model Highlight {
-  id           String   @id @default(cuid())
-  meetingId    String
-  meeting      Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-  timestampSec Int
-  note         String?
-  createdAt    DateTime @default(now())
+  id              String   @id @default(cuid())
+  meetingId       String
+  meeting         Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  timestampSec    Int
+  endTimestampSec Int?
+  note            String?
+  createdAt       DateTime @default(now())
 
   @@index([meetingId])
   @@map("highlight")

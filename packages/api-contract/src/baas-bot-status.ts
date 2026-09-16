@@ -201,6 +201,21 @@ function isActiveMeetingBotUiPhase(phase: MeetingBotUiPhase): boolean {
   return ACTIVE_BOT_UI_PHASES.has(phase)
 }
 
+/** MeetingBaas `start_time` may be Unix seconds or milliseconds. */
+function baasRecordingStartedAtFromStartTime(
+  startTime?: number
+): Date | undefined {
+  if (startTime == null || !Number.isFinite(startTime)) {
+    return undefined
+  }
+  const epochMs = startTime > 1e11 ? startTime : startTime * 1000
+  const date = new Date(epochMs)
+  if (!Number.isFinite(date.getTime())) {
+    return undefined
+  }
+  return date
+}
+
 function patchFromBaasStatusChange(
   meeting: MeetingBotStateFields,
   rawStatus: string,
@@ -213,10 +228,8 @@ function patchFromBaasStatusChange(
 
   const applyStatus = _shouldApplyBaasStatus(meeting.baasStatus, nextStatus)
   const recordingStartedAt =
-    nextStatus === 'in_call_recording' &&
-    recordingStartTimeSec != null &&
-    meeting.recordingStartedAt == null
-      ? new Date(recordingStartTimeSec * 1000)
+    nextStatus === 'in_call_recording' && meeting.recordingStartedAt == null
+      ? baasRecordingStartedAtFromStartTime(recordingStartTimeSec)
       : undefined
 
   if (!applyStatus && recordingStartedAt == null) {

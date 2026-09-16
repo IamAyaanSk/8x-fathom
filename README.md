@@ -45,7 +45,7 @@
 ## Architectural & Design Decisions
 
 1. **BaaS for Bot & Media Orchestration (MeetingBaas)**:
-   - Used MeetingBaas API v2 as the Bot-as-a-Service infrastructure to spin up recording bots across meeting providers (Google Meet, Zoom, Teams). This accelerated development significantly and guaranteed an end-to-end media capture pipeline with maximum feature parity within the time limit.
+   - Used MeetingBaas API v2 as the Bot-as-a-Service infrastructure to spin up recording bots. This accelerated development significantly and guaranteed an end-to-end media capture pipeline with maximum feature parity within the time limit.
 2. **Web-Native In-Call Companion (In-Browser Scratchpad & Highlights)**:
    - Skipped building a separate desktop companion client for real-time highlights and note-taking. Instead, integrated the live recording state, real-time highlight capture, and debounced scratchpad directly into the browser web application (`/meetings/$id` ongoing tab). This saved engineering overhead while delivering a seamless, responsive, and cross-platform experience.
 
@@ -60,7 +60,7 @@ flowchart TD
     subgraph External["External Services"]
         GoogleCal["📅 Google Calendar"]
         Baas["🤖 MeetingBaas (Bot BaaS)"]
-        LiveMeet["🎥 Live Meeting (Meet/Zoom/Teams)"]
+        LiveMeet["🎥 Live Meeting (Meet)"]
     end
 
     subgraph CoreBackend["Backend & Database"]

@@ -21,7 +21,7 @@ const port = env.PORT
 
 app.use(
   cors({
-    origin: 'https://8x-fathom-web.vercel.app',
+    origin: env.WEB_ORIGIN,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
   })
@@ -58,3 +58,4 @@ app.use(errorMiddleware)
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+

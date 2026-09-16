@@ -24,7 +24,8 @@
     "CLOUDFLARE_API_GATEWAY",
     "LM_STUDIO_BASE_URL",
     "LM_STUDIO_API_KEY",
-    "BASE_URL"
+    "BASE_URL",
+    "VITE_API_URL"
   ],
   "tasks": {
     "//#lint": {},

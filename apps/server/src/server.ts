@@ -21,7 +21,7 @@ const port = env.PORT
 
 app.use(
   cors({
-    origin: env.WEB_ORIGIN,
+    origin: 'https://8x-fathom-web.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
   })

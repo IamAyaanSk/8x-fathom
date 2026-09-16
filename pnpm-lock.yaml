@@ -215,15 +215,15 @@ importers:
       '@ai-sdk/openai':
         specifier: 'catalog:'
         version: 4.0.66(zod@4.4.3)
-      '@aws-sdk/client-s3':
-        specifier: 'catalog:'
-        version: 3.1132.0
       '@aws-sdk/s3-request-presigner':
         specifier: 'catalog:'
         version: 3.1132.0
       '@better-auth/prisma-adapter':
         specifier: 'catalog:'
         version: 1.7.5(@better-auth/core@1.7.5(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.4)(kysely@0.29.5)(nanostores@1.5.3))(@better-auth/utils@0.4.2)(@prisma/client@7.9.0(prisma@7.9.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3))(typescript@6.0.3))(prisma@7.9.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3))
+      '@repo/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@repo/api-contract':
         specifier: workspace:*
         version: link:../../packages/api-contract
@@ -236,6 +236,9 @@ importers:
       '@repo/meeting-dispatch':
         specifier: workspace:*
         version: link:../../packages/meeting-dispatch
+      '@repo/r2':
+        specifier: workspace:*
+        version: link:../../packages/r2
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -400,12 +403,6 @@ importers:
 
   apps/worker:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: 'catalog:'
-        version: 3.1132.0
-      '@aws-sdk/lib-storage':
-        specifier: 'catalog:'
-        version: 3.1132.0(@aws-sdk/client-s3@3.1132.0)
       '@repo/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -421,6 +418,9 @@ importers:
       '@repo/meeting-dispatch':
         specifier: workspace:*
         version: link:../../packages/meeting-dispatch
+      '@repo/r2':
+        specifier: workspace:*
+        version: link:../../packages/r2
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -467,6 +467,9 @@ importers:
       '@ai-sdk/openai-compatible':
         specifier: 'catalog:'
         version: 3.0.49(zod@4.4.3)
+      '@repo/shared-validations':
+        specifier: workspace:*
+        version: link:../shared-validations
       ai:
         specifier: 'catalog:'
         version: 7.0.101(zod@4.4.3)
@@ -604,6 +607,28 @@ importers:
       '@repo/db':
         specifier: workspace:*
         version: link:../database
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.1.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/r2:
+    dependencies:
+      '@aws-sdk/client-s3':
+        specifier: 'catalog:'
+        version: 3.1132.0
+      '@aws-sdk/lib-storage':
+        specifier: 'catalog:'
+        version: 3.1132.0(@aws-sdk/client-s3@3.1132.0)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

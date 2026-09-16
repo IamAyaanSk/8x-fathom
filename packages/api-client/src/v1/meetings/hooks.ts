@@ -2,7 +2,9 @@ import { isActiveMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingsCompletedResponse,
   GetMeetingsUpcomingResponse,
-  PostMeetingCaptureResponse
+  PostMeetingCaptureResponse,
+  PostMeetingSummaryGenerateBody,
+  PostMeetingSummaryGenerateResponse
 } from '@repo/api-contract/v1/meetings'
 import {
   type UseMutationOptions,
@@ -16,7 +18,8 @@ import {
 import {
   getMeetingsCompleted,
   getMeetingsUpcoming,
-  postMeetingCapture
+  postMeetingCapture,
+  postMeetingSummaryGenerate
 } from '#src/v1/meetings/index'
 
 type UseMeetingsUpcomingOptions = Omit<
@@ -31,7 +34,9 @@ const meetingsQueryKeys = {
   all: ['meetings'] as const,
   upcoming: () => [...meetingsQueryKeys.all, 'upcoming'] as const,
   completed: () => [...meetingsQueryKeys.all, 'completed'] as const,
-  capture: () => [...meetingsQueryKeys.all, 'capture'] as const
+  capture: () => [...meetingsQueryKeys.all, 'capture'] as const,
+  summaryGenerate: () =>
+    [...meetingsQueryKeys.all, 'summary-generate'] as const
 } as const
 
 function _upcomingRefetchInterval(query: {
@@ -123,6 +128,37 @@ function usePostMeetingCaptureMutation(
   })
 }
 
+type PostMeetingSummaryGenerateVariables = {
+  meetingId: string
+  body: PostMeetingSummaryGenerateBody
+}
+
+type UsePostMeetingSummaryGenerateMutationOptions = Omit<
+  UseMutationOptions<
+    PostMeetingSummaryGenerateResponse,
+    Error,
+    PostMeetingSummaryGenerateVariables
+  >,
+  'mutationFn'
+>
+
+function usePostMeetingSummaryGenerateMutation(
+  options?: UsePostMeetingSummaryGenerateMutationOptions
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: meetingsQueryKeys.summaryGenerate(),
+    mutationFn: ({ meetingId, body }) =>
+      postMeetingSummaryGenerate(meetingId, body),
+    ...options,
+    onSuccess: async (data, variables, onMutateResult, context) => {
+      await queryClient.invalidateQueries({ queryKey: meetingsQueryKeys.all })
+      await options?.onSuccess?.(data, variables, onMutateResult, context)
+    }
+  })
+}
+
 export {
   MEETINGS_UPCOMING_CACHE_MS,
   meetingsCompletedQueryOptions,
@@ -130,5 +166,6 @@ export {
   meetingsUpcomingQueryOptions,
   useMeetingsCompletedQuery,
   useMeetingsUpcomingQuery,
-  usePostMeetingCaptureMutation
+  usePostMeetingCaptureMutation,
+  usePostMeetingSummaryGenerateMutation
 }

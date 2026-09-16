@@ -1,7 +1,7 @@
 {
-  "name": "@repo/ai",
+  "name": "@repo/r2",
   "version": "1.0.0",
-  "description": "Vercel AI SDK models, embeddings, and agents",
+  "description": "Cloudflare R2 object storage helpers",
   "type": "module",
   "exports": {
     ".": {
@@ -16,19 +16,13 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/shared-validations": "workspace:*",
-    "@ai-sdk/openai-compatible": "catalog:",
-    "ai": "catalog:",
-    "workers-ai-provider": "catalog:",
-    "zod": "catalog:"
+    "@aws-sdk/client-s3": "catalog:",
+    "@aws-sdk/lib-storage": "catalog:"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "rimraf": "catalog:",
     "typescript": "catalog:"
-  },
-  "peerDependencies": {
-    "zod": "catalog:"
   }
 }

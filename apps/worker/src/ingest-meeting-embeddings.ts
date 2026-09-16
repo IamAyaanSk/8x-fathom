@@ -14,7 +14,7 @@ import {
   failMeetingProcessing,
   isUnrecoverableTranscriptArtifactError
 } from '#src/meeting-processing-lifecycle'
-import { getR2ObjectUtf8 } from '#src/r2-client'
+import { getR2ObjectUtf8 } from '#src/r2-storage'
 
 function _errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Unknown error'

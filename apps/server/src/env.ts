@@ -1,6 +1,6 @@
 import { loadEnvFile } from 'node:process'
 
-import { unsafeValidateEnv } from '@repo/env'
+import { isProductionEnvironment, unsafeValidateEnv } from '@repo/env'
 import {
   numericStringSchema,
   trimmedStringWithMinLengthOneSchema
@@ -27,8 +27,54 @@ const envZodSchema = z.object({
   R2_SECRET_ACCESS_KEY: trimmedStringWithMinLengthOneSchema,
   R2_BUCKET: trimmedStringWithMinLengthOneSchema,
   R2_ENDPOINT: trimmedStringWithMinLengthOneSchema,
-  OPENAI_API_KEY: trimmedStringWithMinLengthOneSchema
+  OPENAI_API_KEY: trimmedStringWithMinLengthOneSchema,
+  CLOUDFLARE_API_TOKEN: trimmedStringWithMinLengthOneSchema.optional(),
+  CLOUDFLARE_ACCOUNT_ID: trimmedStringWithMinLengthOneSchema.optional(),
+  CLOUDFLARE_API_GATEWAY: trimmedStringWithMinLengthOneSchema.optional(),
+  LM_STUDIO_BASE_URL: trimmedStringWithMinLengthOneSchema.optional(),
+  LM_STUDIO_API_KEY: trimmedStringWithMinLengthOneSchema.optional()
 })
+  .superRefine((data, ctx) => {
+    if (isProductionEnvironment(data.NODE_ENV)) {
+      if (!data.CLOUDFLARE_API_TOKEN) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['CLOUDFLARE_API_TOKEN'],
+          message: 'Required when NODE_ENV is production'
+        })
+      }
+      if (!data.CLOUDFLARE_ACCOUNT_ID) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['CLOUDFLARE_ACCOUNT_ID'],
+          message: 'Required when NODE_ENV is production'
+        })
+      }
+      if (!data.CLOUDFLARE_API_GATEWAY) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['CLOUDFLARE_API_GATEWAY'],
+          message: 'Required when NODE_ENV is production'
+        })
+      }
+      return
+    }
+
+    if (!data.LM_STUDIO_BASE_URL) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['LM_STUDIO_BASE_URL'],
+        message: 'Required when NODE_ENV is development or test'
+      })
+    }
+    if (!data.LM_STUDIO_API_KEY) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['LM_STUDIO_API_KEY'],
+        message: 'Required when NODE_ENV is development or test'
+      })
+    }
+  })
 
 const env = unsafeValidateEnv({
   schema: envZodSchema,

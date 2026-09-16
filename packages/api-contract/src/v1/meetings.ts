@@ -1,3 +1,4 @@
+import { summaryTemplateIdSchema } from '@repo/shared-validations'
 import { z } from 'zod/v4'
 
 import { BAAS_BOT_STATUSES, MEETING_BOT_UI_PHASES } from '#src/baas-bot-status'
@@ -39,6 +40,19 @@ const postMeetingCaptureResponseSchema = _createResponseApiZod(
   postMeetingBotDispatchDataSchema
 )
 
+const postMeetingSummaryGenerateBodySchema = z.object({
+  template: summaryTemplateIdSchema,
+  detail: z.string().trim().min(1).max(4000).optional()
+})
+
+const postMeetingSummaryGenerateDataSchema = z.object({
+  summary: z.string().min(1)
+})
+
+const postMeetingSummaryGenerateResponseSchema = _createResponseApiZod(
+  postMeetingSummaryGenerateDataSchema
+)
+
 export type GetMeetingsUpcomingResponse = z.infer<
   typeof getMeetingsUpcomingResponseSchema
 >
@@ -61,6 +75,16 @@ export type PostMeetingCaptureSuccessResponse = Extract<
   PostMeetingCaptureResponse,
   { success: true }
 >
+export type PostMeetingSummaryGenerateBody = z.infer<
+  typeof postMeetingSummaryGenerateBodySchema
+>
+export type PostMeetingSummaryGenerateResponse = z.infer<
+  typeof postMeetingSummaryGenerateResponseSchema
+>
+export type PostMeetingSummaryGenerateSuccessResponse = Extract<
+  PostMeetingSummaryGenerateResponse,
+  { success: true }
+>
 
 export {
   baasBotStatusSchema,
@@ -69,5 +93,7 @@ export {
   meetingBotUiPhaseSchema,
   meetingListItemSchema,
   meetingsListDataSchema,
-  postMeetingCaptureResponseSchema
+  postMeetingCaptureResponseSchema,
+  postMeetingSummaryGenerateBodySchema,
+  postMeetingSummaryGenerateResponseSchema
 }

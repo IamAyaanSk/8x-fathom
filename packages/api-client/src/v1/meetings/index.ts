@@ -2,12 +2,14 @@ import {
   getMeetingsCompletedResponseSchema,
   getMeetingsUpcomingResponseSchema,
   postMeetingCaptureResponseSchema,
-  type MeetingListItem
+  postMeetingSummaryGenerateResponseSchema,
+  type MeetingListItem,
+  type PostMeetingSummaryGenerateBody
 } from '@repo/api-contract/v1/meetings'
 
 import { _getApiClient, type _HttpRequestOptions } from '#src/index'
 
-export type { MeetingListItem }
+export type { MeetingListItem, PostMeetingSummaryGenerateBody }
 
 async function getMeetingsUpcoming(options: _HttpRequestOptions = {}) {
   const client = _getApiClient()
@@ -34,4 +36,23 @@ async function postMeetingCapture(
   return postMeetingCaptureResponseSchema.parse(response.data)
 }
 
-export { getMeetingsCompleted, getMeetingsUpcoming, postMeetingCapture }
+async function postMeetingSummaryGenerate(
+  meetingId: string,
+  body: PostMeetingSummaryGenerateBody,
+  options: _HttpRequestOptions = {}
+) {
+  const client = _getApiClient()
+  const response = await client.post(
+    `/meetings/${meetingId}/summary/generate`,
+    body,
+    options
+  )
+  return postMeetingSummaryGenerateResponseSchema.parse(response.data)
+}
+
+export {
+  getMeetingsCompleted,
+  getMeetingsUpcoming,
+  postMeetingCapture,
+  postMeetingSummaryGenerate
+}

@@ -19,7 +19,7 @@ import {
   extendMeetingProcessingLease,
   failMeetingProcessing
 } from '#src/meeting-processing-lifecycle'
-import { putR2ObjectFromUrl } from '#src/r2-client'
+import { putR2ObjectFromUrl } from '#src/r2-storage'
 
 function _errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Unknown error'

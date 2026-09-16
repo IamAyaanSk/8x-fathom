@@ -21,9 +21,10 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "catalog:",
-    "@aws-sdk/client-s3": "catalog:",
+    "@repo/r2": "workspace:*",
     "@aws-sdk/s3-request-presigner": "catalog:",
     "@better-auth/prisma-adapter": "catalog:",
+    "@repo/ai": "workspace:*",
     "@repo/api-contract": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",

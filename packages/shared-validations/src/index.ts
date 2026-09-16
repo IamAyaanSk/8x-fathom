@@ -22,6 +22,10 @@ const numericStringSchema = trimmedStringWithMinLengthOneSchema.transform(
 )
 
 export {
+  summaryTemplateIdSchema,
+  type SummaryTemplateId
+} from './summary-template.js'
+export {
   createNameSchema,
   emailSchema,
   trimmedStringWithMinLengthOneSchema,

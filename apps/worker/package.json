@@ -20,8 +20,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "catalog:",
-    "@aws-sdk/lib-storage": "catalog:",
+    "@repo/r2": "workspace:*",
     "@repo/ai": "workspace:*",
     "@repo/api-contract": "workspace:*",
     "@repo/db": "workspace:*",

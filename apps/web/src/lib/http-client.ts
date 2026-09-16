@@ -1,9 +1,9 @@
 import axios from 'axios'
 
-import { env } from '#src/env'
+import { resolvePublicOrigin } from '#lib/public-origin'
 
 const axiosInstance = axios.create({
-  baseURL: `${env.VITE_API_URL}/api/v1`,
+  baseURL: `${resolvePublicOrigin()}/api/v1`,
   timeout: 10000,
   withCredentials: true,
   headers: {

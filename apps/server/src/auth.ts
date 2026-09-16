@@ -1,4 +1,5 @@
 import { prisma } from '@repo/db'
+import { isProductionEnvironment } from '@repo/env'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 
@@ -6,12 +7,27 @@ import { calendarPlugin } from '#src/auth/plugins/calendar'
 import { env } from '#src/env'
 import { CALENDAR_WEBHOOK_PATH } from '#src/services/calendar-constants'
 
+const webOriginHost = new URL(env.WEB_ORIGIN).host
+
+const authBaseURL = isProductionEnvironment(env.NODE_ENV)
+  ? {
+      allowedHosts: [webOriginHost, '*.vercel.app'],
+      protocol: 'https' as const,
+      fallback: env.BETTER_AUTH_URL
+    }
+  : env.BETTER_AUTH_URL
+
 const auth = betterAuth({
   appName: '8x Fathom',
   secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.BETTER_AUTH_URL,
+  baseURL: authBaseURL,
   trustedOrigins: [env.WEB_ORIGIN],
+  account: {    
+    skipStateCookieCheck: true
+  },
   advanced: {
+    trustedProxyHeaders: true,
+    useSecureCookies: isProductionEnvironment(env.NODE_ENV),    
     disableOriginCheck: [CALENDAR_WEBHOOK_PATH] as unknown as boolean
   },
   database: prismaAdapter(prisma, {

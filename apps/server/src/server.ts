@@ -19,6 +19,8 @@ import v1Router from '#src/v1/routes/index'
 const app: Express = express()
 const port = env.PORT
 
+app.set('trust proxy', 1)
+
 app.use(
   cors({
     origin: env.WEB_ORIGIN,

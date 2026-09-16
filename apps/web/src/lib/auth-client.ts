@@ -1,9 +1,9 @@
 import { createAuthClient } from 'better-auth/react'
 
-import { env } from '#src/env'
+import { resolvePublicOrigin } from '#lib/public-origin'
 
 const authClient = createAuthClient({
-  baseURL: env.VITE_API_URL,
+  baseURL: resolvePublicOrigin(),
   fetchOptions: {
     credentials: 'include',
     headers: {

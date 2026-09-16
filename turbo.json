@@ -47,7 +47,7 @@
     },
 
     "build": {
-      "dependsOn": ["^build", "^db:generate"],
+      "dependsOn": ["^build", "^db:generate", "db:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*", "EXPO_OS"],
       "outputs": ["dist/**", "*.tsbuildinfo"]
     },

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+import { MadeWithLoveByAyaan } from '#components/layout/made-with-love-by-ayaan'
+
 type AuthShellProps = {
   children: ReactNode
 }
@@ -46,6 +48,9 @@ function AuthShell({ children }: AuthShellProps) {
             </blockquote>
           </div>
         </main>
+        <footer className="pb-2 pt-4">
+          <MadeWithLoveByAyaan />
+        </footer>
       </div>
     </div>
   )

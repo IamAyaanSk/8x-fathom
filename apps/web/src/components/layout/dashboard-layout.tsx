@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { CircleHelp, LogOut, Settings, Waves } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { MadeWithLoveByAyaan } from '#components/layout/made-with-love-by-ayaan'
 import { authClient } from '#lib/auth-client'
 
 type DashboardLayoutProps = {
@@ -103,6 +104,10 @@ function DashboardLayout({ children, user }: DashboardLayoutProps) {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+
+      <footer className="border-border border-t px-4 py-3 sm:px-6">
+        <MadeWithLoveByAyaan />
+      </footer>
     </div>
   )
 }

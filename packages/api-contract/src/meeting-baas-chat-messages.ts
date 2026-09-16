@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 const meetingBaasChatMessageSchema = z.object({
   message_id: trimmedStringWithMinLengthOneSchema,
   sender_name: trimmedStringWithMinLengthOneSchema,
-  sender_id: z.number().int().optional(),
+  sender_id: z.number().int().nullish(),
   text: z.string(),
   timestamp: z.iso.datetime()
 })

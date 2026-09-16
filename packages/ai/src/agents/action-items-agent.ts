@@ -1,4 +1,4 @@
-import { generateObject, type LanguageModelUsage } from 'ai'
+import { generateText, type LanguageModelUsage } from 'ai'
 import { z } from 'zod/v4'
 
 import { llmModel } from '../model.js'
@@ -55,6 +55,16 @@ const _ACTION_ITEMS_SYSTEM_PROMPT = [
   '- Never mention AI, prompts, schemas, or how the list was produced.'
 ].join(' ')
 
+const _ACTION_ITEMS_JSON_OUTPUT_INSTRUCTION =
+  ' Respond with ONLY a single JSON object (no markdown fences): {"actionItems":[{"owner":string|null,"text":string,"timestampSec":number|null,"kind":"commitment"|"action_plan"}]}.'
+
+function _parseActionItemsFromModelText(text: string): MeetingActionItem[] {
+  const trimmed = text.trim()
+  const fenceMatch = /^```(?:json)?\s*([\s\S]*?)```$/im.exec(trimmed)
+  const jsonText = fenceMatch?.[1]?.trim() ?? trimmed
+  return meetingActionItemsResultSchema.parse(JSON.parse(jsonText)).actionItems
+}
+
 export function formatMeetingActionItemText(item: MeetingActionItem): string {
   const owner = item.owner?.trim() || 'Unassigned'
   const body = item.text.trim()
@@ -82,21 +92,16 @@ export async function generateMeetingActionItems({
   }
 
   const title = meetingTitle?.trim() || 'Untitled meeting'
+  const prompt = `Meeting title: ${title}\n\nTranscript:\n${trimmedTranscript}`
 
-  const { object, usage } = await generateObject({
+  const { text, usage } = await generateText({
     model: llmModel,
-    schema: meetingActionItemsResultSchema,
-    schemaName: 'meetingActionItems',
-    schemaDescription:
-      'Action items and high-confidence action-plan follow-ups with playback timestamps.',
-    system: _ACTION_ITEMS_SYSTEM_PROMPT,
-    prompt: `Meeting title: ${title}\n\nTranscript:\n${trimmedTranscript}`
+    system: _ACTION_ITEMS_SYSTEM_PROMPT + _ACTION_ITEMS_JSON_OUTPUT_INSTRUCTION,
+    prompt
   })
 
-  const parsed = meetingActionItemsResultSchema.parse(object)
-
   return {
-    actionItems: parsed.actionItems,
+    actionItems: _parseActionItemsFromModelText(text),
     tokenUsage: usage
   }
 }

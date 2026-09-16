@@ -4,10 +4,12 @@ import type {
   GetMeetingTranscriptResponse,
   PatchMeetingActionItemResponse,
   PatchMeetingHighlightResponse,
+  PatchMeetingHighlightSuccessResponse,
   PostMeetingHighlightBody,
   PostMeetingHighlightResponse,
   PutMeetingScratchpadEntryBody,
-  PutMeetingScratchpadEntryResponse
+  PutMeetingScratchpadEntryResponse,
+  PutMeetingScratchpadEntrySuccessResponse
 } from '@repo/api-contract/v1/meeting-playback'
 import type {
   GetMeetingsCompletedResponse,
@@ -17,6 +19,7 @@ import type {
   PostMeetingSummaryGenerateResponse
 } from '@repo/api-contract/v1/meetings'
 import {
+  type QueryClient,
   type UseMutationOptions,
   type UseQueryOptions,
   queryOptions,
@@ -281,6 +284,74 @@ function _optimisticMeetingDetailActionItem(
   }
 }
 
+function _mergeMeetingDetailHighlight(
+  detail: Extract<GetMeetingDetailResponse, { success: true }>,
+  highlight: PatchMeetingHighlightSuccessResponse['data']
+): Extract<GetMeetingDetailResponse, { success: true }> {
+  const hasExisting = detail.data.highlights.some(
+    (item) => item.id === highlight.id
+  )
+  const highlights = hasExisting
+    ? detail.data.highlights.map((item) =>
+        item.id === highlight.id ? highlight : item
+      )
+    : [...detail.data.highlights, highlight]
+
+  return {
+    ...detail,
+    data: {
+      ...detail.data,
+      highlights
+    }
+  }
+}
+
+function _mergeMeetingDetailScratchpadEntry(
+  detail: Extract<GetMeetingDetailResponse, { success: true }>,
+  entry: PutMeetingScratchpadEntrySuccessResponse['data']
+): Extract<GetMeetingDetailResponse, { success: true }> {
+  const byTimestampIndex = detail.data.scratchpadEntries.findIndex(
+    (item) => item.timestampSec === entry.timestampSec
+  )
+  const byIdIndex = detail.data.scratchpadEntries.findIndex(
+    (item) => item.id === entry.id
+  )
+  const existingIndex =
+    byTimestampIndex >= 0 ? byTimestampIndex : byIdIndex
+
+  const scratchpadEntries =
+    existingIndex >= 0
+      ? detail.data.scratchpadEntries.map((item, index) =>
+          index === existingIndex ? entry : item
+        )
+      : [...detail.data.scratchpadEntries, entry].sort(
+          (left, right) => left.timestampSec - right.timestampSec
+        )
+
+  return {
+    ...detail,
+    data: {
+      ...detail.data,
+      scratchpadEntries
+    }
+  }
+}
+
+function _patchMeetingDetailCache(
+  queryClient: QueryClient,
+  meetingId: string,
+  updater: (
+    detail: Extract<GetMeetingDetailResponse, { success: true }>
+  ) => Extract<GetMeetingDetailResponse, { success: true }>
+) {
+  const detailKey = meetingsQueryKeys.detail(meetingId)
+  const previous = queryClient.getQueryData<GetMeetingDetailResponse>(detailKey)
+  if (previous?.success !== true) {
+    return
+  }
+  queryClient.setQueryData(detailKey, updater(previous))
+}
+
 function usePatchMeetingActionItemMutation(
   options?: UsePatchMeetingActionItemMutationOptions
 ) {
@@ -360,9 +431,11 @@ function usePostMeetingHighlightMutation(
     mutationFn: ({ meetingId, body }) => postMeetingHighlight(meetingId, body),
     ...options,
     onSuccess: async (data, variables, onMutateResult, context) => {
-      await queryClient.invalidateQueries({
-        queryKey: meetingsQueryKeys.detail(variables.meetingId)
-      })
+      if (data.success === true) {
+        _patchMeetingDetailCache(queryClient, variables.meetingId, (detail) =>
+          _mergeMeetingDetailHighlight(detail, data.data)
+        )
+      }
       await options?.onSuccess?.(data, variables, onMutateResult, context)
     }
   })
@@ -398,9 +471,11 @@ function usePatchMeetingHighlightMutation(
       }),
     ...options,
     onSuccess: async (data, variables, onMutateResult, context) => {
-      await queryClient.invalidateQueries({
-        queryKey: meetingsQueryKeys.detail(variables.meetingId)
-      })
+      if (data.success === true) {
+        _patchMeetingDetailCache(queryClient, variables.meetingId, (detail) =>
+          _mergeMeetingDetailHighlight(detail, data.data)
+        )
+      }
       await options?.onSuccess?.(data, variables, onMutateResult, context)
     }
   })
@@ -431,9 +506,11 @@ function usePutMeetingScratchpadEntryMutation(
       putMeetingScratchpadEntry(meetingId, body),
     ...options,
     onSuccess: async (data, variables, onMutateResult, context) => {
-      await queryClient.invalidateQueries({
-        queryKey: meetingsQueryKeys.detail(variables.meetingId)
-      })
+      if (data.success === true) {
+        _patchMeetingDetailCache(queryClient, variables.meetingId, (detail) =>
+          _mergeMeetingDetailScratchpadEntry(detail, data.data)
+        )
+      }
       await options?.onSuccess?.(data, variables, onMutateResult, context)
     }
   })

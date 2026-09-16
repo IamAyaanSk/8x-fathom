@@ -1,7 +1,7 @@
 import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { usePutMeetingScratchpadEntryMutation } from '@repo/api-client/v1/meetings/hooks'
 import { Textarea } from '@repo/ui-web/components/textarea'
-import { Loader2, StickyNote } from 'lucide-react'
+import { StickyNote } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { useNow } from '#hooks/use-now'
@@ -23,21 +23,33 @@ function MeetingLiveScratchpadPanel({
   const elapsedSec = getRecordingElapsedSec(meeting.recordingStartedAt, nowMs)
   const saveMutation = usePutMeetingScratchpadEntryMutation()
   const [draft, setDraft] = useState('')
+  const [noteTimestampSec, setNoteTimestampSec] = useState(elapsedSec)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastSavedTimestampRef = useRef<number | null>(null)
-  const pendingTimestampRef = useRef(elapsedSec)
+  const draftTextRef = useRef('')
+  const isDirtyRef = useRef(false)
+  const boundTimestampSecRef = useRef(elapsedSec)
 
-  const entryAtCurrentTime = meeting.scratchpadEntries.find(
-    (entry) => entry.timestampSec === elapsedSec
-  )
+  function _entryTextAt(timestampSec: number): string {
+    return (
+      meeting.scratchpadEntries.find(
+        (entry) => entry.timestampSec === timestampSec
+      )?.text ?? ''
+    )
+  }
 
   useEffect(() => {
-    if (lastSavedTimestampRef.current === elapsedSec) {
+    if (isDirtyRef.current || debounceRef.current) {
       return
     }
-    setDraft(entryAtCurrentTime?.text ?? '')
-    lastSavedTimestampRef.current = null
-  }, [elapsedSec, entryAtCurrentTime?.text])
+    if (boundTimestampSecRef.current === elapsedSec) {
+      return
+    }
+    boundTimestampSecRef.current = elapsedSec
+    setNoteTimestampSec(elapsedSec)
+    const nextDraft = _entryTextAt(elapsedSec)
+    draftTextRef.current = nextDraft
+    setDraft(nextDraft)
+  }, [elapsedSec, meeting.scratchpadEntries])
 
   useEffect(() => {
     return () => {
@@ -47,25 +59,29 @@ function MeetingLiveScratchpadPanel({
     }
   }, [])
 
-  function scheduleSave(text: string, timestampSec: number) {
+  function scheduleSave(timestampSec: number) {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current)
     }
-    const trimmed = text.trim()
-    if (trimmed.length === 0) {
-      return
-    }
-    pendingTimestampRef.current = timestampSec
     debounceRef.current = setTimeout(() => {
-      const saveAtSec = pendingTimestampRef.current
+      debounceRef.current = null
+      const trimmed = draftTextRef.current.trim()
+      if (trimmed.length === 0) {
+        isDirtyRef.current = false
+        return
+      }
+      boundTimestampSecRef.current = timestampSec
       saveMutation.mutate(
         {
           meetingId,
-          body: { timestampSec: saveAtSec, text: trimmed }
+          body: { timestampSec, text: trimmed }
         },
         {
           onSuccess: () => {
-            lastSavedTimestampRef.current = saveAtSec
+            isDirtyRef.current = false
+          },
+          onError: () => {
+            isDirtyRef.current = true
           }
         }
       )
@@ -76,9 +92,6 @@ function MeetingLiveScratchpadPanel({
     (left, right) => right.timestampSec - left.timestampSec
   )
 
-  const isSaving =
-    saveMutation.isPending && saveMutation.variables?.meetingId === meetingId
-
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-card ring-border flex flex-col gap-3 rounded-xl p-4 ring-1">
@@ -88,7 +101,7 @@ function MeetingLiveScratchpadPanel({
             <p className="text-foreground text-sm font-medium">Scratchpad</p>
           </div>
           <p className="text-muted-foreground text-xs tabular-nums">
-            {formatPlaybackTimestamp(elapsedSec)}
+            {formatPlaybackTimestamp(noteTimestampSec)}
           </p>
         </div>
         <Textarea
@@ -98,16 +111,14 @@ function MeetingLiveScratchpadPanel({
           className="bg-background min-h-[8rem] resize-none"
           onChange={(event) => {
             const next = event.target.value
+            isDirtyRef.current = true
+            boundTimestampSecRef.current = elapsedSec
+            setNoteTimestampSec(elapsedSec)
+            draftTextRef.current = next
             setDraft(next)
-            scheduleSave(next, elapsedSec)
+            scheduleSave(elapsedSec)
           }}
         />
-        {isSaving ? (
-          <p className="text-muted-foreground flex items-center gap-2 text-xs">
-            <Loader2 aria-hidden className="size-3 animate-spin" />
-            Saving…
-          </p>
-        ) : null}
       </div>
 
       {sortedEntries.length > 0 ? (

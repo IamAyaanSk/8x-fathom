@@ -13,12 +13,28 @@ if (existsSync(packageEnvPath)) {
 
 config({ path: serverEnvPath, override: true })
 
+function _getPrismaCliDatabaseUrl(): string {
+  const unpooled = process.env['DATABASE_URL_UNPOOLED']
+  if (unpooled) {
+    return unpooled
+  }
+
+  const pooled = process.env['DATABASE_URL']
+  if (pooled) {
+    return pooled
+  }
+
+  throw new Error(
+    'Set DATABASE_URL_UNPOOLED (Neon direct) or DATABASE_URL in apps/server/.env for Prisma CLI.'
+  )
+}
+
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations'
   },
   datasource: {
-    url: process.env['DATABASE_URL']
+    url: _getPrismaCliDatabaseUrl()
   }
 })

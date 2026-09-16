@@ -6,7 +6,7 @@ const databaseUrl = process.env.DATABASE_URL
 
 if (!databaseUrl) {
   throw new Error(
-    'DATABASE_URL is not set. Load apps/server/.env before importing @repo/db.'
+    'DATABASE_URL is not set. Use the Neon pooled URL (-pooler hostname). Load apps/server/.env before importing @repo/db.'
   )
 }
 

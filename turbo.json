@@ -3,6 +3,7 @@
   "ui": "tui",
   "globalEnv": [
     "DATABASE_URL",
+    "DATABASE_URL_UNPOOLED",
     "NODE_ENV",
     "PORT",
     "BETTER_AUTH_SECRET",

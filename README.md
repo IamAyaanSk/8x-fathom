@@ -6,9 +6,15 @@ See `AGENTS.md` for product rules, data model, bot status mapping, and the F0–
 
 ## Database and env
 
-Use a local PostgreSQL instance with the **pgvector** extension (`CREATE EXTENSION vector`).
+Use [Neon](https://neon.com) PostgreSQL with **pgvector** (migrations run `CREATE EXTENSION IF NOT EXISTS vector`).
 
-Copy `apps/server/.env.example` to `apps/server/.env` and set `DATABASE_URL`. Prisma CLI loads that file from `packages/database/prisma.config.ts` (optional `packages/database/.env` fallback).
+1. Create a Neon project and open **Connect** in the console.
+2. Copy both connection strings ([Prisma + Neon guide](https://neon.com/docs/guides/prisma)):
+   - **Pooled** (`-pooler` in the hostname) → `DATABASE_URL` on the API server and worker.
+   - **Direct (unpooled)** → `DATABASE_URL_UNPOOLED` on the API server only (Prisma migrate / deploy / studio).
+3. Optional: add `&connect_timeout=15` if the database was idle and the first connection times out.
+
+Copy `apps/server/.env.example` to `apps/server/.env` and set those URLs. Prisma CLI loads `apps/server/.env` from `packages/database/prisma.config.ts` (optional `packages/database/.env` fallback). Runtime uses `@prisma/adapter-pg` with the **pooled** `DATABASE_URL`.
 
 Copy `apps/web/.env.example` to `apps/web/.env`. Copy `apps/worker/.env.example` to `apps/worker/.env` and set the same `DATABASE_URL`, `MEETINGBAAS_API_KEY`, `MEETINGBAAS_WEBHOOK_SECRET`, and `BASE_URL` as the API server. Worker HTTP (health) defaults to port `3001`.
 

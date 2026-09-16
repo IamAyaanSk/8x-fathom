@@ -4,6 +4,11 @@ import {
   getCalendarStatusController,
   postCalendarSyncController
 } from '#src/v1/controllers/calendar'
+import { patchMeetingActionItemController } from '#src/v1/controllers/meeting-action-items'
+import {
+  getMeetingDetailController,
+  getMeetingTranscriptController
+} from '#src/v1/controllers/meeting-playback'
 import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting-summary'
 import {
   getMeetingsCompletedController,
@@ -21,6 +26,12 @@ router.get('/calendar/status', getCalendarStatusController)
 router.post('/calendar/sync', postCalendarSyncController)
 router.get('/meetings/upcoming', getMeetingsUpcomingController)
 router.get('/meetings/completed', getMeetingsCompletedController)
+router.get('/meetings/:meetingId', getMeetingDetailController)
+router.get('/meetings/:meetingId/transcript', getMeetingTranscriptController)
+router.patch(
+  '/meetings/:meetingId/action-items/:actionItemId',
+  patchMeetingActionItemController
+)
 router.post('/meetings/:meetingId/capture', postMeetingCaptureController)
 router.post(
   '/meetings/:meetingId/summary/generate',

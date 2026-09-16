@@ -12,6 +12,7 @@ import {
   signedArtifactUrlsFromCompletedData
 } from '@repo/api-contract/meeting-baas-artifacts'
 import type { MeetingBaasWebhookEvent } from '@repo/api-contract/meeting-baas-webhook'
+import { isMeetingCaptureBotParticipant } from '@repo/api-contract/meeting-participants'
 import { prisma } from '@repo/db'
 import { Webhook, WebhookVerificationError } from 'svix'
 
@@ -178,7 +179,13 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
     }
 
     const incomingUrls = signedArtifactUrlsFromCompletedData(event.data)
-    const participants = event.data.participants
+    const participants = event.data.participants?.filter(
+      (participant) =>
+        !isMeetingCaptureBotParticipant({
+          name: participant.name,
+          displayName: participant.display_name ?? null
+        })
+    )
 
     if (meeting.processingStatus === 'importing') {
       await prisma.meeting.update({
@@ -200,7 +207,9 @@ async function applyMeetingBaasWebhook(event: MeetingBaasWebhookEvent) {
         baasStatus: 'completed',
         processingStatus: 'importing',
         baasSignedArtifactUrls: incomingUrls,
-        ...(participants && meeting._count.participants === 0
+        ...(participants &&
+        participants.length > 0 &&
+        meeting._count.participants === 0
           ? {
               participants: {
                 create: participants.map((participant) => ({

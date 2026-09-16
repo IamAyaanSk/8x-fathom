@@ -1,5 +1,6 @@
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
 import { getMeetingBotUiLabel } from '@repo/api-contract/baas-bot-status'
+import { Link } from '@tanstack/react-router'
 
 import {
   formatMeetingCardWeekday,
@@ -35,7 +36,11 @@ function MyCallCard({ meeting }: { meeting: MeetingListItem }) {
   const statusLabel = getMeetingBotUiLabel(meeting.uiPhase, meeting.baasStatus)
 
   return (
-    <article className="flex flex-col gap-3">
+    <Link
+      to="/meetings/$meetingId"
+      params={{ meetingId: meeting.id }}
+      className="focus-visible:ring-ring flex flex-col gap-3 rounded-xl outline-none focus-visible:ring-2"
+    >
       <div
         className={
           showRecording
@@ -59,7 +64,7 @@ function MyCallCard({ meeting }: { meeting: MeetingListItem }) {
         <p className="text-muted-foreground mt-0.5 text-sm">{statusLabel}</p>
         <p className="text-muted-foreground/80 mt-0.5 text-sm">{weekday}</p>
       </div>
-    </article>
+    </Link>
   )
 }
 

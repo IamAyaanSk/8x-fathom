@@ -196,7 +196,7 @@ async function _dispatchLockedMeeting(
   const client = createMeetingBaasClient(params.meetingBaasApiKey)
   const createResult = await client.createBot({
     meeting_url: row.meetingUrl,
-    bot_name: `${row.userName}'s 8x Notetaker}`,
+    bot_name: `${row.userName}'s 8x Notetaker`,
     transcription_enabled: true,
     allow_multiple_bots: false,
     timeout_config: {

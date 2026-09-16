@@ -26,6 +26,11 @@ export {
   type SummaryTemplateId
 } from './summary-template.js'
 export {
+  SUMMARY_TEMPLATE_GROUPS,
+  SUMMARY_TEMPLATE_LABELS,
+  summaryTemplateLabel
+} from './summary-template-labels.js'
+export {
   createNameSchema,
   emailSchema,
   trimmedStringWithMinLengthOneSchema,

@@ -16,8 +16,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/shared-validations": "workspace:*",
     "@ai-sdk/openai-compatible": "catalog:",
+    "@repo/shared-validations": "workspace:*",
     "ai": "catalog:",
     "workers-ai-provider": "catalog:",
     "zod": "catalog:"

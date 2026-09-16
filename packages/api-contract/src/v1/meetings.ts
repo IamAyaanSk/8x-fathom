@@ -23,11 +23,13 @@ const meetingsListDataSchema = z.object({
   meetings: z.array(meetingListItemSchema)
 })
 
-const getMeetingsUpcomingResponseSchema =
-  _createResponseApiZod(meetingsListDataSchema)
+const getMeetingsUpcomingResponseSchema = _createResponseApiZod(
+  meetingsListDataSchema
+)
 
-const getMeetingsCompletedResponseSchema =
-  _createResponseApiZod(meetingsListDataSchema)
+const getMeetingsCompletedResponseSchema = _createResponseApiZod(
+  meetingsListDataSchema
+)
 
 const postMeetingBotDispatchDataSchema = z.object({
   meetingId: z.string(),

@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "catalog:",
-    "@repo/r2": "workspace:*",
     "@aws-sdk/s3-request-presigner": "catalog:",
     "@better-auth/prisma-adapter": "catalog:",
     "@repo/ai": "workspace:*",
@@ -29,6 +28,7 @@
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
     "@repo/meeting-dispatch": "workspace:*",
+    "@repo/r2": "workspace:*",
     "@repo/shared-validations": "workspace:*",
     "ai": "catalog:",
     "better-auth": "catalog:",

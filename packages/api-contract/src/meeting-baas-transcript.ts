@@ -116,6 +116,69 @@ function parseMeetingBaasOutputTranscriptionFromJson(
   return parseMeetingBaasOutputTranscription(JSON.parse(rawJson))
 }
 
+const meetingTranscriptLineSchema = z.object({
+  startSec: z.number(),
+  endSec: z.number(),
+  speaker: z.string().nullable(),
+  text: z.string().min(1)
+})
+
+type MeetingTranscriptLine = z.infer<typeof meetingTranscriptLineSchema>
+
+function meetingTranscriptLinesFromTranscription(
+  transcription: MeetingBaasOutputTranscription
+): MeetingTranscriptLine[] {
+  const lines: MeetingTranscriptLine[] = []
+
+  for (const utterance of meetingBaasTranscriptUtterancesInOrder(
+    transcription
+  )) {
+    const text = utterance.text.trim()
+    if (!text) {
+      continue
+    }
+
+    const startSec = Math.max(0, Math.floor(utterance.start ?? 0))
+    const rawEnd = utterance.end ?? utterance.start ?? 0
+    const endSec = Math.max(startSec, Math.ceil(rawEnd))
+    const speaker = utterance.speaker?.trim() ?? null
+
+    lines.push({ startSec, endSec, speaker, text })
+  }
+
+  if (lines.length === 0) {
+    throw new Error('Meeting transcript has no utterances')
+  }
+
+  return lines
+}
+
+function meetingTranscriptLinesFromJson(
+  rawJson: string
+): MeetingTranscriptLine[] {
+  const transcription = parseMeetingBaasOutputTranscriptionFromJson(rawJson)
+  return meetingTranscriptLinesFromTranscription(transcription)
+}
+
+function meetingTranscriptDurationSec(
+  transcription: MeetingBaasOutputTranscription
+): number | null {
+  const total = transcription.result.total_duration
+  if (total !== undefined && total > 0) {
+    return Math.ceil(total)
+  }
+
+  let maxEnd = 0
+  for (const utterance of transcription.result.utterances) {
+    const end = utterance.end ?? utterance.start ?? 0
+    if (end > maxEnd) {
+      maxEnd = end
+    }
+  }
+
+  return maxEnd > 0 ? Math.ceil(maxEnd) : null
+}
+
 export {
   formatMeetingBaasTranscriptText,
   formatMeetingBaasTranscriptTextFromJson,
@@ -126,6 +189,11 @@ export {
   meetingBaasTranscriptUtterancesInOrder,
   parseMeetingBaasOutputTranscription,
   parseMeetingBaasOutputTranscriptionFromJson,
+  meetingTranscriptDurationSec,
+  meetingTranscriptLineSchema,
+  meetingTranscriptLinesFromJson,
+  meetingTranscriptLinesFromTranscription,
   type MeetingBaasOutputTranscription,
-  type MeetingBaasTranscriptUtterance
+  type MeetingBaasTranscriptUtterance,
+  type MeetingTranscriptLine
 }

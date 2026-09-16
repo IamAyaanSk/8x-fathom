@@ -283,7 +283,11 @@ async function dispatchBotForMeeting(
   }
 
   if (params.mode === 'capture') {
-    _assertCaptureWindow(existing.startTime, now.getTime())
+    const isFailedJoinRetry =
+      existing.baasStatus === 'failed' && existing.recordingStartedAt == null
+    if (!isFailedJoinRetry) {
+      _assertCaptureWindow(existing.startTime, now.getTime())
+    }
   }
 
   if (

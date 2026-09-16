@@ -34,7 +34,7 @@ function getUpcomingMeetingCaptureUi({
   const canCapture =
     (failedJoin || !hasBot) &&
     meeting.uiPhase !== 'failed_processing' &&
-    manualCaptureAllowed &&
+    (failedJoin || manualCaptureAllowed) &&
     !hasEnded &&
     !isCapturing
 

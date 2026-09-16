@@ -1,0 +1,14 @@
+# Monorepo Docker builds use the repository root as context (Northflank: set context to `.`).
+.git
+.github
+.turbo
+**/.turbo
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!.env.example
+.agent-logs
+.cursor
+**/*.tsbuildinfo
+apps/web

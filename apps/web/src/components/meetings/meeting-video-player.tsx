@@ -1,4 +1,4 @@
-import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
+import type { MeetingPlaybackMedia } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
 import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -9,7 +9,7 @@ import { formatRecordingDurationLabel } from '#lib/format-recording-duration-lab
 const PLAYBACK_RATES = [1, 1.25, 1.5, 2] as const
 
 type MeetingVideoPlayerProps = {
-  meeting: MeetingDetail
+  meeting: MeetingPlaybackMedia
   onSeekReady: (seekTo: (timestampSec: number) => void) => void
   onTimeUpdate: (currentTimeSec: number) => void
 }

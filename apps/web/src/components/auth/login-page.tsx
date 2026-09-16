@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle
 } from '@repo/ui-web/components/card'
+import { Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -52,6 +53,23 @@ function LoginPage() {
           ) : null}
           <p className="text-muted-foreground text-center text-sm">
             New here? Continue with Google to get started.
+          </p>
+          <p className="text-muted-foreground text-center text-xs leading-relaxed">
+            By continuing, you agree to our{' '}
+            <Link
+              to="/terms"
+              className="text-foreground underline-offset-4 hover:underline"
+            >
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link
+              to="/privacy"
+              className="text-foreground underline-offset-4 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+            .
           </p>
         </CardContent>
       </Card>

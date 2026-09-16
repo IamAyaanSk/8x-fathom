@@ -5,13 +5,18 @@ import { Sparkles, StickyNote, Video } from 'lucide-react'
 import { MeetingTimestampLink } from '#components/meetings/meeting-timestamp-link'
 import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
 
+type MeetingSummaryCaptureSource = {
+  highlights: MeetingDetail['highlights']
+  scratchpadEntries?: MeetingDetail['scratchpadEntries']
+}
+
 type MeetingSummaryCaptureSectionsProps = {
-  meeting: MeetingDetail
+  meeting: MeetingSummaryCaptureSource
   onSeek: (timestampSec: number) => void
   className?: string
 }
 
-function _completedHighlights(meeting: MeetingDetail) {
+function _completedHighlights(meeting: MeetingSummaryCaptureSource) {
   return meeting.highlights
     .filter((highlight) => highlight.endTimestampSec != null)
     .sort((left, right) => left.timestampSec - right.timestampSec)
@@ -23,7 +28,7 @@ function MeetingSummaryCaptureSections({
   className
 }: MeetingSummaryCaptureSectionsProps) {
   const highlights = _completedHighlights(meeting)
-  const scratchpadEntries = [...meeting.scratchpadEntries].sort(
+  const scratchpadEntries = [...(meeting.scratchpadEntries ?? [])].sort(
     (left, right) => left.timestampSec - right.timestampSec
   )
 

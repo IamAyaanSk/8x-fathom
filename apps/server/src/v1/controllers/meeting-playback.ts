@@ -1,9 +1,4 @@
 import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
-import {
-  meetingTranscriptDurationSec,
-  meetingTranscriptLinesFromJson,
-  parseMeetingBaasOutputTranscriptionFromJson
-} from '@repo/api-contract/meeting-baas-transcript'
 import { isMeetingCaptureBotParticipant } from '@repo/api-contract/meeting-participants'
 import type {
   GetMeetingDetailSuccessResponse,
@@ -13,11 +8,13 @@ import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
-import { getR2ObjectUtf8, presignR2GetObjectUrl } from '#src/r2-storage'
+import {
+  calendarDurationSec,
+  loadRecordingPlayback
+} from '#src/services/meeting-recording-playback'
+import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
 import { dateToIsoStringOrNull } from '#src/utils/date-to-iso'
 import { HttpError } from '#src/v1/errors/http-error'
-
-const RECORDING_PLAYBACK_PRESIGN_SECONDS = 3600
 
 function _meetingIdFromRequest(req: Request): string | null {
   const meetingId = req.params.meetingId
@@ -25,33 +22,6 @@ function _meetingIdFromRequest(req: Request): string | null {
     return null
   }
   return meetingId
-}
-
-async function _loadRecordingPlayback(recordingR2Key: string | null) {
-  if (!recordingR2Key) {
-    return null
-  }
-
-  const expiresAt = new Date(
-    Date.now() + RECORDING_PLAYBACK_PRESIGN_SECONDS * 1000
-  )
-  const url = await presignR2GetObjectUrl(
-    recordingR2Key,
-    RECORDING_PLAYBACK_PRESIGN_SECONDS
-  )
-
-  return {
-    url,
-    expiresAt: expiresAt.toISOString()
-  }
-}
-
-function _calendarDurationSec(startTime: Date, endTime: Date): number | null {
-  const calendarSeconds = Math.max(
-    0,
-    Math.floor((endTime.getTime() - startTime.getTime()) / 1000)
-  )
-  return calendarSeconds > 0 ? calendarSeconds : null
 }
 
 const getMeetingDetailController = async (
@@ -143,12 +113,12 @@ const getMeetingDetailController = async (
 
     let recordingPlayback: { url: string; expiresAt: string } | null = null
     try {
-      recordingPlayback = await _loadRecordingPlayback(meeting.recordingR2Key)
+      recordingPlayback = await loadRecordingPlayback(meeting.recordingR2Key)
     } catch {
       throw new HttpError(502, 'Failed to prepare recording playback')
     }
 
-    const recordingDurationSec = _calendarDurationSec(
+    const recordingDurationSec = calendarDurationSec(
       meeting.startTime,
       meeting.endTime
     )
@@ -248,35 +218,12 @@ const getMeetingTranscriptController = async (
       throw new HttpError(404, 'Meeting not found')
     }
 
-    if (!meeting.transcriptR2Key) {
-      throw new HttpError(409, 'Meeting transcript is not available yet')
-    }
-
-    let rawTranscript: string
-    try {
-      rawTranscript = await getR2ObjectUtf8(meeting.transcriptR2Key)
-    } catch {
-      throw new HttpError(502, 'Failed to load meeting transcript')
-    }
-
-    let lines: ReturnType<typeof meetingTranscriptLinesFromJson>
-    let durationSec: number | null = null
-    try {
-      lines = meetingTranscriptLinesFromJson(rawTranscript)
-      const transcription =
-        parseMeetingBaasOutputTranscriptionFromJson(rawTranscript)
-      durationSec = meetingTranscriptDurationSec(transcription)
-    } catch {
-      throw new HttpError(502, 'Failed to parse meeting transcript')
-    }
+    const transcript = await loadMeetingTranscriptData(meeting.transcriptR2Key)
 
     res.json({
       success: true,
       message: 'Meeting transcript fetched successfully',
-      data: {
-        lines,
-        durationSec
-      }
+      data: transcript
     })
   } catch (error) {
     next(error)

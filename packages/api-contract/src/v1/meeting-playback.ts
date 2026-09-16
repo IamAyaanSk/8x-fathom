@@ -187,6 +187,10 @@ export type PutMeetingScratchpadEntrySuccessResponse = Extract<
 export type MeetingScratchpadEntry = z.infer<
   typeof meetingScratchpadEntrySchema
 >
+export type MeetingPlaybackMedia = Pick<
+  MeetingDetail,
+  'recordingDurationSec' | 'recordingPlayback' | 'highlights'
+>
 
 export {
   getMeetingDetailResponseSchema,

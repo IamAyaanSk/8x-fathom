@@ -1,21 +1,31 @@
 import { useMeetingTranscriptQuery } from '@repo/api-client/v1/meetings/hooks'
+import { useMeetingShareTranscriptQuery } from '@repo/api-client/v1/share/hooks'
 import { Loader2 } from 'lucide-react'
 
 import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
 
 type MeetingTranscriptPanelProps = {
-  meetingId: string
+  meetingId?: string
+  shareSlug?: string
   currentTimeSec: number
   onSeek: (timestampSec: number) => void
 }
 
 function MeetingTranscriptPanel({
   meetingId,
+  shareSlug,
   currentTimeSec,
   onSeek
 }: MeetingTranscriptPanelProps) {
-  const { data, isPending, isError, refetch } =
-    useMeetingTranscriptQuery(meetingId)
+  const meetingTranscript = useMeetingTranscriptQuery(meetingId ?? '', {
+    enabled: meetingId != null && meetingId.length > 0
+  })
+  const shareTranscript = useMeetingShareTranscriptQuery(shareSlug ?? '', {
+    enabled: shareSlug != null && shareSlug.length > 0
+  })
+
+  const query = shareSlug ? shareTranscript : meetingTranscript
+  const { data, isPending, isError, refetch } = query
 
   if (isPending) {
     return (

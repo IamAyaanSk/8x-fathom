@@ -11,9 +11,11 @@ import {
 import { MeetingSummaryCaptureSections } from '#components/meetings/meeting-summary-capture-sections'
 
 type MeetingSummaryPanelProps = {
-  meeting: MeetingDetail
+  meeting: Pick<MeetingDetail, 'summary' | 'highlights'> &
+    Partial<Pick<MeetingDetail, 'id' | 'scratchpadEntries'>>
   onSeek: (timestampSec: number) => void
   canRecreateSummary: boolean
+  readOnly?: boolean
 }
 
 function _renderSummaryBody(body: string) {
@@ -115,7 +117,8 @@ function _summaryGenerateErrorMessage(error: Error): string {
 function MeetingSummaryPanel({
   meeting,
   onSeek,
-  canRecreateSummary
+  canRecreateSummary,
+  readOnly = false
 }: MeetingSummaryPanelProps) {
   const meetingId = meeting.id
   const summary = meeting.summary
@@ -126,7 +129,7 @@ function MeetingSummaryPanel({
   const generateSummary = usePostMeetingSummaryGenerateMutation()
 
   function openRecreateDialog() {
-    if (!canRecreateSummary) {
+    if (!canRecreateSummary || !meetingId) {
       return
     }
     setGenerateError(null)
@@ -134,6 +137,9 @@ function MeetingSummaryPanel({
   }
 
   function handleDialogSubmit(payload: MeetingRecreateSummarySubmit) {
+    if (!meetingId) {
+      return
+    }
     setGenerateError(null)
     generateSummary.mutate(
       {
@@ -169,7 +175,7 @@ function MeetingSummaryPanel({
     <>
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {canRecreateSummary ? (
+          {!readOnly && canRecreateSummary && meetingId ? (
             <Button
               type="button"
               variant="outline"
@@ -185,7 +191,7 @@ function MeetingSummaryPanel({
               Recreate
             </Button>
           ) : null}
-          {summary ? (
+          {!readOnly && summary ? (
             <Button
               type="button"
               variant="default"

@@ -15,6 +15,11 @@ import {
   getMeetingDetailController,
   getMeetingTranscriptController
 } from '#src/v1/controllers/meeting-playback'
+import {
+  getMeetingShareDetailController,
+  getMeetingShareTranscriptController,
+  postMeetingShareEnableController
+} from '#src/v1/controllers/meeting-share'
 import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting-summary'
 import {
   getMeetingsCompletedController,
@@ -26,6 +31,9 @@ import { requireSession } from '#src/v1/middlewares/require-session'
 
 const router = express.Router()
 
+router.get('/share/:shareSlug', getMeetingShareDetailController)
+router.get('/share/:shareSlug/transcript', getMeetingShareTranscriptController)
+
 router.use(requireSession)
 router.get('/users', getUsersController)
 router.get('/calendar/status', getCalendarStatusController)
@@ -34,6 +42,7 @@ router.get('/meetings/upcoming', getMeetingsUpcomingController)
 router.get('/meetings/completed', getMeetingsCompletedController)
 router.get('/meetings/:meetingId', getMeetingDetailController)
 router.get('/meetings/:meetingId/transcript', getMeetingTranscriptController)
+router.post('/meetings/:meetingId/share', postMeetingShareEnableController)
 router.patch(
   '/meetings/:meetingId/action-items/:actionItemId',
   patchMeetingActionItemController

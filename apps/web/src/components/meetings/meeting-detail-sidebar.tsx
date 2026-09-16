@@ -1,5 +1,6 @@
 import { usePatchMeetingActionItemMutation } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
+import { usePostMeetingShareEnableMutation } from '@repo/api-client/v1/share/hooks'
 import { meetingParticipantLabel } from '@repo/api-contract/meeting-participants'
 import { Button } from '@repo/ui-web/components/button'
 import { cn } from '@repo/ui-web/lib/utils'
@@ -34,7 +35,10 @@ function MeetingDetailSidebar({
     meeting.title.trim().length > 0 ? meeting.title : 'Untitled call'
   const dateLabel = formatMeetingDetailDate(meeting.startTime)
   const patchActionItem = usePatchMeetingActionItemMutation()
+  const enableShare = usePostMeetingShareEnableMutation()
   const [copiedFollowUp, setCopiedFollowUp] = useState(false)
+  const [copiedShare, setCopiedShare] = useState(false)
+  const canShare = meeting.processingStatus === 'ready'
 
   function toggleActionItem(actionItemId: string, completed: boolean) {
     patchActionItem.mutate({
@@ -60,6 +64,32 @@ function MeetingDetailSidebar({
     }, 2000)
   }
 
+  async function handleShare() {
+    if (!canShare) {
+      return
+    }
+
+    try {
+      let shareSlug = meeting.shareSlug
+      if (!shareSlug) {
+        const result = await enableShare.mutateAsync(meetingId)
+        if (result.success !== true) {
+          return
+        }
+        shareSlug = result.data.shareSlug
+      }
+
+      const shareUrl = `${window.location.origin}/share/${shareSlug}`
+      await navigator.clipboard.writeText(shareUrl)
+      setCopiedShare(true)
+      window.setTimeout(() => {
+        setCopiedShare(false)
+      }, 2000)
+    } catch {
+      return
+    }
+  }
+
   return (
     <aside className={cn('flex flex-col gap-0', className)}>
       <div className="flex flex-col gap-4">
@@ -74,10 +104,13 @@ function MeetingDetailSidebar({
             type="button"
             variant="default"
             className="min-w-0 flex-1"
-            disabled={!meeting.shareSlug}
+            disabled={!canShare || enableShare.isPending}
+            onClick={() => {
+              void handleShare()
+            }}
           >
             <Link2 aria-hidden className="size-4" />
-            Share
+            {copiedShare ? 'Copied' : 'Share'}
           </Button>
           <Button
             type="button"

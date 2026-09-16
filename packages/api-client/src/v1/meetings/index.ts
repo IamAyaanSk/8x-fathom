@@ -6,6 +6,7 @@ import {
   postMeetingHighlightResponseSchema,
   putMeetingScratchpadEntryResponseSchema,
   type MeetingDetail,
+  type MeetingPlaybackMedia,
   type MeetingScratchpadEntry,
   type MeetingTranscriptData,
   type PatchMeetingActionItemBody,
@@ -27,6 +28,7 @@ import { _getApiClient, type _HttpRequestOptions } from '#src/index'
 export type {
   MeetingDetail,
   MeetingListItem,
+  MeetingPlaybackMedia,
   MeetingScratchpadEntry,
   MeetingTranscriptData,
   PatchMeetingActionItemBody,

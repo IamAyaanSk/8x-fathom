@@ -105,11 +105,18 @@ function _renderSummaryMarkdown(summary: string) {
 
 function _summaryGenerateErrorMessage(error: Error): string {
   const axiosLike = error as Error & {
+    code?: string
     response?: { data?: { message?: string } }
   }
   const message = axiosLike.response?.data?.message
   if (typeof message === 'string' && message.length > 0) {
     return message
+  }
+  if (
+    axiosLike.code === 'ECONNABORTED' ||
+    error.message.toLowerCase().includes('timeout')
+  ) {
+    return 'Summary generation timed out. Please try again.'
   }
   return 'Summary could not be recreated. Try again.'
 }

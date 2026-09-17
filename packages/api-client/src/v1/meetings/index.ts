@@ -151,7 +151,10 @@ async function postMeetingSummaryGenerate(
   const response = await client.post(
     `/meetings/${meetingId}/summary/generate`,
     body,
-    options
+    {
+      timeout: 180_000,
+      ...options
+    }
   )
   return postMeetingSummaryGenerateResponseSchema.parse(response.data)
 }

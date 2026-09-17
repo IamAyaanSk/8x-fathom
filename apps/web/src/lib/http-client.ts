@@ -4,7 +4,7 @@ import { resolvePublicOrigin } from '#lib/public-origin'
 
 const axiosInstance = axios.create({
   baseURL: `${resolvePublicOrigin()}/api/v1`,
-  timeout: 10000,
+  timeout: 30000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

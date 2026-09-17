@@ -51,6 +51,16 @@
 
 ---
 
+## Calendar Event Tracking
+
+> **Note**: Only Google Calendar events associated with a **Google Meet conference** (containing a valid video conference URL) are tracked and synchronized, as these represent actual online meetings on your calendar where the notetaker bot can join and record.
+
+Make sure your Google Calendar event has **Google Meet video conferencing** added:
+
+![Google Meet Directions](./assets/meet-directions.png)
+
+---
+
 ## Architecture
 
 8x Fathom coordinates Google Calendar integration, automated bot orchestration via MeetingBaas, artifact streaming to Cloudflare R2, asynchronous background processing workers, and pgvector embeddings for retrieval-augmented generation (RAG).

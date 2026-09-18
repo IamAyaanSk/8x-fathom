@@ -15,12 +15,23 @@ function getMeetingDayGroupLabel(startTimeIso: string, nowMs: number): string {
   const meetingDay = _startOfLocalDay(Date.parse(startTimeIso))
   const today = _startOfLocalDay(nowMs)
   const yesterday = today - 86_400_000
+  const tomorrow = today + 86_400_000
 
   if (meetingDay === today) {
     return 'Today'
   }
+  if (meetingDay === tomorrow) {
+    return 'Tomorrow'
+  }
   if (meetingDay === yesterday) {
     return 'Yesterday'
+  }
+
+  const daysDiff = Math.round((meetingDay - today) / 86_400_000)
+  if (daysDiff > 0 && daysDiff < 7) {
+    return new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(
+      new Date(meetingDay)
+    )
   }
 
   const daysAgo = Math.round((today - meetingDay) / 86_400_000)

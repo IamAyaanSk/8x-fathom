@@ -13,6 +13,7 @@ import type { ReactNode } from 'react'
 import { MyCallsGrid } from '#components/meetings/my-calls-grid'
 import { UpcomingMeetingRow } from '#components/meetings/upcoming-meeting-row'
 import type { CategorizedMeetings } from '#lib/meeting-call-tabs'
+import { groupMeetingsByDay } from '#lib/meeting-day-groups'
 
 const tabTriggerClassName = cn(
   'h-auto flex-none rounded-none px-0 pb-3 text-base font-medium text-foreground/80 shadow-none',
@@ -33,17 +34,39 @@ type MeetingCallsTabsProps = {
 function MeetingCallsList({
   meetings,
   emptyTitle,
-  emptyDescription
+  emptyDescription,
+  nowMs
 }: {
   meetings: MeetingListItem[]
   emptyTitle: string
   emptyDescription: string
+  nowMs?: number
 }) {
   if (meetings.length === 0) {
     return (
       <div className="py-16 text-center">
         <p className="text-foreground text-sm font-medium">{emptyTitle}</p>
         <p className="text-muted-foreground mt-2 text-sm">{emptyDescription}</p>
+      </div>
+    )
+  }
+
+  if (nowMs !== undefined) {
+    const groups = groupMeetingsByDay(meetings, nowMs)
+    return (
+      <div className="flex flex-col gap-8">
+        {groups.map((group) => (
+          <section key={group.label} className="flex flex-col gap-3">
+            <h3 className="text-foreground text-base font-semibold">
+              {group.label}
+            </h3>
+            <ul className="border-border border-t">
+              {group.meetings.map((meeting) => (
+                <UpcomingMeetingRow key={meeting.id} meeting={meeting} />
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     )
   }
@@ -112,11 +135,12 @@ function MeetingCallsTabs({
         </div>
       ) : (
         <>
-          <TabsContent value="upcoming" className="mt-0 space-y-3">
+          <TabsContent value="upcoming" className="mt-0 space-y-6">
             <MeetingCallsList
               meetings={categories.upcoming}
               emptyTitle="No upcoming calls"
               emptyDescription="Only meetings in the next 2 days with a video link are synced. Future calls appear here until they finish or the scheduled end time passes."
+              nowMs={nowMs}
             />
             {categories.upcoming.length > 0 ? (
               <p className="text-muted-foreground text-xs">

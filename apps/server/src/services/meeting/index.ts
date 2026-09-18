@@ -16,4 +16,14 @@ function extractMeetingUrlFromGoogleEvent(event: calendar_v3.Schema$Event) {
   return null
 }
 
-export { extractMeetingUrlFromGoogleEvent }
+function isParticipantBot(name: string) {
+  const isNoteTakerInName = name.includes('notetaker')
+  const isBotInName =
+    name.includes('8x') || name.includes('bot') || name.includes('meetingbaas')
+
+  if (isNoteTakerInName || isBotInName) return true
+
+  return false
+}
+
+export { extractMeetingUrlFromGoogleEvent, isParticipantBot }

@@ -388,6 +388,9 @@ importers:
       '@babel/core':
         specifier: ^7.29.7
         version: 7.29.7(supports-color@8.1.1)
+      '@repo/meeting-dispatch':
+        specifier: workspace:*
+        version: link:../../packages/meeting-dispatch
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config

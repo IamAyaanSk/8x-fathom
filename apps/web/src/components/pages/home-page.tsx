@@ -120,7 +120,9 @@ function HomePage() {
             <p className="text-muted-foreground text-sm leading-relaxed">
               Link Google Calendar so we can find upcoming calls with video
               links. Please select the same Google account used for sign-in ({' '}
-              <span className="text-foreground font-medium">{session.user.email}</span>
+              <span className="text-foreground font-medium">
+                {session.user.email}
+              </span>
               ).
             </p>
           </div>

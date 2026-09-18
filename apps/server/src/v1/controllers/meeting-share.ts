@@ -1,4 +1,3 @@
-import { isMeetingCaptureBotParticipant } from '@repo/api-contract/meeting-participants'
 import type {
   GetMeetingShareDetailSuccessResponse,
   GetMeetingShareTranscriptSuccessResponse,
@@ -14,6 +13,7 @@ import {
 } from '#src/services/meeting-recording-playback'
 import { ensureMeetingShareSlug } from '#src/services/meeting-share-slug'
 import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
+import { isParticipantBot } from '#src/services/meeting/index'
 import { HttpError } from '#src/v1/errors/http-error'
 
 function _shareSlugFromRequest(req: Request): string | null {
@@ -128,13 +128,7 @@ const getMeetingShareDetailController = async (
           completed: item.completed
         })),
         participants: meeting.participants
-          .filter(
-            (participant) =>
-              !isMeetingCaptureBotParticipant({
-                name: participant.name,
-                displayName: participant.displayName
-              })
-          )
+          .filter((participant) => !isParticipantBot(participant.name))
           .map((participant) => ({
             id: participant.id,
             name: participant.name,

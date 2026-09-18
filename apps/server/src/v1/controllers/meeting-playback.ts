@@ -1,5 +1,4 @@
 import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
-import { isMeetingCaptureBotParticipant } from '@repo/api-contract/meeting-participants'
 import type {
   GetMeetingDetailSuccessResponse,
   GetMeetingTranscriptSuccessResponse
@@ -13,6 +12,7 @@ import {
   loadRecordingPlayback
 } from '#src/services/meeting-recording-playback'
 import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
+import { isParticipantBot } from '#src/services/meeting/index'
 import { dateToIsoStringOrNull } from '#src/utils/date-to-iso'
 import { HttpError } from '#src/v1/errors/http-error'
 
@@ -169,13 +169,7 @@ const getMeetingDetailController = async (
           completed: item.completed
         })),
         participants: meeting.participants
-          .filter(
-            (participant) =>
-              !isMeetingCaptureBotParticipant({
-                name: participant.name,
-                displayName: participant.displayName
-              })
-          )
+          .filter((participant) => !isParticipantBot(participant.name))
           .map((participant) => ({
             id: participant.id,
             name: participant.name,

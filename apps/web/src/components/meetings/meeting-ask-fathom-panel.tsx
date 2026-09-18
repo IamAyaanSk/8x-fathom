@@ -35,26 +35,55 @@ import type { MeetingAssistantUIMessage } from '#lib/meeting-assistant-api'
 
 const MAX_MESSAGE_LENGTH = 300
 
-const STARTER_QUESTIONS = [
-  {
-    icon: ListTree,
-    title: 'Decisions',
-    question: 'What were the main decisions?'
-  },
+type StarterQuestion = {
+  icon: typeof ListTree
+  title: string
+  question: string
+}
+
+const LIBRARY_STARTER_QUESTIONS: readonly StarterQuestion[] = [
   {
     icon: CheckSquare,
-    title: 'Actions',
-    question: 'Summarize the action items'
+    title: 'Action items',
+    question: 'What are action items across my recent meetings?'
+  },
+  {
+    icon: ListTree,
+    title: 'Key decisions',
+    question: 'What major decisions were agreed upon across recent calls?'
   },
   {
     icon: Sparkles,
-    title: 'Topics',
-    question: 'What topics were covered?'
+    title: 'Recent updates',
+    question: 'Summarize the latest project progress and roadmap discussions.'
   },
   {
     icon: Users,
-    title: 'People',
-    question: 'Who committed to follow-ups?'
+    title: 'Commitments',
+    question: 'Who committed to deliverables or follow-ups this week?'
+  }
+] as const
+
+const MEETING_STARTER_QUESTIONS: readonly StarterQuestion[] = [
+  {
+    icon: ListTree,
+    title: 'Decisions',
+    question: 'What were the main decisions made in this call?'
+  },
+  {
+    icon: CheckSquare,
+    title: 'Action items',
+    question: 'Summarize the action items and assignees from this meeting.'
+  },
+  {
+    icon: Sparkles,
+    title: 'Key takeaways',
+    question: 'Give me a quick bulleted summary of the main discussion points.'
+  },
+  {
+    icon: Users,
+    title: 'Follow-ups',
+    question: 'What follow-ups or next steps were agreed upon in this call?'
   }
 ] as const
 
@@ -63,6 +92,7 @@ type MeetingAskFathomPanelProps = {
   disabledReason?: string
   className?: string
   showIntro?: boolean
+  starterQuestions?: readonly StarterQuestion[]
 }
 
 function getMessageText(message: MeetingAssistantUIMessage) {
@@ -175,9 +205,13 @@ function MeetingAskFathomPanel({
   assistantApiUrl,
   disabledReason,
   className,
-  showIntro = true
+  showIntro = true,
+  starterQuestions
 }: MeetingAskFathomPanelProps) {
   const [input, setInput] = useState('')
+  const starters =
+    starterQuestions ??
+    (showIntro ? MEETING_STARTER_QUESTIONS : LIBRARY_STARTER_QUESTIONS)
 
   const transport = useMemo(
     () =>
@@ -261,7 +295,7 @@ function MeetingAskFathomPanel({
                     </p>
                   </div>
                   <div className="mt-6 grid w-full grid-cols-2 gap-2.5">
-                    {STARTER_QUESTIONS.map((item) => {
+                    {starters.map((item) => {
                       const Icon = item.icon
                       return (
                         <button
@@ -407,4 +441,9 @@ function MeetingAskFathomPanel({
   )
 }
 
-export { MeetingAskFathomPanel }
+export {
+  LIBRARY_STARTER_QUESTIONS,
+  MEETING_STARTER_QUESTIONS,
+  MeetingAskFathomPanel
+}
+export type { StarterQuestion }

@@ -11,7 +11,10 @@ import { cn } from '@repo/ui-web/lib/utils'
 import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
 
-import { MeetingAskFathomPanel } from '#components/meetings/meeting-ask-fathom-panel'
+import {
+  LIBRARY_STARTER_QUESTIONS,
+  MeetingAskFathomPanel
+} from '#components/meetings/meeting-ask-fathom-panel'
 
 type MeetingAskFathomSheetProps = {
   assistantApiUrl: string
@@ -66,6 +69,7 @@ function MeetingAskFathomSheet({
               assistantApiUrl={assistantApiUrl}
               disabledReason={disabledReason}
               showIntro={false}
+              starterQuestions={LIBRARY_STARTER_QUESTIONS}
               className="min-h-0 flex-1"
             />
           ) : null}

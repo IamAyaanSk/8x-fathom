@@ -7,8 +7,11 @@ import type {
 import '#src/types/express'
 import type { NextFunction, Request, Response } from 'express'
 
-import { setupCalendarWatchAndSync } from '#src/services/calendar-sync'
 import { isCalendarConnectedForUser } from '#src/services/google-account'
+import {
+  setupCalendarWatch,
+  syncCalendarEvents
+} from '#src/services/google-calendar/index'
 
 const getCalendarStatusController = async (
   req: Request,
@@ -36,7 +39,8 @@ const postCalendarSyncController = async (
 ) => {
   try {
     const userId = req.session!.user.id
-    const result = await setupCalendarWatchAndSync(userId)
+    await setupCalendarWatch(userId)
+    const result = await syncCalendarEvents(userId)
 
     res.json({
       success: true,

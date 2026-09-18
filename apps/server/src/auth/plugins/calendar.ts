@@ -6,12 +6,10 @@ import {
   createAuthMiddleware
 } from 'better-auth/api'
 
-import { CALENDAR_WEBHOOK_PATH } from '#src/services/calendar-constants'
-import { hasCalendarScope } from '#src/services/calendar-scope'
-import {
-  scheduleCalendarSyncFromWebhook,
-  setupCalendarWatchAndSync
-} from '#src/services/calendar-sync'
+import { CALENDAR_WEBHOOK_PATH } from '#src/services/google-calendar/constants'
+import { syncCalendarEvents } from '#src/services/google-calendar/index'
+import { setupCalendarWatch } from '#src/services/google-calendar/index'
+import { hasCalendarScope } from '#src/services/google-calendar/index'
 
 const GOOGLE_CHANNEL_ID_HEADER = 'x-goog-channel-id'
 const GOOGLE_RESOURCE_ID_HEADER = 'x-goog-resource-id'
@@ -44,7 +42,12 @@ function calendarPlugin(): BetterAuthPlugin {
           }
 
           const watch = await prisma.calendarWatch.findFirst({
-            where: { channelId }
+            where: { channelId },
+            select: {
+              resourceId: true,
+              channelToken: true,
+              userId: true
+            }
           })
 
           if (!watch) {
@@ -66,7 +69,7 @@ function calendarPlugin(): BetterAuthPlugin {
           }
 
           if (resourceState === 'sync' || resourceState === 'exists') {
-            scheduleCalendarSyncFromWebhook(watch.userId)
+            void syncCalendarEvents(watch.userId)
           }
 
           return ctx.json({ ok: true })
@@ -98,7 +101,7 @@ function calendarPlugin(): BetterAuthPlugin {
             }
 
             try {
-              await setupCalendarWatchAndSync(session.user.id)
+              await setupCalendarWatch(session.user.id)
             } catch (error: unknown) {
               ctx.context.logger.error(
                 'Calendar setup after OAuth callback failed',

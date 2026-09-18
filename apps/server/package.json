@@ -30,6 +30,7 @@
     "@repo/meeting-dispatch": "workspace:*",
     "@repo/r2": "workspace:*",
     "@repo/shared-validations": "workspace:*",
+    "@types/luxon": "catalog:",
     "ai": "catalog:",
     "better-auth": "catalog:",
     "body-parser": "catalog:",
@@ -38,6 +39,7 @@
     "express": "catalog:",
     "googleapis": "catalog:",
     "helmet": "catalog:",
+    "luxon": "catalog:",
     "morgan": "catalog:",
     "svix": "catalog:",
     "zod": "catalog:"

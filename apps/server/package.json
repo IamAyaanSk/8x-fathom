@@ -25,6 +25,7 @@
     "@better-auth/prisma-adapter": "catalog:",
     "@repo/ai": "workspace:*",
     "@repo/api-contract": "workspace:*",
+    "@repo/date": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
     "@repo/meeting-dispatch": "workspace:*",

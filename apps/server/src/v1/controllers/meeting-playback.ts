@@ -3,16 +3,16 @@ import type {
   GetMeetingDetailSuccessResponse,
   GetMeetingTranscriptSuccessResponse
 } from '@repo/api-contract/v1/meeting-playback'
+import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
-import {
-  calendarDurationSec,
-  loadRecordingPlayback
-} from '#src/services/meeting-recording-playback'
 import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
-import { isParticipantBot } from '#src/services/meeting/index'
+import {
+  getMeetingPlaybackUrl,
+  isParticipantBot
+} from '#src/services/meeting/index'
 import { dateToIsoStringOrNull } from '#src/utils/date-to-iso'
 import { HttpError } from '#src/v1/errors/http-error'
 
@@ -113,7 +113,7 @@ const getMeetingDetailController = async (
 
     let recordingPlayback: { url: string; expiresAt: string } | null = null
     try {
-      recordingPlayback = await loadRecordingPlayback(meeting.recordingR2Key)
+      recordingPlayback = await getMeetingPlaybackUrl(meeting.recordingR2Key)
     } catch {
       throw new HttpError(502, 'Failed to prepare recording playback')
     }

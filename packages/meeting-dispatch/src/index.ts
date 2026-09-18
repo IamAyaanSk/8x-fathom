@@ -13,4 +13,8 @@ export {
   BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP,
   BAAS_STATUS_RANK
 } from './constants.js'
-export { mapWebhookStatusToProcessStatus, getBaasStatusRank } from './utils.js'
+export {
+  mapWebhookStatusToProcessStatus,
+  getBaasStatusRank,
+  formatMeetingBaasTranscript
+} from './utils.js'

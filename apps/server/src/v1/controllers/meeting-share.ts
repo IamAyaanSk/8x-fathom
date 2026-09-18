@@ -3,17 +3,17 @@ import type {
   GetMeetingShareTranscriptSuccessResponse,
   PostMeetingShareEnableSuccessResponse
 } from '@repo/api-contract/v1/meeting-share'
+import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
-import {
-  calendarDurationSec,
-  loadRecordingPlayback
-} from '#src/services/meeting-recording-playback'
 import { ensureMeetingShareSlug } from '#src/services/meeting-share-slug'
 import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
-import { isParticipantBot } from '#src/services/meeting/index'
+import {
+  getMeetingPlaybackUrl,
+  isParticipantBot
+} from '#src/services/meeting/index'
 import { HttpError } from '#src/v1/errors/http-error'
 
 function _shareSlugFromRequest(req: Request): string | null {
@@ -97,7 +97,7 @@ const getMeetingShareDetailController = async (
 
     let recordingPlayback: { url: string; expiresAt: string } | null = null
     try {
-      recordingPlayback = await loadRecordingPlayback(meeting.recordingR2Key)
+      recordingPlayback = await getMeetingPlaybackUrl(meeting.recordingR2Key)
     } catch {
       throw new HttpError(502, 'Failed to prepare recording playback')
     }

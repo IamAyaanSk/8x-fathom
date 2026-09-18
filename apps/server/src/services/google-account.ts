@@ -1,6 +1,6 @@
 import { prisma } from '@repo/db'
 
-import { hasCalendarScope } from '#src/services/calendar-scope'
+import { hasCalendarScope } from '#src/services/google-calendar/index'
 
 type GoogleAccountRecord = {
   id: string
@@ -35,34 +35,4 @@ async function isCalendarConnectedForUser(userId: string): Promise<boolean> {
   return hasCalendarScope(account.scope)
 }
 
-async function getGoogleAccessTokenForUser(userId: string): Promise<string> {
-  const account = await getGoogleAccountForUser(userId)
-  if (!account) {
-    throw new Error('Google account is not linked')
-  }
-
-  if (!hasCalendarScope(account.scope)) {
-    throw new Error('Google Calendar scope is not granted')
-  }
-
-  const { auth } = await import('#src/auth')
-
-  const tokenResult = await auth.api.getAccessToken({
-    body: {
-      accountId: account.id,
-      userId
-    }
-  })
-
-  if (!tokenResult.accessToken) {
-    throw new Error('Could not retrieve Google access token')
-  }
-
-  return tokenResult.accessToken
-}
-
-export {
-  getGoogleAccessTokenForUser,
-  getGoogleAccountForUser,
-  isCalendarConnectedForUser
-}
+export { getGoogleAccountForUser, isCalendarConnectedForUser }

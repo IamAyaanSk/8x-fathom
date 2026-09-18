@@ -5,7 +5,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma'
 
 import { calendarPlugin } from '#src/auth/plugins/calendar'
 import { env } from '#src/env'
-import { CALENDAR_WEBHOOK_PATH } from '#src/services/calendar-constants'
+import { CALENDAR_WEBHOOK_PATH } from '#src/services/google-calendar/constants'
 
 const webOriginHost = new URL(env.WEB_ORIGIN).host
 
@@ -22,12 +22,12 @@ const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: authBaseURL,
   trustedOrigins: [env.WEB_ORIGIN],
-  account: {    
+  account: {
     skipStateCookieCheck: true
   },
   advanced: {
     trustedProxyHeaders: true,
-    useSecureCookies: isProductionEnvironment(env.NODE_ENV),    
+    useSecureCookies: isProductionEnvironment(env.NODE_ENV),
     disableOriginCheck: [CALENDAR_WEBHOOK_PATH] as unknown as boolean
   },
   database: prismaAdapter(prisma, {

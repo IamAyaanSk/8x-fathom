@@ -10,8 +10,7 @@ const getCalendarStatusResponseSchema = _createResponseApiZod(
 
 const postCalendarSyncResponseSchema = _createResponseApiZod(
   z.object({
-    syncedCount: z.number().int().nonnegative(),
-    watchRegistered: z.boolean()
+    syncedCount: z.number().int().nonnegative()
   })
 )
 

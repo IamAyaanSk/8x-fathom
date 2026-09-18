@@ -112,12 +112,17 @@ function MeetingCallsTabs({
         </div>
       ) : (
         <>
-          <TabsContent value="upcoming" className="mt-0">
+          <TabsContent value="upcoming" className="mt-0 space-y-3">
             <MeetingCallsList
               meetings={categories.upcoming}
               emptyTitle="No upcoming calls"
-              emptyDescription="Future calls with a video link appear here until they finish or the scheduled end time passes."
+              emptyDescription="Only meetings in the next 2 days with a video link are synced. Future calls appear here until they finish or the scheduled end time passes."
             />
+            {categories.upcoming.length > 0 ? (
+              <p className="text-muted-foreground text-xs">
+                Only meetings up to 2 days ahead are synced from your calendar.
+              </p>
+            ) : null}
           </TabsContent>
 
           <TabsContent value="live" className="mt-0">

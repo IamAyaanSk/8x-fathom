@@ -6,7 +6,6 @@ import { calendar_v3, google } from 'googleapis'
 import { DateTime } from 'luxon'
 
 import { env } from '#src/env'
-import { extractMeetingUrlFromGoogleEvent } from '#src/services/extract-meeting-url'
 import { getGoogleAccessTokenForUser } from '#src/services/google-account/index'
 import {
   CALENDAR_SCOPE_MARKERS,
@@ -20,6 +19,7 @@ import {
   GoogleCalendarEventSchema,
   GoogleCalendarWatchResponseSchema
 } from '#src/services/google-calendar/validations'
+import { extractMeetingUrlFromGoogleEvent } from '#src/services/meeting/index'
 
 function _getCalendarWebhookUrl(): string {
   return `${env.BASE_URL.replace(/\/$/, '')}/api/auth${CALENDAR_WEBHOOK_PATH}`

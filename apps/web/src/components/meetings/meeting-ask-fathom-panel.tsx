@@ -31,7 +31,10 @@ import {
 import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
-import type { MeetingAssistantUIMessage } from '#lib/meeting-assistant-api'
+import {
+  MEETING_ASSISTANT_API,
+  type MeetingAssistantUIMessage
+} from '#lib/meeting-assistant-api'
 
 const MAX_MESSAGE_LENGTH = 300
 
@@ -88,7 +91,7 @@ const MEETING_STARTER_QUESTIONS: readonly StarterQuestion[] = [
 ] as const
 
 type MeetingAskFathomPanelProps = {
-  assistantApiUrl: string
+  meetingId?: string
   disabledReason?: string
   className?: string
   showIntro?: boolean
@@ -202,7 +205,7 @@ function AssistantMessage({ message }: { message: MeetingAssistantUIMessage }) {
 }
 
 function MeetingAskFathomPanel({
-  assistantApiUrl,
+  meetingId,
   disabledReason,
   className,
   showIntro = true,
@@ -216,13 +219,14 @@ function MeetingAskFathomPanel({
   const transport = useMemo(
     () =>
       new DefaultChatTransport<MeetingAssistantUIMessage>({
-        api: assistantApiUrl,
+        api: MEETING_ASSISTANT_API,
+        body: meetingId ? { meetingId } : undefined,
         credentials: 'include',
         headers: {
           'ngrok-skip-browser-warning': 'true'
         }
       }),
-    [assistantApiUrl]
+    [meetingId]
   )
 
   const { error, messages, regenerate, sendMessage, status, stop } =

@@ -4,10 +4,7 @@ import {
   getCalendarStatusController,
   postCalendarSyncController
 } from '#src/v1/controllers/calendar'
-import {
-  postMeetingAssistantController,
-  postMeetingsLibraryAssistantController
-} from '#src/v1/controllers/meeting-assistant'
+import { postMeetingAssistantController } from '#src/v1/controllers/meeting/assistant'
 import {
   patchMeetingHighlightController,
   postMeetingHighlightController,
@@ -43,7 +40,7 @@ router.get('/calendar/status', getCalendarStatusController)
 router.post('/calendar/sync', postCalendarSyncController)
 router.get('/meetings/upcoming', getMeetingsUpcomingController)
 router.get('/meetings/completed', getMeetingsCompletedController)
-router.post('/meetings/assistant', postMeetingsLibraryAssistantController)
+router.post('/meetings/assistant', postMeetingAssistantController)
 router.get('/meetings/:meetingId', getMeetingDetailController)
 router.get('/meetings/:meetingId/transcript', getMeetingTranscriptController)
 router.post('/meetings/:meetingId/share', postMeetingShareEnableController)
@@ -65,6 +62,5 @@ router.post(
   '/meetings/:meetingId/summary/generate',
   postMeetingSummaryGenerateController
 )
-router.post('/meetings/:meetingId/assistant', postMeetingAssistantController)
 
 export default router

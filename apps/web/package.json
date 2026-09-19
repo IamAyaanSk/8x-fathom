@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
-    "@repo/meeting-dispatch": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "catalog:",

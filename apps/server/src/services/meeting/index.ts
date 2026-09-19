@@ -28,9 +28,12 @@ function extractMeetingUrlFromGoogleEvent(event: calendar_v3.Schema$Event) {
 }
 
 function isParticipantBot(name: string) {
-  const isNoteTakerInName = name.includes('notetaker')
+  const lowercasedName = name.toLowerCase()
+  const isNoteTakerInName = lowercasedName.includes('notetaker')
   const isBotInName =
-    name.includes('8x') || name.includes('bot') || name.includes('meetingbaas')
+    lowercasedName.includes('8x') ||
+    lowercasedName.includes('bot') ||
+    lowercasedName.includes('meetingbaas')
 
   if (isNoteTakerInName || isBotInName) return true
 

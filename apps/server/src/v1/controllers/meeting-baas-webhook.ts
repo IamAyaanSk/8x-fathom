@@ -1,7 +1,8 @@
 import '#src/types/express'
 import {
   meetingBaasWebhookEventSchema,
-  meetingBaasWebhookHeadersSchema
+  meetingBaasWebhookHeadersSchema,
+  type MeetingBaasWebhookEvent
 } from '@repo/api-contract/meeting-baas-webhook'
 import { prisma } from '@repo/db'
 import {
@@ -14,6 +15,21 @@ import { Webhook } from 'svix'
 import { env } from '#src/env'
 import { isParticipantBot } from '#src/services/meeting/index'
 import { HttpError } from '#src/v1/errors/http-error'
+
+function _getBaasRecordingStartedAtFromWebhook(event: MeetingBaasWebhookEvent) {
+  if (
+    event.event === 'bot.status_change' &&
+    event.data.status.code === 'in_call_recording'
+  ) {
+    if (event.data.status.start_time) {
+      return new Date(event.data.status.start_time * 1000)
+    }
+
+    return new Date()
+  }
+
+  return undefined
+}
 
 const postMeetingBaasWebhookController = async (
   req: Request,
@@ -58,10 +74,9 @@ const postMeetingBaasWebhookController = async (
     const meetingId = event.extra?.meetingId
 
     const meeting = await prisma.meeting.findFirst({
-      where: {
-        baasBotId: botId,
-        id: meetingId
-      },
+      where: meetingId
+        ? { OR: [{ baasBotId: botId }, { id: meetingId }] }
+        : { baasBotId: botId },
       select: {
         id: true,
         baasBotId: true,
@@ -101,40 +116,33 @@ const postMeetingBaasWebhookController = async (
         return
       }
 
-      if (webhookBotStatus !== 'joining') {
-        if (!meeting.baasStatus) {
-          // This is impossible state for us
-          // TODO: notify error reporting service
-          res.status(200).json({ success: true, message: 'OK' })
-          return
-        }
+      if (!meeting.baasStatus) {
+        await prisma.meeting.update({
+          where: { id: meeting.id },
+          data: {
+            baasStatus: webhookBotStatus,
+            recordingStartedAt: _getBaasRecordingStartedAtFromWebhook(event)
+          }
+        })
 
-        if (
-          getBaasStatusRank(webhookBotStatus) <=
-          getBaasStatusRank(meeting.baasStatus)
-        ) {
-          // Ignore older status update
-          res.status(200).json({ success: true, message: 'OK' })
-          return
-        }
+        res.status(200).json({ success: true, message: 'OK' })
+        return
       }
 
-      let baasRecordingStartedAt: Date | undefined
-
-      if (webhookBotStatus === 'in_call_recording') {
-        if (event.data.status.start_time) {
-          baasRecordingStartedAt = new Date(event.data.status.start_time)
-        } else {
-          // Fallback to when we received this webhook
-          baasRecordingStartedAt = new Date()
-        }
+      if (
+        getBaasStatusRank(webhookBotStatus) <
+        getBaasStatusRank(meeting.baasStatus)
+      ) {
+        // Ignore older status update
+        res.status(200).json({ success: true, message: 'OK' })
+        return
       }
 
       await prisma.meeting.update({
         where: { id: meeting.id },
         data: {
           baasStatus: webhookBotStatus,
-          recordingStartedAt: baasRecordingStartedAt
+          recordingStartedAt: _getBaasRecordingStartedAtFromWebhook(event)
         }
       })
 

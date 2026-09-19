@@ -36,7 +36,8 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
 > = {
   joining: 'joining',
   in_waiting_room: 'in_waiting_room',
-  in_call_recording: 'in_call_recording'
+  in_call_recording: 'in_call_recording',
+  completed: 'completed'
 } as const
 
 export {

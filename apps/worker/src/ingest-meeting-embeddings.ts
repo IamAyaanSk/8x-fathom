@@ -1,12 +1,9 @@
 import '#src/env'
 import { randomUUID } from 'node:crypto'
 
-import { generateEmbeddings } from '@repo/ai'
+import { embeddingToPgVectorLiteral, generateEmbeddings } from '@repo/ai'
 import { parseMeetingBaasOutputTranscriptionFromJson } from '@repo/api-contract/meeting-baas-transcript'
-import {
-  buildTranscriptEmbeddingChunks,
-  embeddingToPgVectorLiteral
-} from '@repo/api-contract/transcript-embedding-chunks'
+import { buildTranscriptEmbeddingChunks } from '@repo/api-contract/transcript-embedding-chunks'
 import { prisma } from '@repo/db'
 
 import {

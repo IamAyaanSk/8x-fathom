@@ -5,10 +5,11 @@ import type {
 } from '@repo/api-contract/v1/meeting-share'
 import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
+import { getMeetingTranscriptData } from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
-import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
+import { getR2ObjectUtf8 } from '#src/r2-storage'
 import {
   createMeetingShareSlug,
   getMeetingPlaybackUrl,
@@ -154,7 +155,13 @@ const getMeetingShareTranscriptController = async (
     }
 
     const meeting = await _loadReadySharedMeeting(shareSlug)
-    const transcript = await loadMeetingTranscriptData(meeting.transcriptR2Key)
+
+    if (!meeting.transcriptR2Key) {
+      throw new HttpError(404, 'Meeting transcript not found')
+    }
+
+    const rawTranscript = await getR2ObjectUtf8(meeting.transcriptR2Key)
+    const transcript = getMeetingTranscriptData(rawTranscript)
 
     res.json({
       success: true,

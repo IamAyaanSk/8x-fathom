@@ -1,8 +1,12 @@
+// TODO: Move this to wroker
+
 import {
   formatMeetingBaasTranscriptUtteranceLine,
   meetingBaasTranscriptUtterancesInOrder,
   type MeetingBaasOutputTranscription
 } from './meeting-baas-transcript.js'
+
+export const TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS = 1024
 
 export const DEFAULT_TRANSCRIPT_CHUNK_MAX_CHARS = 2_800
 

@@ -16,5 +16,6 @@ export {
 export {
   mapWebhookStatusToProcessStatus,
   getBaasStatusRank,
-  formatMeetingBaasTranscript
+  formatMeetingBaasTranscriptForAgent,
+  getMeetingTranscriptData
 } from './utils.js'

@@ -23,7 +23,11 @@ export {
   summaryTemplateIdSchema,
   summaryTemplateSectionHeadings
 } from './agents/summary-templates.js'
-export { generateEmbedding, generateEmbeddings } from './embeddings.js'
+export {
+  generateEmbedding,
+  generateEmbeddings,
+  embeddingToPgVectorLiteral
+} from './embeddings.js'
 export { embeddingModel, llmModel } from './model.js'
 export {
   createMeetingRagTools,

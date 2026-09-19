@@ -1,3 +1,5 @@
+// TODO: Move this to wroker
+
 import {
   formatMeetingBaasTranscriptUtteranceLine,
   meetingBaasTranscriptUtterancesInOrder,
@@ -142,24 +144,4 @@ function buildTranscriptEmbeddingChunks({
   return chunks
 }
 
-function embeddingToPgVectorLiteral(embedding: readonly number[]): string {
-  if (embedding.length !== TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS) {
-    throw new Error(
-      `Expected embedding length ${TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS}, received ${embedding.length}`
-    )
-  }
-
-  for (const value of embedding) {
-    if (typeof value !== 'number' || !Number.isFinite(value)) {
-      throw new Error('Embedding contains a non-finite number')
-    }
-  }
-
-  return `[${embedding.join(',')}]`
-}
-
-export {
-  buildTranscriptEmbeddingChunks,
-  embeddingToPgVectorLiteral,
-  type TranscriptEmbeddingChunkDraft
-}
+export { buildTranscriptEmbeddingChunks, type TranscriptEmbeddingChunkDraft }

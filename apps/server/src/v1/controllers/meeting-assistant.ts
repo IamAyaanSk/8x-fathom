@@ -7,7 +7,7 @@ import { prisma } from '@repo/db'
 import { pipeAgentUIStreamToResponse, validateUIMessages } from 'ai'
 import type { NextFunction, Request, Response } from 'express'
 
-import { createMeetingRagSearchDeps } from '#src/services/meeting-transcript-vector-search'
+import { searchMeetingTranscripts } from '#src/services/meeting/index'
 import '#src/types/express'
 import { HttpError } from '#src/v1/errors/http-error'
 
@@ -54,7 +54,10 @@ async function _streamMeetingAssistant({
   const agent = createMeetingAssistantAgent({
     context,
     meetingTitle,
-    deps: createMeetingRagSearchDeps({ userId })
+    deps: {
+      searchAllMeetBase: ({ query }) =>
+        searchMeetingTranscripts({ userId, query })
+    }
   })
 
   const abortController = new AbortController()

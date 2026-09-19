@@ -4,10 +4,12 @@ import {
   type PostMeetingSummaryGenerateSuccessResponse
 } from '@repo/api-contract/v1/meetings'
 import { prisma } from '@repo/db'
-import type { NextFunction, Request, Response } from 'express'
+import { formatMeetingBaasTranscriptForAgent } from '@repo/meeting-dispatch'
 
 import '#src/types/express'
-import { loadMeetingTranscriptText } from '#src/services/load-meeting-transcript'
+import type { NextFunction, Request, Response } from 'express'
+
+import { getR2ObjectUtf8 } from '#src/r2-storage'
 import { HttpError } from '#src/v1/errors/http-error'
 
 function _meetingIdFromRequest(req: Request): string | null {
@@ -54,7 +56,8 @@ const postMeetingSummaryGenerateController = async (
 
     let transcript: string
     try {
-      transcript = await loadMeetingTranscriptText(meeting.transcriptR2Key)
+      const rawTranscript = await getR2ObjectUtf8(meeting.transcriptR2Key)
+      transcript = formatMeetingBaasTranscriptForAgent(rawTranscript)
     } catch {
       throw new HttpError(502, 'Failed to load meeting transcript')
     }

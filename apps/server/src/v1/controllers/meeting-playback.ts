@@ -1,18 +1,20 @@
 import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
-import { isMeetingCaptureBotParticipant } from '@repo/api-contract/meeting-participants'
 import type {
   GetMeetingDetailSuccessResponse,
   GetMeetingTranscriptSuccessResponse
 } from '@repo/api-contract/v1/meeting-playback'
+import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
-import type { NextFunction, Request, Response } from 'express'
+import { getMeetingTranscriptData } from '@repo/meeting-dispatch'
 
 import '#src/types/express'
+import type { NextFunction, Request, Response } from 'express'
+
+import { getR2ObjectUtf8 } from '#src/r2-storage'
 import {
-  calendarDurationSec,
-  loadRecordingPlayback
-} from '#src/services/meeting-recording-playback'
-import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
+  getMeetingPlaybackUrl,
+  isParticipantBot
+} from '#src/services/meeting/index'
 import { dateToIsoStringOrNull } from '#src/utils/date-to-iso'
 import { HttpError } from '#src/v1/errors/http-error'
 
@@ -113,7 +115,7 @@ const getMeetingDetailController = async (
 
     let recordingPlayback: { url: string; expiresAt: string } | null = null
     try {
-      recordingPlayback = await loadRecordingPlayback(meeting.recordingR2Key)
+      recordingPlayback = await getMeetingPlaybackUrl(meeting.recordingR2Key)
     } catch {
       throw new HttpError(502, 'Failed to prepare recording playback')
     }
@@ -169,13 +171,7 @@ const getMeetingDetailController = async (
           completed: item.completed
         })),
         participants: meeting.participants
-          .filter(
-            (participant) =>
-              !isMeetingCaptureBotParticipant({
-                name: participant.name,
-                displayName: participant.displayName
-              })
-          )
+          .filter((participant) => !isParticipantBot(participant.name))
           .map((participant) => ({
             id: participant.id,
             name: participant.name,
@@ -218,7 +214,12 @@ const getMeetingTranscriptController = async (
       throw new HttpError(404, 'Meeting not found')
     }
 
-    const transcript = await loadMeetingTranscriptData(meeting.transcriptR2Key)
+    if (!meeting.transcriptR2Key) {
+      throw new HttpError(404, 'Meeting transcript not found')
+    }
+
+    const rawTranscript = await getR2ObjectUtf8(meeting.transcriptR2Key)
+    const transcript = getMeetingTranscriptData(rawTranscript)
 
     res.json({
       success: true,

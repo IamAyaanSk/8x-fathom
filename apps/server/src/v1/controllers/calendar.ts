@@ -5,10 +5,11 @@ import type {
 } from '@repo/api-contract/v1/calendar'
 
 import '#src/types/express'
+import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
-import { isCalendarConnectedForUser } from '#src/services/google-account'
 import {
+  hasCalendarScope,
   setupCalendarWatch,
   syncCalendarEvents
 } from '#src/services/google-calendar/index'
@@ -20,7 +21,22 @@ const getCalendarStatusController = async (
 ) => {
   try {
     const userId = req.session!.user.id
-    const connected = await isCalendarConnectedForUser(userId)
+    const account = await prisma.account.findFirst({
+      where: {
+        userId,
+        providerId: 'google'
+      },
+      select: {
+        id: true,
+        userId: true,
+        scope: true
+      }
+    })
+
+    let connected
+
+    if (!account) connected = false
+    else connected = hasCalendarScope(account.scope)
 
     res.json({
       success: true,

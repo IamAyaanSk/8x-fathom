@@ -1,19 +1,20 @@
-import { isMeetingCaptureBotParticipant } from '@repo/api-contract/meeting-participants'
 import type {
   GetMeetingShareDetailSuccessResponse,
   GetMeetingShareTranscriptSuccessResponse,
   PostMeetingShareEnableSuccessResponse
 } from '@repo/api-contract/v1/meeting-share'
+import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
+import { getMeetingTranscriptData } from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
+import { getR2ObjectUtf8 } from '#src/r2-storage'
 import {
-  calendarDurationSec,
-  loadRecordingPlayback
-} from '#src/services/meeting-recording-playback'
-import { ensureMeetingShareSlug } from '#src/services/meeting-share-slug'
-import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
+  createMeetingShareSlug,
+  getMeetingPlaybackUrl,
+  isParticipantBot
+} from '#src/services/meeting/index'
 import { HttpError } from '#src/v1/errors/http-error'
 
 function _shareSlugFromRequest(req: Request): string | null {
@@ -97,7 +98,7 @@ const getMeetingShareDetailController = async (
 
     let recordingPlayback: { url: string; expiresAt: string } | null = null
     try {
-      recordingPlayback = await loadRecordingPlayback(meeting.recordingR2Key)
+      recordingPlayback = await getMeetingPlaybackUrl(meeting.recordingR2Key)
     } catch {
       throw new HttpError(502, 'Failed to prepare recording playback')
     }
@@ -128,13 +129,7 @@ const getMeetingShareDetailController = async (
           completed: item.completed
         })),
         participants: meeting.participants
-          .filter(
-            (participant) =>
-              !isMeetingCaptureBotParticipant({
-                name: participant.name,
-                displayName: participant.displayName
-              })
-          )
+          .filter((participant) => !isParticipantBot(participant.name))
           .map((participant) => ({
             id: participant.id,
             name: participant.name,
@@ -160,7 +155,13 @@ const getMeetingShareTranscriptController = async (
     }
 
     const meeting = await _loadReadySharedMeeting(shareSlug)
-    const transcript = await loadMeetingTranscriptData(meeting.transcriptR2Key)
+
+    if (!meeting.transcriptR2Key) {
+      throw new HttpError(404, 'Meeting transcript not found')
+    }
+
+    const rawTranscript = await getR2ObjectUtf8(meeting.transcriptR2Key)
+    const transcript = getMeetingTranscriptData(rawTranscript)
 
     res.json({
       success: true,
@@ -200,8 +201,19 @@ const postMeetingShareEnableController = async (
       throw new HttpError(409, 'Meeting is not ready to share')
     }
 
-    const shareSlug =
-      meeting.shareSlug ?? (await ensureMeetingShareSlug(meetingId))
+    let shareSlug = meeting.shareSlug
+    if (!shareSlug) {
+      shareSlug = createMeetingShareSlug()
+
+      await prisma.meeting.update({
+        where: {
+          id: meetingId
+        },
+        data: {
+          shareSlug
+        }
+      })
+    }
 
     res.json({
       success: true,

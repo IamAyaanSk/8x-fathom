@@ -21,6 +21,12 @@ const meetingBaasStatusChangeWebhookSchema = z.object({
   extra: meetingBaasWebhookExtraSchema
 })
 
+const meetingBaasWebhookHeadersSchema = z.object({
+  'svix-id': z.string().min(1),
+  'svix-timestamp': z.string().min(1),
+  'svix-signature': z.string().min(1)
+})
+
 const meetingBaasParticipantSchema = z.object({
   name: z.string(),
   id: z.number().nullable(),
@@ -63,6 +69,7 @@ const meetingBaasWebhookEventSchema = z.discriminatedUnion('event', [
 ])
 
 type MeetingBaasWebhookEvent = z.infer<typeof meetingBaasWebhookEventSchema>
+type MeetingBaasParticipant = z.infer<typeof meetingBaasParticipantSchema>
 
-export type { MeetingBaasWebhookEvent }
-export { meetingBaasWebhookEventSchema }
+export type { MeetingBaasWebhookEvent, MeetingBaasParticipant }
+export { meetingBaasWebhookEventSchema, meetingBaasWebhookHeadersSchema }

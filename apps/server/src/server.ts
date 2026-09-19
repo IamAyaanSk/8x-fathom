@@ -12,7 +12,7 @@ import morgan from 'morgan'
 import { auth } from '#src/auth'
 import { env } from '#src/env'
 import '#src/types/express'
-import { postMeetingBaasWebhookController } from '#src/v1/controllers/webhooks/baas-webhook'
+import { postMeetingBaasWebhookController } from '#src/v1/controllers/meeting/webhooks'
 import { errorMiddleware } from '#src/v1/middlewares/error'
 import v1Router from '#src/v1/routes/index'
 

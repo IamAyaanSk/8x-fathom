@@ -1,7 +1,6 @@
 import {
   getMeetingDetailResponseSchema,
   getMeetingTranscriptResponseSchema,
-  patchMeetingActionItemResponseSchema,
   patchMeetingHighlightResponseSchema,
   postMeetingHighlightResponseSchema,
   putMeetingScratchpadEntryResponseSchema,
@@ -9,11 +8,15 @@ import {
   type MeetingPlaybackMedia,
   type MeetingScratchpadEntry,
   type MeetingTranscriptData,
-  type PatchMeetingActionItemBody,
   type PatchMeetingHighlightBody,
   type PostMeetingHighlightBody,
   type PutMeetingScratchpadEntryBody
 } from '@repo/api-contract/v1/meeting-playback'
+import {
+  type PatchMeetingActionItemRequestBody,
+  type PatchMeetingActionItemsRequestParams,
+  patchMeetingActionItemResponseSchema
+} from '@repo/api-contract/v1/meeting/action-items'
 import {
   getMeetingsCompletedResponseSchema,
   getMeetingsUpcomingResponseSchema,
@@ -31,7 +34,8 @@ export type {
   MeetingPlaybackMedia,
   MeetingScratchpadEntry,
   MeetingTranscriptData,
-  PatchMeetingActionItemBody,
+  PatchMeetingActionItemRequestBody,
+  PatchMeetingActionItemsRequestParams,
   PatchMeetingHighlightBody,
   PostMeetingHighlightBody,
   PostMeetingSummaryGenerateBody,
@@ -74,7 +78,7 @@ async function getMeetingTranscript(
 async function patchMeetingActionItem(
   meetingId: string,
   actionItemId: string,
-  body: PatchMeetingActionItemBody,
+  body: PatchMeetingActionItemRequestBody,
   options: _HttpRequestOptions = {}
 ) {
   const client = _getApiClient()

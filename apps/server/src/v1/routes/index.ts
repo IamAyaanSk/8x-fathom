@@ -4,7 +4,6 @@ import {
   getCalendarStatusController,
   postCalendarSyncController
 } from '#src/v1/controllers/calendar'
-import { patchMeetingActionItemController } from '#src/v1/controllers/meeting-action-items'
 import {
   postMeetingAssistantController,
   postMeetingsLibraryAssistantController
@@ -24,6 +23,7 @@ import {
   postMeetingShareEnableController
 } from '#src/v1/controllers/meeting-share'
 import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting-summary'
+import { patchMeetingActionItemController } from '#src/v1/controllers/meeting/action-items'
 import {
   getMeetingsCompletedController,
   getMeetingsUpcomingController,

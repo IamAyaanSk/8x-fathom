@@ -2,7 +2,6 @@ import { isActiveMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingDetailResponse,
   GetMeetingTranscriptResponse,
-  PatchMeetingActionItemResponse,
   PatchMeetingHighlightResponse,
   PatchMeetingHighlightSuccessResponse,
   PostMeetingHighlightBody,
@@ -11,6 +10,7 @@ import type {
   PutMeetingScratchpadEntryResponse,
   PutMeetingScratchpadEntrySuccessResponse
 } from '@repo/api-contract/v1/meeting-playback'
+import { type PatchMeetingActionItemResponse } from '@repo/api-contract/v1/meeting/action-items'
 import type {
   GetMeetingsCompletedResponse,
   GetMeetingsUpcomingResponse,

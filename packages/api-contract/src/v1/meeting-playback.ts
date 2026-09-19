@@ -90,14 +90,6 @@ const getMeetingTranscriptResponseSchema = _createResponseApiZod(
   meetingTranscriptDataSchema
 )
 
-const patchMeetingActionItemBodySchema = z.object({
-  completed: z.boolean()
-})
-
-const patchMeetingActionItemResponseSchema = _createResponseApiZod(
-  meetingActionItemSchema
-)
-
 const postMeetingHighlightBodySchema = z.object({
   timestampSec: meetingTimestampSecSchema
 })
@@ -144,16 +136,7 @@ export type GetMeetingTranscriptSuccessResponse = Extract<
   { success: true }
 >
 export type MeetingTranscriptData = z.infer<typeof meetingTranscriptDataSchema>
-export type PatchMeetingActionItemBody = z.infer<
-  typeof patchMeetingActionItemBodySchema
->
-export type PatchMeetingActionItemResponse = z.infer<
-  typeof patchMeetingActionItemResponseSchema
->
-export type PatchMeetingActionItemSuccessResponse = Extract<
-  PatchMeetingActionItemResponse,
-  { success: true }
->
+
 export type PostMeetingHighlightBody = z.infer<
   typeof postMeetingHighlightBodySchema
 >
@@ -197,8 +180,6 @@ export {
   getMeetingTranscriptResponseSchema,
   meetingActionItemSchema,
   meetingChatMessageSchema,
-  patchMeetingActionItemBodySchema,
-  patchMeetingActionItemResponseSchema,
   meetingDetailSchema,
   meetingHighlightSchema,
   meetingParticipantSchema,

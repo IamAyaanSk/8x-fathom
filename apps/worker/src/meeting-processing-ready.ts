@@ -57,6 +57,7 @@ async function tryMarkMeetingProcessingReady(meetingId: string): Promise<void> {
         where: { id: meetingId },
         data: {
           ...readyData,
+          // TODO: remove this
           shareSlug: createMeetingShareSlug()
         }
       })

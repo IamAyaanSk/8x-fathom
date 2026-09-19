@@ -8,9 +8,9 @@ import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
-import { ensureMeetingShareSlug } from '#src/services/meeting-share-slug'
 import { loadMeetingTranscriptData } from '#src/services/meeting-transcript'
 import {
+  createMeetingShareSlug,
   getMeetingPlaybackUrl,
   isParticipantBot
 } from '#src/services/meeting/index'
@@ -194,8 +194,19 @@ const postMeetingShareEnableController = async (
       throw new HttpError(409, 'Meeting is not ready to share')
     }
 
-    const shareSlug =
-      meeting.shareSlug ?? (await ensureMeetingShareSlug(meetingId))
+    let shareSlug = meeting.shareSlug
+    if (!shareSlug) {
+      shareSlug = createMeetingShareSlug()
+
+      await prisma.meeting.update({
+        where: {
+          id: meetingId
+        },
+        data: {
+          shareSlug
+        }
+      })
+    }
 
     res.json({
       success: true,

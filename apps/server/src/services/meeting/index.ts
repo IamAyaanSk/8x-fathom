@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto'
+
 import type { calendar_v3 } from 'googleapis'
 
 import { presignR2GetObjectUrl } from '#src/r2-storage'
@@ -48,8 +50,13 @@ async function getMeetingPlaybackUrl(recordingR2Key: string | null) {
   }
 }
 
+function createMeetingShareSlug() {
+  return randomBytes(16).toString('base64url')
+}
+
 export {
   extractMeetingUrlFromGoogleEvent,
   isParticipantBot,
-  getMeetingPlaybackUrl
+  getMeetingPlaybackUrl,
+  createMeetingShareSlug
 }

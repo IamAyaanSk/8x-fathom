@@ -4,8 +4,6 @@ import {
   type MeetingBaasOutputTranscription
 } from './meeting-baas-transcript.js'
 
-export const TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS = 1024
-
 export const DEFAULT_TRANSCRIPT_CHUNK_MAX_CHARS = 2_800
 
 type TranscriptEmbeddingChunkDraft = {
@@ -142,24 +140,4 @@ function buildTranscriptEmbeddingChunks({
   return chunks
 }
 
-function embeddingToPgVectorLiteral(embedding: readonly number[]): string {
-  if (embedding.length !== TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS) {
-    throw new Error(
-      `Expected embedding length ${TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS}, received ${embedding.length}`
-    )
-  }
-
-  for (const value of embedding) {
-    if (typeof value !== 'number' || !Number.isFinite(value)) {
-      throw new Error('Embedding contains a non-finite number')
-    }
-  }
-
-  return `[${embedding.join(',')}]`
-}
-
-export {
-  buildTranscriptEmbeddingChunks,
-  embeddingToPgVectorLiteral,
-  type TranscriptEmbeddingChunkDraft
-}
+export { buildTranscriptEmbeddingChunks, type TranscriptEmbeddingChunkDraft }

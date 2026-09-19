@@ -10,14 +10,7 @@ const meetingRagSearchInputSchema = z.object({
     .trim()
     .min(1)
     .max(500)
-    .describe('Search query derived from the user question.'),
-  topK: z
-    .number()
-    .int()
-    .min(1)
-    .max(MAX_TOP_K)
-    .optional()
-    .describe('Maximum number of transcript snippets to return.')
+    .describe('Search query derived from the user question.')
 })
 
 const meetingRagSnippetSchema = z.object({
@@ -46,19 +39,12 @@ type MeetingRagTools = {
   searchAllMeetBase: MeetingRagTool
 }
 
-function _withDefaultTopK(input: MeetingRagSearchInput): MeetingRagSearchInput {
-  return {
-    query: input.query,
-    topK: input.topK ?? DEFAULT_TOP_K
-  }
-}
-
 function createMeetingRagTools(deps: MeetingRagSearchDeps): MeetingRagTools {
   const searchAllMeetBase = tool({
     description:
       'Search transcripts across the user processed meetings for passages relevant to the question. Call this before any factual answer about meeting content.',
     inputSchema: meetingRagSearchInputSchema,
-    execute: async (input) => deps.searchAllMeetBase(_withDefaultTopK(input))
+    execute: async (input) => deps.searchAllMeetBase(input)
   })
 
   return {

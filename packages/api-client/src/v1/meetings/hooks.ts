@@ -1,16 +1,24 @@
 import { isActiveMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingDetailResponse,
-  GetMeetingTranscriptResponse,
-  PatchMeetingHighlightResponse,
-  PatchMeetingHighlightSuccessResponse,
-  PostMeetingHighlightBody,
-  PostMeetingHighlightResponse,
-  PutMeetingScratchpadEntryBody,
-  PutMeetingScratchpadEntryResponse,
-  PutMeetingScratchpadEntrySuccessResponse
+  GetMeetingTranscriptResponse
 } from '@repo/api-contract/v1/meeting-playback'
-import { type PatchMeetingActionItemResponse } from '@repo/api-contract/v1/meeting/action-items'
+import type { PatchMeetingActionItemResponse } from '@repo/api-contract/v1/meeting/action-items'
+import type {
+  PatchMeetingHighlightRequestBody,
+  PatchMeetingHighlightRequestParams,
+  PatchMeetingHighlightResponse,
+  PostMeetingHighlightRequestBody,
+  PostMeetingHighlightResponse
+} from '@repo/api-contract/v1/meeting/highlights'
+import type {
+  MeetingHighlight,
+  MeetingScratchpadEntry
+} from '@repo/api-contract/v1/meeting/index'
+import type {
+  PutMeetingScratchpadEntryRequestBody,
+  PutMeetingScratchpadEntryResponse
+} from '@repo/api-contract/v1/meeting/scratchpad'
 import type {
   GetMeetingsCompletedResponse,
   GetMeetingsUpcomingResponse,
@@ -155,10 +163,10 @@ function _meetingDetailRefetchInterval(query: {
   if (data.data.recordingPlayback) {
     return MEETING_PLAYBACK_URL_REFRESH_MS
   }
-  if (data.data.uiPhase === 'in_call_recording') {
-    return MEETINGS_UPCOMING_ACTIVE_REFETCH_MS
-  }
   if (
+    data.data.uiPhase === 'joining' ||
+    data.data.uiPhase === 'in_waiting_room' ||
+    data.data.uiPhase === 'in_call_recording' ||
     data.data.uiPhase === 'call_ended_processing' ||
     data.data.uiPhase === 'transcribing'
   ) {
@@ -286,7 +294,7 @@ function _optimisticMeetingDetailActionItem(
 
 function _mergeMeetingDetailHighlight(
   detail: Extract<GetMeetingDetailResponse, { success: true }>,
-  highlight: PatchMeetingHighlightSuccessResponse['data']
+  highlight: MeetingHighlight
 ): Extract<GetMeetingDetailResponse, { success: true }> {
   const hasExisting = detail.data.highlights.some(
     (item) => item.id === highlight.id
@@ -308,7 +316,7 @@ function _mergeMeetingDetailHighlight(
 
 function _mergeMeetingDetailScratchpadEntry(
   detail: Extract<GetMeetingDetailResponse, { success: true }>,
-  entry: PutMeetingScratchpadEntrySuccessResponse['data']
+  entry: MeetingScratchpadEntry
 ): Extract<GetMeetingDetailResponse, { success: true }> {
   const byTimestampIndex = detail.data.scratchpadEntries.findIndex(
     (item) => item.timestampSec === entry.timestampSec
@@ -408,7 +416,7 @@ function usePatchMeetingActionItemMutation(
 
 type PostMeetingHighlightVariables = {
   meetingId: string
-  body: PostMeetingHighlightBody
+  body: PostMeetingHighlightRequestBody
 }
 
 type UsePostMeetingHighlightMutationOptions = Omit<
@@ -441,12 +449,9 @@ function usePostMeetingHighlightMutation(
 }
 
 type PatchMeetingHighlightVariables = {
-  meetingId: string
-  highlightId: string
-  endTimestampSec?: number
-  note?: string | null
+  params: PatchMeetingHighlightRequestParams
+  body: PatchMeetingHighlightRequestBody
 }
-
 type UsePatchMeetingHighlightMutationOptions = Omit<
   UseMutationOptions<
     PatchMeetingHighlightResponse,
@@ -463,16 +468,15 @@ function usePatchMeetingHighlightMutation(
 
   return useMutation({
     mutationKey: meetingsQueryKeys.highlightPatch(),
-    mutationFn: ({ meetingId, highlightId, endTimestampSec, note }) =>
-      patchMeetingHighlight(meetingId, highlightId, {
-        ...(endTimestampSec !== undefined ? { endTimestampSec } : {}),
-        ...(note !== undefined ? { note } : {})
-      }),
+    mutationFn: ({ params, body }) =>
+      patchMeetingHighlight(params.meetingId, params.highlightId, body),
     ...options,
     onSuccess: async (data, variables, onMutateResult, context) => {
       if (data.success === true) {
-        _patchMeetingDetailCache(queryClient, variables.meetingId, (detail) =>
-          _mergeMeetingDetailHighlight(detail, data.data)
+        _patchMeetingDetailCache(
+          queryClient,
+          variables.params.meetingId,
+          (detail) => _mergeMeetingDetailHighlight(detail, data.data)
         )
       }
       await options?.onSuccess?.(data, variables, onMutateResult, context)
@@ -482,7 +486,7 @@ function usePatchMeetingHighlightMutation(
 
 type PutMeetingScratchpadEntryVariables = {
   meetingId: string
-  body: PutMeetingScratchpadEntryBody
+  body: PutMeetingScratchpadEntryRequestBody
 }
 
 type UsePutMeetingScratchpadEntryMutationOptions = Omit<

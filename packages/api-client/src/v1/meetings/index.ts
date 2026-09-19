@@ -1,22 +1,32 @@
 import {
   getMeetingDetailResponseSchema,
   getMeetingTranscriptResponseSchema,
-  patchMeetingHighlightResponseSchema,
-  postMeetingHighlightResponseSchema,
-  putMeetingScratchpadEntryResponseSchema,
   type MeetingDetail,
   type MeetingPlaybackMedia,
-  type MeetingScratchpadEntry,
-  type MeetingTranscriptData,
-  type PatchMeetingHighlightBody,
-  type PostMeetingHighlightBody,
-  type PutMeetingScratchpadEntryBody
+  type MeetingTranscriptData
 } from '@repo/api-contract/v1/meeting-playback'
 import {
   type PatchMeetingActionItemRequestBody,
   type PatchMeetingActionItemsRequestParams,
   patchMeetingActionItemResponseSchema
 } from '@repo/api-contract/v1/meeting/action-items'
+import {
+  type PatchMeetingHighlightRequestBody,
+  type PatchMeetingHighlightRequestParams,
+  patchMeetingHighlightResponseSchema,
+  type PostMeetingHighlightRequestBody,
+  type PostMeetingHighlightRequestParams,
+  postMeetingHighlightResponseSchema
+} from '@repo/api-contract/v1/meeting/highlights'
+import {
+  type MeetingHighlight,
+  type MeetingScratchpadEntry
+} from '@repo/api-contract/v1/meeting/index'
+import {
+  type PutMeetingScratchpadEntryRequestBody,
+  type PutMeetingScratchpadEntryRequestParams,
+  putMeetingScratchpadEntryResponseSchema
+} from '@repo/api-contract/v1/meeting/scratchpad'
 import {
   getMeetingsCompletedResponseSchema,
   getMeetingsUpcomingResponseSchema,
@@ -30,17 +40,26 @@ import { _getApiClient, type _HttpRequestOptions } from '#src/index'
 
 export type {
   MeetingDetail,
+  MeetingHighlight,
   MeetingListItem,
   MeetingPlaybackMedia,
   MeetingScratchpadEntry,
   MeetingTranscriptData,
   PatchMeetingActionItemRequestBody,
   PatchMeetingActionItemsRequestParams,
-  PatchMeetingHighlightBody,
-  PostMeetingHighlightBody,
+  PatchMeetingHighlightRequestBody,
+  PatchMeetingHighlightRequestParams,
+  PostMeetingHighlightRequestBody,
+  PostMeetingHighlightRequestParams,
   PostMeetingSummaryGenerateBody,
-  PutMeetingScratchpadEntryBody
+  PutMeetingScratchpadEntryRequestBody,
+  PutMeetingScratchpadEntryRequestParams
 }
+
+// Backward-compatibility aliases
+export type PatchMeetingHighlightBody = PatchMeetingHighlightRequestBody
+export type PostMeetingHighlightBody = PostMeetingHighlightRequestBody
+export type PutMeetingScratchpadEntryBody = PutMeetingScratchpadEntryRequestBody
 
 async function getMeetingsUpcoming(options: _HttpRequestOptions = {}) {
   const client = _getApiClient()
@@ -105,7 +124,7 @@ async function postMeetingCapture(
 
 async function postMeetingHighlight(
   meetingId: string,
-  body: PostMeetingHighlightBody,
+  body: PostMeetingHighlightRequestBody,
   options: _HttpRequestOptions = {}
 ) {
   const client = _getApiClient()
@@ -120,7 +139,7 @@ async function postMeetingHighlight(
 async function patchMeetingHighlight(
   meetingId: string,
   highlightId: string,
-  body: PatchMeetingHighlightBody,
+  body: PatchMeetingHighlightRequestBody,
   options: _HttpRequestOptions = {}
 ) {
   const client = _getApiClient()
@@ -134,7 +153,7 @@ async function patchMeetingHighlight(
 
 async function putMeetingScratchpadEntry(
   meetingId: string,
-  body: PutMeetingScratchpadEntryBody,
+  body: PutMeetingScratchpadEntryRequestBody,
   options: _HttpRequestOptions = {}
 ) {
   const client = _getApiClient()

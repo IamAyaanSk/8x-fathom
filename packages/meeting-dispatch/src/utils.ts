@@ -3,7 +3,9 @@ import { meetingBaasOutputTranscriptionSchema } from '@repo/api-contract/meeting
 import {
   BAAS_STATUS_RANK,
   BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP,
-  type BaasStatusToProcess
+  type BaasStatusToProcess,
+  type MeetingProcessingStatus,
+  type UIMeetStatus
 } from './constants.js'
 
 function mapWebhookStatusToProcessStatus(status: string) {
@@ -12,6 +14,44 @@ function mapWebhookStatusToProcessStatus(status: string) {
 
 function getBaasStatusRank(status: BaasStatusToProcess) {
   return BAAS_STATUS_RANK[status]
+}
+
+type GetMeetingUiStatusArgs = {
+  baasStatus: BaasStatusToProcess | null
+  processingStatus: MeetingProcessingStatus
+}
+function getMeetingUiStatus({
+  baasStatus,
+  processingStatus
+}: GetMeetingUiStatusArgs): UIMeetStatus {
+  if (processingStatus === 'ready') return 'ready'
+
+  if (processingStatus === 'failed') return 'failed_processing'
+
+  if (!baasStatus && processingStatus === 'idle') return 'starting_soon'
+
+  if (baasStatus === 'failed') return 'failed_to_join'
+
+  if (baasStatus === 'in_call_recording') return 'in_call_recording'
+
+  if (baasStatus === 'transcribing') return 'transcribing'
+
+  if (baasStatus === 'in_waiting_room') return 'in_waiting_room'
+
+  const callProcessingStates: MeetingProcessingStatus[] = [
+    'importing',
+    'pending',
+    'processing'
+  ]
+
+  if (
+    baasStatus === 'completed' &&
+    callProcessingStates.includes(processingStatus)
+  ) {
+    return 'call_ended_processing'
+  }
+
+  return 'joining'
 }
 
 function formatMeetingBaasTranscriptForAgent(rawTranscript: string) {
@@ -67,5 +107,6 @@ export {
   mapWebhookStatusToProcessStatus,
   getMeetingTranscriptData,
   getBaasStatusRank,
+  getMeetingUiStatus,
   formatMeetingBaasTranscriptForAgent
 }

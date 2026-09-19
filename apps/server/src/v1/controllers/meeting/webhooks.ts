@@ -196,8 +196,7 @@ const postMeetingBaasWebhookController = async (
       await prisma.meeting.update({
         where: { id: meeting.id },
         data: {
-          baasStatus: 'failed',
-          processingStatus: 'failed'
+          baasStatus: 'failed'
         }
       })
 

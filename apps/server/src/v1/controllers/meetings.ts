@@ -1,7 +1,3 @@
-import {
-  getMeetingBotUiPhase,
-  type MeetingProcessingStatus
-} from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingsCompletedSuccessResponse,
   GetMeetingsUpcomingSuccessResponse,
@@ -12,7 +8,9 @@ import { type Prisma, prisma } from '@repo/db'
 import {
   dispatchBotForMeeting,
   DispatchError,
-  type DispatchResult
+  getMeetingUiStatus,
+  type DispatchResult,
+  type MeetingProcessingStatus
 } from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 
@@ -65,10 +63,8 @@ function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
     htmlLink: row.htmlLink,
     baasBotId: row.baasBotId,
     baasStatus: row.baasStatus,
-    uiPhase: getMeetingBotUiPhase({
-      baasBotId: row.baasBotId,
+    uiPhase: getMeetingUiStatus({
       baasStatus: row.baasStatus,
-      recordingStartedAt: row.recordingStartedAt,
       processingStatus: row.processingStatus
     })
   }
@@ -82,10 +78,8 @@ function _dispatchResponseData(
     meetingId: dispatched.meetingId,
     baasBotId: dispatched.baasBotId,
     baasStatus: dispatched.baasStatus,
-    uiPhase: getMeetingBotUiPhase({
-      baasBotId: dispatched.baasBotId,
+    uiPhase: getMeetingUiStatus({
       baasStatus: dispatched.baasStatus,
-      recordingStartedAt: null,
       processingStatus
     })
   }

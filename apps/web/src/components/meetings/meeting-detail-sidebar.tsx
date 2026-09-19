@@ -1,7 +1,6 @@
 import { usePatchMeetingActionItemMutation } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { usePostMeetingShareEnableMutation } from '@repo/api-client/v1/share/hooks'
-import { meetingParticipantLabel } from '@repo/api-contract/meeting-participants'
 import { Button } from '@repo/ui-web/components/button'
 import { cn } from '@repo/ui-web/lib/utils'
 import {
@@ -134,7 +133,7 @@ function MeetingDetailSidebar({
         ) : (
           <ul className="flex flex-col gap-3">
             {meeting.participants.map((participant) => {
-              const label = meetingParticipantLabel(participant)
+              const label = participant.name
               return (
                 <li
                   key={participant.id}

@@ -76,7 +76,8 @@ const MEETING_BOT_UI_PHASES = [
   'call_ended_processing',
   'ready',
   'failed_to_join',
-  'failed_processing'
+  'failed_processing',
+  'in_waiting_room'
 ] as const
 
 type MeetingBotUiPhase = (typeof MEETING_BOT_UI_PHASES)[number]
@@ -89,7 +90,8 @@ const MEETING_BOT_UI_LABELS: Record<MeetingBotUiPhase, string> = {
   call_ended_processing: 'Call ended, processing…',
   ready: 'Ready',
   failed_to_join: 'Failed to join',
-  failed_processing: 'Failed processing'
+  failed_processing: 'Failed processing',
+  in_waiting_room: 'In waiting room'
 }
 
 const ACTIVE_BOT_UI_PHASES = new Set<MeetingBotUiPhase>([
@@ -151,40 +153,6 @@ function canDispatchNewBot(meeting: MeetingBotStateFields): boolean {
     return true
   }
   return meeting.baasStatus === 'failed'
-}
-
-function getMeetingBotUiPhase(
-  meeting: MeetingBotStateFields
-): MeetingBotUiPhase {
-  if (meeting.processingStatus === 'ready') {
-    return 'ready'
-  }
-  if (meeting.processingStatus === 'failed') {
-    return 'failed_processing'
-  }
-  if (!meeting.baasBotId) {
-    return 'starting_soon'
-  }
-  if (meeting.baasStatus === 'failed') {
-    return meeting.recordingStartedAt != null
-      ? 'failed_processing'
-      : 'failed_to_join'
-  }
-  if (meeting.baasStatus === 'in_call_recording') {
-    return 'in_call_recording'
-  }
-  if (meeting.baasStatus === 'transcribing') {
-    return 'transcribing'
-  }
-  if (
-    meeting.baasStatus === 'completed' ||
-    meeting.processingStatus === 'importing' ||
-    meeting.processingStatus === 'pending' ||
-    meeting.processingStatus === 'processing'
-  ) {
-    return 'call_ended_processing'
-  }
-  return 'joining'
 }
 
 function getMeetingBotUiLabel(
@@ -265,7 +233,6 @@ export {
   TERMINAL_BAAS_STATUSES,
   canDispatchNewBot,
   getMeetingBotUiLabel,
-  getMeetingBotUiPhase,
   isActiveMeetingBotUiPhase,
   mapBaasApiStatus,
   patchFromBaasFailed,

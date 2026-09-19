@@ -1,11 +1,13 @@
-import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type {
   GetMeetingDetailSuccessResponse,
   GetMeetingTranscriptSuccessResponse
 } from '@repo/api-contract/v1/meeting-playback'
 import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
-import { getMeetingTranscriptData } from '@repo/meeting-dispatch'
+import {
+  getMeetingTranscriptData,
+  getMeetingUiStatus
+} from '@repo/meeting-dispatch'
 
 import '#src/types/express'
 import type { NextFunction, Request, Response } from 'express'
@@ -106,11 +108,9 @@ const getMeetingDetailController = async (
       throw new HttpError(404, 'Meeting not found')
     }
 
-    const uiPhase = getMeetingBotUiPhase({
-      baasBotId: meeting.baasBotId,
+    const uiPhase = getMeetingUiStatus({
       baasStatus: meeting.baasStatus,
-      processingStatus: meeting.processingStatus,
-      recordingStartedAt: meeting.recordingStartedAt
+      processingStatus: meeting.processingStatus
     })
 
     let recordingPlayback: { url: string; expiresAt: string } | null = null

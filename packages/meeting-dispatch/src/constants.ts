@@ -10,9 +10,18 @@ const BAAS_STATUS_TO_PROCESS = [
   'failed'
 ] as const
 
-export type BaasStatusToProcess = (typeof BAAS_STATUS_TO_PROCESS)[number]
-export type BaasWebHookStatusToProcess =
-  (typeof BAAS_WEBHOOK_STATUS_TO_PROCESS)[number]
+type BaasStatusToProcess = (typeof BAAS_STATUS_TO_PROCESS)[number]
+
+const MEETING_PROCESSING_STATUSES = [
+  'idle',
+  'importing',
+  'pending',
+  'processing',
+  'ready',
+  'failed'
+] as const
+
+type MeetingProcessingStatus = (typeof MEETING_PROCESSING_STATUSES)[number]
 
 const BAAS_STATUS_RANK: Record<BaasStatusToProcess, number> = {
   joining: 1,
@@ -29,6 +38,8 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS = [
   'in_call_recording',
   'completed'
 ] as const
+type BaasWebHookStatusToProcess =
+  (typeof BAAS_WEBHOOK_STATUS_TO_PROCESS)[number]
 
 const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
   string,
@@ -40,8 +51,24 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
   completed: 'completed'
 } as const
 
+const UI_MEET_STATUS = [
+  'joining',
+  'ready',
+  'failed_processing',
+  'failed_to_join',
+  'starting_soon',
+  'in_call_recording',
+  'call_ended_processing',
+  'transcribing',
+  'in_waiting_room'
+] as const
+type UIMeetStatus = (typeof UI_MEET_STATUS)[number]
+
 export {
   BAAS_STATUS_TO_PROCESS,
   BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP,
-  BAAS_STATUS_RANK
+  BAAS_STATUS_RANK,
+  type UIMeetStatus,
+  type MeetingProcessingStatus,
+  type BaasStatusToProcess
 }

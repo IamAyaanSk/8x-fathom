@@ -1,8 +1,3 @@
-import {
-  meetingHighlightNoteSchema,
-  meetingScratchpadTextSchema,
-  meetingTimestampSecSchema
-} from '@repo/shared-validations'
 import { z } from 'zod/v4'
 
 import {
@@ -13,30 +8,16 @@ import {
 import { meetingTranscriptLineSchema } from '#src/meeting-baas-transcript'
 import { _createResponseApiZod } from '#src/utils'
 
+import {
+  meetingActionItemSchema,
+  meetingHighlightSchema,
+  meetingScratchpadEntrySchema,
+  type MeetingScratchpadEntry
+} from './meeting/index.js'
+
 const baasBotStatusSchema = z.enum(BAAS_BOT_STATUSES)
 const meetingBotUiPhaseSchema = z.enum(MEETING_BOT_UI_PHASES)
 const meetingProcessingStatusSchema = z.enum(MEETING_PROCESSING_STATUSES)
-
-const meetingHighlightSchema = z.object({
-  id: z.string(),
-  timestampSec: z.number().int().min(0),
-  endTimestampSec: z.number().int().min(0).nullable(),
-  note: z.string().nullable()
-})
-
-const meetingScratchpadEntrySchema = z.object({
-  id: z.string(),
-  timestampSec: z.number().int().min(0),
-  text: z.string(),
-  updatedAt: z.iso.datetime()
-})
-
-const meetingActionItemSchema = z.object({
-  id: z.string(),
-  text: z.string(),
-  timestampSec: z.number().int().min(0).nullable(),
-  completed: z.boolean()
-})
 
 const meetingParticipantSchema = z.object({
   id: z.string(),
@@ -90,36 +71,6 @@ const getMeetingTranscriptResponseSchema = _createResponseApiZod(
   meetingTranscriptDataSchema
 )
 
-const postMeetingHighlightBodySchema = z.object({
-  timestampSec: meetingTimestampSecSchema
-})
-
-const postMeetingHighlightResponseSchema = _createResponseApiZod(
-  meetingHighlightSchema
-)
-
-const patchMeetingHighlightBodySchema = z
-  .object({
-    endTimestampSec: meetingTimestampSecSchema.optional(),
-    note: meetingHighlightNoteSchema.nullable().optional()
-  })
-  .refine((body) => body.endTimestampSec != null || body.note !== undefined, {
-    message: 'Highlight update must include end time or note'
-  })
-
-const patchMeetingHighlightResponseSchema = _createResponseApiZod(
-  meetingHighlightSchema
-)
-
-const putMeetingScratchpadEntryBodySchema = z.object({
-  timestampSec: meetingTimestampSecSchema,
-  text: meetingScratchpadTextSchema
-})
-
-const putMeetingScratchpadEntryResponseSchema = _createResponseApiZod(
-  meetingScratchpadEntrySchema
-)
-
 export type GetMeetingDetailResponse = z.infer<
   typeof getMeetingDetailResponseSchema
 >
@@ -136,40 +87,7 @@ export type GetMeetingTranscriptSuccessResponse = Extract<
   { success: true }
 >
 export type MeetingTranscriptData = z.infer<typeof meetingTranscriptDataSchema>
-
-export type PostMeetingHighlightBody = z.infer<
-  typeof postMeetingHighlightBodySchema
->
-export type PostMeetingHighlightResponse = z.infer<
-  typeof postMeetingHighlightResponseSchema
->
-export type PostMeetingHighlightSuccessResponse = Extract<
-  PostMeetingHighlightResponse,
-  { success: true }
->
-export type PatchMeetingHighlightBody = z.infer<
-  typeof patchMeetingHighlightBodySchema
->
-export type PatchMeetingHighlightResponse = z.infer<
-  typeof patchMeetingHighlightResponseSchema
->
-export type PatchMeetingHighlightSuccessResponse = Extract<
-  PatchMeetingHighlightResponse,
-  { success: true }
->
-export type PutMeetingScratchpadEntryBody = z.infer<
-  typeof putMeetingScratchpadEntryBodySchema
->
-export type PutMeetingScratchpadEntryResponse = z.infer<
-  typeof putMeetingScratchpadEntryResponseSchema
->
-export type PutMeetingScratchpadEntrySuccessResponse = Extract<
-  PutMeetingScratchpadEntryResponse,
-  { success: true }
->
-export type MeetingScratchpadEntry = z.infer<
-  typeof meetingScratchpadEntrySchema
->
+export type { MeetingScratchpadEntry }
 export type MeetingPlaybackMedia = Pick<
   MeetingDetail,
   'recordingDurationSec' | 'recordingPlayback' | 'highlights'
@@ -185,11 +103,5 @@ export {
   meetingParticipantSchema,
   meetingRecordingPlaybackSchema,
   meetingScratchpadEntrySchema,
-  meetingTranscriptDataSchema,
-  patchMeetingHighlightBodySchema,
-  patchMeetingHighlightResponseSchema,
-  postMeetingHighlightBodySchema,
-  postMeetingHighlightResponseSchema,
-  putMeetingScratchpadEntryBodySchema,
-  putMeetingScratchpadEntryResponseSchema
+  meetingTranscriptDataSchema
 }

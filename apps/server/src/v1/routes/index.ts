@@ -7,9 +7,9 @@ import {
 import { postMeetingAssistantController } from '#src/v1/controllers/meeting/assistant'
 import {
   patchMeetingHighlightController,
-  postMeetingHighlightController,
-  putMeetingScratchpadEntryController
-} from '#src/v1/controllers/meeting-live-capture'
+  postMeetingHighlightController
+} from '#src/v1/controllers/meeting/highlights'
+import { putMeetingScratchpadEntryController } from '#src/v1/controllers/meeting/scratchpad'
 import {
   getMeetingDetailController,
   getMeetingTranscriptController

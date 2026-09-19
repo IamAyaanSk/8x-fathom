@@ -1,4 +1,3 @@
-import '#src/types/express'
 import {
   meetingBaasWebhookEventSchema,
   meetingBaasWebhookHeadersSchema,

@@ -1,12 +1,17 @@
-import { meetingBaasOutputTranscriptionSchema } from '@repo/api-contract/meeting-baas-transcript'
+import { meetingBaasOutputTranscriptionSchema } from '@repo/shared-validations/meeting'
 
 import {
+  BAAS_STATUS_MAP,
   BAAS_STATUS_RANK,
   BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP,
   type BaasStatusToProcess,
   type MeetingProcessingStatus,
   type UIMeetStatus
 } from './constants.js'
+
+function mapBaasStatus(status: string) {
+  return BAAS_STATUS_MAP[status] ?? null
+}
 
 function mapWebhookStatusToProcessStatus(status: string) {
   return BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP[status] ?? null
@@ -52,6 +57,31 @@ function getMeetingUiStatus({
   }
 
   return 'joining'
+}
+
+type CanDispatchNewBotArgs = {
+  baasStatus: BaasStatusToProcess | null
+  processingStatus: MeetingProcessingStatus
+}
+function canDispatchNewBot({
+  processingStatus,
+  baasStatus
+}: CanDispatchNewBotArgs): boolean {
+  if (baasStatus === 'completed') {
+    return false
+  }
+  if (
+    processingStatus === 'importing' ||
+    processingStatus === 'pending' ||
+    processingStatus === 'processing' ||
+    processingStatus === 'ready'
+  ) {
+    return false
+  }
+  if (!baasStatus || baasStatus === 'failed') {
+    return true
+  }
+  return false
 }
 
 function formatMeetingBaasTranscriptForAgent(rawTranscript: string) {
@@ -105,8 +135,10 @@ function getMeetingTranscriptData(rawTranscript: string) {
 
 export {
   mapWebhookStatusToProcessStatus,
+  mapBaasStatus,
   getMeetingTranscriptData,
   getBaasStatusRank,
   getMeetingUiStatus,
-  formatMeetingBaasTranscriptForAgent
+  formatMeetingBaasTranscriptForAgent,
+  canDispatchNewBot
 }

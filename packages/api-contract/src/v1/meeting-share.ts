@@ -3,12 +3,12 @@ import { z } from 'zod/v4'
 import { _createResponseApiZod } from '#src/utils'
 
 import {
-  getMeetingTranscriptResponseSchema,
   meetingActionItemSchema,
   meetingHighlightSchema,
   meetingParticipantSchema,
   meetingRecordingPlaybackSchema
-} from './meeting-playback.js'
+} from './meeting/index.js'
+import { getMeetingTranscriptResponseSchema } from './meeting/playback.js'
 
 const meetingShareDetailSchema = z.object({
   title: z.string(),

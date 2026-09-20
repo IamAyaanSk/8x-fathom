@@ -1,44 +1,38 @@
-import type {
-  GetMeetingDetailSuccessResponse,
-  GetMeetingTranscriptSuccessResponse
-} from '@repo/api-contract/v1/meeting-playback'
+import {
+  meetingRequestParamsSchema,
+  type GetMeetingDetailResponse,
+  type GetMeetingTranscriptResponse
+} from '@repo/api-contract/v1/meeting/playback'
 import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
 import {
   getMeetingTranscriptData,
   getMeetingUiStatus
 } from '@repo/meeting-dispatch'
-
-import '#src/types/express'
 import type { NextFunction, Request, Response } from 'express'
 
+import '#src/types/express'
 import { getR2ObjectUtf8 } from '#src/r2-storage'
 import {
   getMeetingPlaybackUrl,
   isParticipantBot
 } from '#src/services/meeting/index'
-import { dateToIsoStringOrNull } from '#src/utils/date-to-iso'
 import { HttpError } from '#src/v1/errors/http-error'
-
-function _meetingIdFromRequest(req: Request): string | null {
-  const meetingId = req.params.meetingId
-  if (typeof meetingId !== 'string' || meetingId.length === 0) {
-    return null
-  }
-  return meetingId
-}
 
 const getMeetingDetailController = async (
   req: Request,
-  res: Response<GetMeetingDetailSuccessResponse>,
+  res: Response<GetMeetingDetailResponse>,
   next: NextFunction
 ) => {
   try {
     const userId = req.session!.user.id
-    const meetingId = _meetingIdFromRequest(req)
-    if (!meetingId) {
-      throw new HttpError(400, 'Meeting id is required')
+
+    const validatedParams = meetingRequestParamsSchema.safeParse(req.params)
+    if (!validatedParams.success) {
+      throw new HttpError(400, 'Invalid request parameters')
     }
+
+    const { meetingId } = validatedParams.data
 
     const meeting = await prisma.meeting.findFirst({
       where: { id: meetingId, userId },
@@ -135,49 +129,26 @@ const getMeetingDetailController = async (
         endTime: meeting.endTime.toISOString(),
         htmlLink: meeting.htmlLink,
         uiPhase,
+        // TODO: Remove them from FE in future
         baasStatus: meeting.baasStatus,
         processingStatus: meeting.processingStatus,
+
         summary: meeting.summary,
         shareSlug: meeting.shareSlug,
         recordingDurationSec,
-        recordingStartedAt: dateToIsoStringOrNull(meeting.recordingStartedAt),
+        recordingStartedAt: meeting.recordingStartedAt?.toISOString() ?? null,
         recordingPlayback,
-        highlights: meeting.highlights.map((highlight) => ({
-          id: highlight.id,
-          timestampSec: highlight.timestampSec,
-          endTimestampSec: highlight.endTimestampSec,
-          note: highlight.note
+        highlights: meeting.highlights,
+        scratchpadEntries: meeting.scratchpadEntries.map((entry) => ({
+          id: entry.id,
+          timestampSec: entry.timestampSec,
+          text: entry.text,
+          updatedAt: entry.updatedAt.toISOString()
         })),
-        scratchpadEntries: meeting.scratchpadEntries.flatMap((entry) => {
-          const updatedAt =
-            dateToIsoStringOrNull(entry.updatedAt) ??
-            dateToIsoStringOrNull(entry.createdAt)
-          if (!updatedAt) {
-            return []
-          }
-          return [
-            {
-              id: entry.id,
-              timestampSec: entry.timestampSec,
-              text: entry.text,
-              updatedAt
-            }
-          ]
-        }),
-        actionItems: meeting.actionItems.map((item) => ({
-          id: item.id,
-          text: item.text,
-          timestampSec: item.timestampSec,
-          completed: item.completed
-        })),
-        participants: meeting.participants
-          .filter((participant) => !isParticipantBot(participant.name))
-          .map((participant) => ({
-            id: participant.id,
-            name: participant.name,
-            displayName: participant.displayName,
-            profilePicture: participant.profilePicture
-          })),
+        actionItems: meeting.actionItems,
+        participants: meeting.participants.filter(
+          (participant) => !isParticipantBot(participant.name)
+        ),
         chatMessages: meeting.chatMessages.map((message) => ({
           id: message.id,
           senderName: message.senderName,
@@ -193,15 +164,18 @@ const getMeetingDetailController = async (
 
 const getMeetingTranscriptController = async (
   req: Request,
-  res: Response<GetMeetingTranscriptSuccessResponse>,
+  res: Response<GetMeetingTranscriptResponse>,
   next: NextFunction
 ) => {
   try {
     const userId = req.session!.user.id
-    const meetingId = _meetingIdFromRequest(req)
-    if (!meetingId) {
-      throw new HttpError(400, 'Meeting id is required')
+
+    const validatedParams = meetingRequestParamsSchema.safeParse(req.params)
+    if (!validatedParams.success) {
+      throw new HttpError(400, 'Invalid request parameters')
     }
+
+    const { meetingId } = validatedParams.data
 
     const meeting = await prisma.meeting.findFirst({
       where: { id: meetingId, userId },

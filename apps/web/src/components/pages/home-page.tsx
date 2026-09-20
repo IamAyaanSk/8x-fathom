@@ -218,9 +218,7 @@ function HomePage() {
 
   const toolbarEnd = (
     <>
-      <MeetingAskFathomSheet
-        disabledReason={askFathomDisabledReason}
-      />
+      <MeetingAskFathomSheet disabledReason={askFathomDisabledReason} />
       {syncButton}
     </>
   )

@@ -137,24 +137,6 @@ function _shouldApplyBaasStatus(
   return BAAS_STATUS_RANK[next] > BAAS_STATUS_RANK[current]
 }
 
-function canDispatchNewBot(meeting: MeetingBotStateFields): boolean {
-  if (meeting.recordingStartedAt != null) {
-    return false
-  }
-  if (
-    meeting.processingStatus === 'importing' ||
-    meeting.processingStatus === 'pending' ||
-    meeting.processingStatus === 'processing' ||
-    meeting.processingStatus === 'ready'
-  ) {
-    return false
-  }
-  if (!meeting.baasBotId) {
-    return true
-  }
-  return meeting.baasStatus === 'failed'
-}
-
 function getMeetingBotUiLabel(
   phase: MeetingBotUiPhase,
   baasStatus?: BaasBotStatus | null
@@ -231,7 +213,6 @@ export {
   MEETING_BOT_UI_PHASES,
   MEETING_PROCESSING_STATUSES,
   TERMINAL_BAAS_STATUSES,
-  canDispatchNewBot,
   getMeetingBotUiLabel,
   isActiveMeetingBotUiPhase,
   mapBaasApiStatus,

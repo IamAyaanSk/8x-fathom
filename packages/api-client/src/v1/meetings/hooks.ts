@@ -1,8 +1,4 @@
 import { isActiveMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
-import type {
-  GetMeetingDetailResponse,
-  GetMeetingTranscriptResponse
-} from '@repo/api-contract/v1/meeting-playback'
 import type { PatchMeetingActionItemResponse } from '@repo/api-contract/v1/meeting/action-items'
 import type {
   PatchMeetingHighlightRequestBody,
@@ -15,6 +11,10 @@ import type {
   MeetingHighlight,
   MeetingScratchpadEntry
 } from '@repo/api-contract/v1/meeting/index'
+import type {
+  GetMeetingDetailResponse,
+  GetMeetingTranscriptResponse
+} from '@repo/api-contract/v1/meeting/playback'
 import type {
   PutMeetingScratchpadEntryRequestBody,
   PutMeetingScratchpadEntryResponse

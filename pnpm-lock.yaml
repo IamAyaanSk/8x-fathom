@@ -556,6 +556,9 @@ importers:
 
   packages/api-contract:
     dependencies:
+      '@repo/meeting-dispatch':
+        specifier: workspace:*
+        version: link:../meeting-dispatch
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../shared-validations
@@ -646,9 +649,6 @@ importers:
       '@meeting-baas/sdk':
         specifier: 'catalog:'
         version: 6.2.9(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
-      '@repo/api-contract':
-        specifier: workspace:*
-        version: link:../api-contract
       '@repo/db':
         specifier: workspace:*
         version: link:../database

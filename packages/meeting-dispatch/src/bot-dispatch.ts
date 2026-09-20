@@ -1,14 +1,13 @@
-import {
-  canDispatchNewBot,
-  mapBaasApiStatus,
-  type MeetingProcessingStatus
-} from '@repo/api-contract/baas-bot-status'
 import { Prisma, prisma, type BaasBotStatus } from '@repo/db'
 import { MEETING_CAPTURE_LEAD_MS } from '@repo/shared-validations'
 
-import { DISPATCH_BATCH_SIZE } from './constants.js'
+import {
+  type MeetingProcessingStatus,
+  DISPATCH_BATCH_SIZE
+} from './constants.js'
 import { DispatchError } from './errors.js'
 import { createMeetingBaasClient } from './meeting-baas-client.js'
+import { mapBaasStatus, canDispatchNewBot } from './utils.js'
 
 type DispatchMode = 'scheduled' | 'capture'
 
@@ -74,6 +73,7 @@ function _toDispatchResult(meeting: {
   }
 }
 
+// TODO: Cleanup props
 function _assertCanDispatchNewBot(meeting: {
   id: string
   baasBotId: string | null
@@ -231,7 +231,7 @@ async function _dispatchLockedMeeting(
 
   const statusResult = await client.getBotStatus({ bot_id: botId })
   if (statusResult.success) {
-    baasStatus = mapBaasApiStatus(statusResult.data.status) ?? 'joining'
+    baasStatus = mapBaasStatus(statusResult.data.status) ?? 'joining'
   }
 
   await tx.meeting.update({

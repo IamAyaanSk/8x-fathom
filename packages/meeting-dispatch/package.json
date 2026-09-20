@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@meeting-baas/sdk": "catalog:",
-    "@repo/api-contract": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/shared-validations": "workspace:*"
   },

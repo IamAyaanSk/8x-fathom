@@ -1,11 +1,4 @@
 import {
-  getMeetingDetailResponseSchema,
-  getMeetingTranscriptResponseSchema,
-  type MeetingDetail,
-  type MeetingPlaybackMedia,
-  type MeetingTranscriptData
-} from '@repo/api-contract/v1/meeting-playback'
-import {
   type PatchMeetingActionItemRequestBody,
   type PatchMeetingActionItemsRequestParams,
   patchMeetingActionItemResponseSchema
@@ -20,8 +13,14 @@ import {
 } from '@repo/api-contract/v1/meeting/highlights'
 import {
   type MeetingHighlight,
-  type MeetingScratchpadEntry
+  type MeetingScratchpadEntry,
+  type MeetingDetail,
+  type MeetingPlaybackMedia
 } from '@repo/api-contract/v1/meeting/index'
+import {
+  getMeetingDetailResponseSchema,
+  getMeetingTranscriptResponseSchema
+} from '@repo/api-contract/v1/meeting/playback'
 import {
   type PutMeetingScratchpadEntryRequestBody,
   type PutMeetingScratchpadEntryRequestParams,
@@ -44,7 +43,6 @@ export type {
   MeetingListItem,
   MeetingPlaybackMedia,
   MeetingScratchpadEntry,
-  MeetingTranscriptData,
   PatchMeetingActionItemRequestBody,
   PatchMeetingActionItemsRequestParams,
   PatchMeetingHighlightRequestBody,

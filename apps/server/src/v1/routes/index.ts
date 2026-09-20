@@ -4,16 +4,6 @@ import {
   getCalendarStatusController,
   postCalendarSyncController
 } from '#src/v1/controllers/calendar'
-import { postMeetingAssistantController } from '#src/v1/controllers/meeting/assistant'
-import {
-  patchMeetingHighlightController,
-  postMeetingHighlightController
-} from '#src/v1/controllers/meeting/highlights'
-import { putMeetingScratchpadEntryController } from '#src/v1/controllers/meeting/scratchpad'
-import {
-  getMeetingDetailController,
-  getMeetingTranscriptController
-} from '#src/v1/controllers/meeting-playback'
 import {
   getMeetingShareDetailController,
   getMeetingShareTranscriptController,
@@ -21,6 +11,16 @@ import {
 } from '#src/v1/controllers/meeting-share'
 import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting-summary'
 import { patchMeetingActionItemController } from '#src/v1/controllers/meeting/action-items'
+import { postMeetingAssistantController } from '#src/v1/controllers/meeting/assistant'
+import {
+  patchMeetingHighlightController,
+  postMeetingHighlightController
+} from '#src/v1/controllers/meeting/highlights'
+import {
+  getMeetingDetailController,
+  getMeetingTranscriptController
+} from '#src/v1/controllers/meeting/playback'
+import { putMeetingScratchpadEntryController } from '#src/v1/controllers/meeting/scratchpad'
 import {
   getMeetingsCompletedController,
   getMeetingsUpcomingController,

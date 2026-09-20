@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./meeting": {
+      "types": "./src/meeting.ts",
+      "default": "./dist/meeting.js"
     }
   },
   "scripts": {

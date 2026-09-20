@@ -14,7 +14,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as ShareShareSlugRouteImport } from './routes/share/$shareSlug'
 import { Route as AuthenticatedMeetingsMeetingIdRouteImport } from './routes/_authenticated/meetings/$meetingId'
 
@@ -42,11 +41,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const ShareShareSlugRoute = ShareShareSlugRouteImport.update({
   id: '/share/$shareSlug',
   path: '/share/$shareSlug',
@@ -64,7 +58,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
-  '/users': typeof AuthenticatedUsersRoute
   '/share/$shareSlug': typeof ShareShareSlugRoute
   '/meetings/$meetingId': typeof AuthenticatedMeetingsMeetingIdRoute
 }
@@ -72,7 +65,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
-  '/users': typeof AuthenticatedUsersRoute
   '/share/$shareSlug': typeof ShareShareSlugRoute
   '/': typeof AuthenticatedIndexRoute
   '/meetings/$meetingId': typeof AuthenticatedMeetingsMeetingIdRoute
@@ -83,7 +75,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
-  '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/share/$shareSlug': typeof ShareShareSlugRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/meetings/$meetingId': typeof AuthenticatedMeetingsMeetingIdRoute
@@ -95,7 +86,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/terms'
-    | '/users'
     | '/share/$shareSlug'
     | '/meetings/$meetingId'
   fileRoutesByTo: FileRoutesByTo
@@ -103,7 +93,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/terms'
-    | '/users'
     | '/share/$shareSlug'
     | '/'
     | '/meetings/$meetingId'
@@ -113,7 +102,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacy'
     | '/terms'
-    | '/_authenticated/users'
     | '/share/$shareSlug'
     | '/_authenticated/'
     | '/_authenticated/meetings/$meetingId'
@@ -164,13 +152,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/users': {
-      id: '/_authenticated/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/share/$shareSlug': {
       id: '/share/$shareSlug'
       path: '/share/$shareSlug'
@@ -189,13 +170,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedMeetingsMeetingIdRoute: typeof AuthenticatedMeetingsMeetingIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedMeetingsMeetingIdRoute: AuthenticatedMeetingsMeetingIdRoute,
 }

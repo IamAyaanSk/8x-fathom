@@ -2,7 +2,7 @@ import type {
   GetMeetingShareDetailResponse,
   GetMeetingShareTranscriptResponse,
   PostMeetingShareEnableResponse
-} from '@repo/api-contract/v1/meeting-share'
+} from '@repo/api-contract/v1/meeting/share'
 import {
   type UseMutationOptions,
   type UseQueryOptions,

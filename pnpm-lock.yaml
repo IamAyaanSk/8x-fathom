@@ -528,6 +528,9 @@ importers:
       '@repo/api-contract':
         specifier: workspace:*
         version: link:../api-contract
+      '@repo/shared-validations':
+        specifier: workspace:*
+        version: link:../shared-validations
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(react@19.2.8)
@@ -646,9 +649,6 @@ importers:
       '@meeting-baas/sdk':
         specifier: 'catalog:'
         version: 6.2.9(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
-      '@repo/api-contract':
-        specifier: workspace:*
-        version: link:../api-contract
       '@repo/db':
         specifier: workspace:*
         version: link:../database

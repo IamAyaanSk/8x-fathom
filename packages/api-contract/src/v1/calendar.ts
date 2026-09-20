@@ -17,17 +17,9 @@ const postCalendarSyncResponseSchema = _createResponseApiZod(
 export type GetCalendarStatusResponse = z.infer<
   typeof getCalendarStatusResponseSchema
 >
-export type GetCalendarStatusSuccessResponse = Extract<
-  GetCalendarStatusResponse,
-  { success: true }
->
 
 export type PostCalendarSyncResponse = z.infer<
   typeof postCalendarSyncResponseSchema
->
-export type PostCalendarSyncSuccessResponse = Extract<
-  PostCalendarSyncResponse,
-  { success: true }
 >
 
 export { getCalendarStatusResponseSchema, postCalendarSyncResponseSchema }

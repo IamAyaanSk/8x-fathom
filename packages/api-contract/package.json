@@ -23,10 +23,6 @@
       "types": "./src/meeting-baas-transcript.ts",
       "default": "./dist/meeting-baas-transcript.js"
     },
-    "./meeting-participants": {
-      "types": "./src/meeting-participants.ts",
-      "default": "./dist/meeting-participants.js"
-    },
     "./meeting-baas-chat-messages": {
       "types": "./src/meeting-baas-chat-messages.ts",
       "default": "./dist/meeting-baas-chat-messages.js"

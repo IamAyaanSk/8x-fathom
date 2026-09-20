@@ -13,8 +13,6 @@ import { useNow } from '#hooks/use-now'
 import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
 import { getRecordingElapsedSec } from '#lib/recording-elapsed-sec'
 
-const HIGHLIGHT_TITLE_DEBOUNCE_MS = 800
-
 type MeetingLiveHighlightPanelProps = {
   meeting: MeetingDetail
   meetingId: string
@@ -36,14 +34,11 @@ function MeetingLiveHighlightPanel({
   const startMutation = usePostMeetingHighlightMutation()
   const patchMutation = usePatchMeetingHighlightMutation()
   const [titleDraft, setTitleDraft] = useState('')
-  const titleTextRef = useRef('')
-  const titleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const syncedHighlightIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!activeHighlight) {
       syncedHighlightIdRef.current = null
-      titleTextRef.current = ''
       setTitleDraft('')
       return
     }
@@ -51,33 +46,8 @@ function MeetingLiveHighlightPanel({
       return
     }
     syncedHighlightIdRef.current = activeHighlight.id
-    const nextTitle = activeHighlight.note ?? ''
-    titleTextRef.current = nextTitle
-    setTitleDraft(nextTitle)
+    setTitleDraft(activeHighlight.note ?? '')
   }, [activeHighlight?.id, activeHighlight?.note])
-
-  useEffect(() => {
-    return () => {
-      if (titleDebounceRef.current) {
-        clearTimeout(titleDebounceRef.current)
-      }
-    }
-  }, [])
-
-  function scheduleTitleSave(highlightId: string) {
-    if (titleDebounceRef.current) {
-      clearTimeout(titleDebounceRef.current)
-    }
-    titleDebounceRef.current = setTimeout(() => {
-      titleDebounceRef.current = null
-      const trimmed = titleTextRef.current.trim()
-      patchMutation.mutate({
-        meetingId,
-        highlightId,
-        note: trimmed.length > 0 ? trimmed : null
-      })
-    }, HIGHLIGHT_TITLE_DEBOUNCE_MS)
-  }
 
   const highlightDurationSec = activeHighlight
     ? Math.max(0, elapsedSec - activeHighlight.timestampSec)
@@ -87,8 +57,8 @@ function MeetingLiveHighlightPanel({
     startMutation.isPending && startMutation.variables?.meetingId === meetingId
   const isEnding =
     patchMutation.isPending &&
-    patchMutation.variables?.meetingId === meetingId &&
-    patchMutation.variables?.endTimestampSec !== undefined
+    patchMutation.variables?.params.meetingId === meetingId &&
+    patchMutation.variables?.body.endTimestampSec !== undefined
 
   function handleStartHighlight() {
     startMutation.mutate({
@@ -101,16 +71,16 @@ function MeetingLiveHighlightPanel({
     if (!activeHighlight) {
       return
     }
-    if (titleDebounceRef.current) {
-      clearTimeout(titleDebounceRef.current)
-      titleDebounceRef.current = null
-    }
-    const trimmedTitle = titleTextRef.current.trim()
+    const trimmedTitle = titleDraft.trim()
     patchMutation.mutate({
-      meetingId,
-      highlightId: activeHighlight.id,
-      endTimestampSec: elapsedSec,
-      note: trimmedTitle.length > 0 ? trimmedTitle : null
+      params: {
+        meetingId,
+        highlightId: activeHighlight.id
+      },
+      body: {
+        endTimestampSec: elapsedSec,
+        note: trimmedTitle.length > 0 ? trimmedTitle : null
+      }
     })
   }
 
@@ -193,12 +163,7 @@ function MeetingLiveHighlightPanel({
             placeholder="Type to add a title (optional)"
             rows={2}
             className="bg-background min-h-0 resize-none"
-            onChange={(event) => {
-              const next = event.target.value
-              titleTextRef.current = next
-              setTitleDraft(next)
-              scheduleTitleSave(activeHighlight.id)
-            }}
+            onChange={(event) => setTitleDraft(event.target.value)}
           />
         </div>
       ) : (

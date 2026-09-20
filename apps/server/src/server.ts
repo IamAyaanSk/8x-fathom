@@ -12,7 +12,7 @@ import morgan from 'morgan'
 import { auth } from '#src/auth'
 import { env } from '#src/env'
 import '#src/types/express'
-import { postMeetingBaasWebhookController } from '#src/v1/controllers/meeting-baas-webhook'
+import { postMeetingBaasWebhookController } from '#src/v1/controllers/meeting/webhooks'
 import { errorMiddleware } from '#src/v1/middlewares/error'
 import v1Router from '#src/v1/routes/index'
 
@@ -24,7 +24,7 @@ app.set('trust proxy', 1)
 app.use(
   cors({
     origin: env.WEB_ORIGIN,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
   })
 )

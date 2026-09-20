@@ -1,5 +1,4 @@
 import type { MeetingShareDetail } from '@repo/api-client/v1/share/index'
-import { meetingParticipantLabel } from '@repo/api-contract/meeting-participants'
 import { cn } from '@repo/ui-web/lib/utils'
 import { Check, Sparkles } from 'lucide-react'
 
@@ -41,7 +40,7 @@ function MeetingShareSidebar({
         ) : (
           <ul className="flex flex-col gap-3">
             {meeting.participants.map((participant) => {
-              const label = meetingParticipantLabel(participant)
+              const label = participant.name
               return (
                 <li
                   key={participant.id}

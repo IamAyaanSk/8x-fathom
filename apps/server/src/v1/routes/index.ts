@@ -4,32 +4,28 @@ import {
   getCalendarStatusController,
   postCalendarSyncController
 } from '#src/v1/controllers/calendar'
-import { patchMeetingActionItemController } from '#src/v1/controllers/meeting-action-items'
-import {
-  postMeetingAssistantController,
-  postMeetingsLibraryAssistantController
-} from '#src/v1/controllers/meeting-assistant'
+import { patchMeetingActionItemController } from '#src/v1/controllers/meeting/action-items'
+import { postMeetingAssistantController } from '#src/v1/controllers/meeting/assistant'
 import {
   patchMeetingHighlightController,
-  postMeetingHighlightController,
-  putMeetingScratchpadEntryController
-} from '#src/v1/controllers/meeting-live-capture'
-import {
-  getMeetingDetailController,
-  getMeetingTranscriptController
-} from '#src/v1/controllers/meeting-playback'
-import {
-  getMeetingShareDetailController,
-  getMeetingShareTranscriptController,
-  postMeetingShareEnableController
-} from '#src/v1/controllers/meeting-share'
-import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting-summary'
+  postMeetingHighlightController
+} from '#src/v1/controllers/meeting/highlights'
 import {
   getMeetingsCompletedController,
   getMeetingsUpcomingController,
   postMeetingCaptureController
-} from '#src/v1/controllers/meetings'
-import { getUsersController } from '#src/v1/controllers/users'
+} from '#src/v1/controllers/meeting/index'
+import {
+  getMeetingDetailController,
+  getMeetingTranscriptController
+} from '#src/v1/controllers/meeting/playback'
+import { putMeetingScratchpadEntryController } from '#src/v1/controllers/meeting/scratchpad'
+import {
+  getMeetingShareDetailController,
+  getMeetingShareTranscriptController,
+  postMeetingShareEnableController
+} from '#src/v1/controllers/meeting/share'
+import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting/summary'
 import { requireSession } from '#src/v1/middlewares/require-session'
 
 const router = express.Router()
@@ -38,12 +34,11 @@ router.get('/share/:shareSlug', getMeetingShareDetailController)
 router.get('/share/:shareSlug/transcript', getMeetingShareTranscriptController)
 
 router.use(requireSession)
-router.get('/users', getUsersController)
 router.get('/calendar/status', getCalendarStatusController)
 router.post('/calendar/sync', postCalendarSyncController)
 router.get('/meetings/upcoming', getMeetingsUpcomingController)
 router.get('/meetings/completed', getMeetingsCompletedController)
-router.post('/meetings/assistant', postMeetingsLibraryAssistantController)
+router.post('/meetings/assistant', postMeetingAssistantController)
 router.get('/meetings/:meetingId', getMeetingDetailController)
 router.get('/meetings/:meetingId/transcript', getMeetingTranscriptController)
 router.post('/meetings/:meetingId/share', postMeetingShareEnableController)
@@ -65,6 +60,5 @@ router.post(
   '/meetings/:meetingId/summary/generate',
   postMeetingSummaryGenerateController
 )
-router.post('/meetings/:meetingId/assistant', postMeetingAssistantController)
 
 export default router

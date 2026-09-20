@@ -1,18 +1,15 @@
 import {
-  getMeetingBotUiPhase,
-  type MeetingProcessingStatus
-} from '@repo/api-contract/baas-bot-status'
-import type {
-  GetMeetingsCompletedSuccessResponse,
-  GetMeetingsUpcomingSuccessResponse,
-  MeetingListItem,
-  PostMeetingCaptureResponse
-} from '@repo/api-contract/v1/meetings'
+  postMeetingCaptureRequestParamsSchema,
+  type GetMeetingsCompletedResponse,
+  type GetMeetingsUpcomingResponse,
+  type PostMeetingCaptureResponse
+} from '@repo/api-contract/v1/meeting/index'
 import { type Prisma, prisma } from '@repo/db'
+import type { MeetingListItem } from '@repo/shared-validations/meeting'
 import {
   dispatchBotForMeeting,
   DispatchError,
-  type DispatchResult
+  getMeetingUiStatus
 } from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 
@@ -20,23 +17,6 @@ import '#src/env'
 import '#src/types/express'
 import { env } from '#src/env'
 import { HttpError } from '#src/v1/errors/http-error'
-
-function _dispatchCallbackParams() {
-  return {
-    meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
-    callbackBaseUrl: env.BASE_URL,
-    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET,
-    transcriptionApiKey: env.DEEPGRAM_API_KEY
-  }
-}
-
-function _meetingIdFromRequest(req: Request): string | null {
-  const meetingId = req.params.meetingId
-  if (typeof meetingId !== 'string' || meetingId.length === 0) {
-    return null
-  }
-  return meetingId
-}
 
 const _meetingListSelect = {
   id: true,
@@ -62,38 +42,22 @@ function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
     startTime: row.startTime.toISOString(),
     endTime: row.endTime.toISOString(),
     meetingUrl: row.meetingUrl,
-    htmlLink: row.htmlLink,
+
+    // TODO: Remove this from FE
     baasBotId: row.baasBotId,
     baasStatus: row.baasStatus,
-    uiPhase: getMeetingBotUiPhase({
-      baasBotId: row.baasBotId,
-      baasStatus: row.baasStatus,
-      recordingStartedAt: row.recordingStartedAt,
-      processingStatus: row.processingStatus
-    })
-  }
-}
+    htmlLink: row.htmlLink,
 
-function _dispatchResponseData(
-  dispatched: DispatchResult,
-  processingStatus: MeetingProcessingStatus
-) {
-  return {
-    meetingId: dispatched.meetingId,
-    baasBotId: dispatched.baasBotId,
-    baasStatus: dispatched.baasStatus,
-    uiPhase: getMeetingBotUiPhase({
-      baasBotId: dispatched.baasBotId,
-      baasStatus: dispatched.baasStatus,
-      recordingStartedAt: null,
-      processingStatus
+    uiPhase: getMeetingUiStatus({
+      baasStatus: row.baasStatus,
+      processingStatus: row.processingStatus
     })
   }
 }
 
 const getMeetingsUpcomingController = async (
   req: Request,
-  res: Response<GetMeetingsUpcomingSuccessResponse>,
+  res: Response<GetMeetingsUpcomingResponse>,
   next: NextFunction
 ) => {
   try {
@@ -101,7 +65,14 @@ const getMeetingsUpcomingController = async (
     const now = new Date()
 
     const rows = await prisma.meeting.findMany({
-      where: { userId, endTime: { gt: now } },
+      where: {
+        userId,
+        OR: [
+          { baasStatus: null },
+          { baasStatus: { notIn: ['completed', 'transcribing'] } }
+        ],
+        endTime: { gt: now }
+      },
       orderBy: { startTime: 'asc' },
       select: _meetingListSelect
     })
@@ -120,16 +91,21 @@ const getMeetingsUpcomingController = async (
 
 const getMeetingsCompletedController = async (
   req: Request,
-  res: Response<GetMeetingsCompletedSuccessResponse>,
+  res: Response<GetMeetingsCompletedResponse>,
   next: NextFunction
 ) => {
   try {
     const userId = req.session!.user.id
-
     const now = new Date()
 
     const rows = await prisma.meeting.findMany({
-      where: { userId, endTime: { lte: now } },
+      where: {
+        userId,
+        OR: [
+          { endTime: { lte: now } },
+          { baasStatus: { in: ['completed', 'transcribing'] } }
+        ]
+      },
       orderBy: { startTime: 'desc' },
       select: _meetingListSelect
     })
@@ -153,14 +129,15 @@ const postMeetingCaptureController = async (
 ) => {
   try {
     const userId = req.session!.user.id
-    const meetingId = _meetingIdFromRequest(req)
-    if (!meetingId) {
-      res.status(400).json({
-        success: false,
-        message: 'Meeting id is required'
-      })
-      return
+
+    const validatedParams = postMeetingCaptureRequestParamsSchema.safeParse(
+      req.params
+    )
+    if (!validatedParams.success) {
+      throw new HttpError(400, 'Invalid request parameters')
     }
+
+    const { meetingId } = validatedParams.data
 
     let dispatched
     try {
@@ -168,7 +145,10 @@ const postMeetingCaptureController = async (
         meetingId,
         userId,
         mode: 'capture',
-        ..._dispatchCallbackParams()
+        meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
+        callbackBaseUrl: env.BASE_URL,
+        webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET,
+        transcriptionApiKey: env.DEEPGRAM_API_KEY
       })
     } catch (error) {
       if (error instanceof DispatchError) {
@@ -180,7 +160,15 @@ const postMeetingCaptureController = async (
     res.json({
       success: true,
       message: 'Bot dispatched successfully',
-      data: _dispatchResponseData(dispatched, 'idle')
+      data: {
+        meetingId: dispatched.meetingId,
+        baasBotId: dispatched.baasBotId,
+        baasStatus: dispatched.baasStatus,
+        uiPhase: getMeetingUiStatus({
+          baasStatus: dispatched.baasStatus,
+          processingStatus: 'idle'
+        })
+      }
     })
   } catch (error) {
     next(error)

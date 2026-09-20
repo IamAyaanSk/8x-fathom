@@ -1,10 +1,8 @@
 import '#src/env'
 import type {
-  GetCalendarStatusSuccessResponse,
-  PostCalendarSyncSuccessResponse
+  GetCalendarStatusResponse,
+  PostCalendarSyncResponse
 } from '@repo/api-contract/v1/calendar'
-
-import '#src/types/express'
 import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
@@ -16,7 +14,7 @@ import {
 
 const getCalendarStatusController = async (
   req: Request,
-  res: Response<GetCalendarStatusSuccessResponse>,
+  res: Response<GetCalendarStatusResponse>,
   next: NextFunction
 ) => {
   try {
@@ -50,7 +48,7 @@ const getCalendarStatusController = async (
 
 const postCalendarSyncController = async (
   req: Request,
-  res: Response<PostCalendarSyncSuccessResponse>,
+  res: Response<PostCalendarSyncResponse>,
   next: NextFunction
 ) => {
   try {

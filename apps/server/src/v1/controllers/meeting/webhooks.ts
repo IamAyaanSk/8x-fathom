@@ -1,4 +1,3 @@
-import '#src/types/express'
 import {
   meetingBaasWebhookEventSchema,
   meetingBaasWebhookHeadersSchema,
@@ -197,8 +196,7 @@ const postMeetingBaasWebhookController = async (
       await prisma.meeting.update({
         where: { id: meeting.id },
         data: {
-          baasStatus: 'failed',
-          processingStatus: 'failed'
+          baasStatus: 'failed'
         }
       })
 

@@ -1,7 +1,7 @@
 import {
   BAAS_STATUS_TO_PROCESS,
-  UI_MEET_STATUS,
-  MEETING_PROCESSING_STATUS
+  MEETING_PROCESSING_STATUS,
+  UI_MEET_STATUS
 } from '@repo/meeting-dispatch'
 import {
   meetingHighlightNoteSchema,
@@ -9,6 +9,8 @@ import {
   meetingTimestampSecSchema
 } from '@repo/shared-validations'
 import { z } from 'zod/v4'
+
+import { _createResponseApiZod } from '#src/utils'
 
 export const meetingActionItemSchema = z.object({
   id: z.string(),
@@ -100,4 +102,62 @@ export const meetingShareDetailSchema = meetingDetailSchema.pick({
   actionItems: true,
   participants: true
 })
+
 export type MeetingShareDetail = z.infer<typeof meetingShareDetailSchema>
+
+export const meetingListItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  startTime: z.iso.datetime(),
+  endTime: z.iso.datetime(),
+  meetingUrl: z.url(),
+  htmlLink: z.url().nullable(),
+  baasBotId: z.string().nullable(),
+  baasStatus: baasBotStatusSchema.nullable(),
+  uiPhase: meetingBotUiPhaseSchema
+})
+
+export type MeetingListItem = z.infer<typeof meetingListItemSchema>
+
+export const meetingsListDataSchema = z.object({
+  meetings: z.array(meetingListItemSchema)
+})
+
+// Meetings endpoints schemas
+
+export const getMeetingsUpcomingResponseSchema = _createResponseApiZod(
+  meetingsListDataSchema
+)
+
+export const getMeetingsCompletedResponseSchema = _createResponseApiZod(
+  meetingsListDataSchema
+)
+
+export const postMeetingCaptureRequestParamsSchema = z.object({
+  meetingId: z.string()
+})
+
+export type PostMeetingCaptureRequestParams = z.infer<
+  typeof postMeetingCaptureRequestParamsSchema
+>
+
+const postMeetingBotDispatchDataSchema = z.object({
+  meetingId: z.string(),
+  baasBotId: z.string(),
+  baasStatus: baasBotStatusSchema.nullable(),
+  uiPhase: meetingBotUiPhaseSchema
+})
+
+export const postMeetingCaptureResponseSchema = _createResponseApiZod(
+  postMeetingBotDispatchDataSchema
+)
+
+export type GetMeetingsUpcomingResponse = z.infer<
+  typeof getMeetingsUpcomingResponseSchema
+>
+export type GetMeetingsCompletedResponse = z.infer<
+  typeof getMeetingsCompletedResponseSchema
+>
+export type PostMeetingCaptureResponse = z.infer<
+  typeof postMeetingCaptureResponseSchema
+>

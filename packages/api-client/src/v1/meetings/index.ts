@@ -12,10 +12,15 @@ import {
   postMeetingHighlightResponseSchema
 } from '@repo/api-contract/v1/meeting/highlights'
 import {
-  type MeetingHighlight,
-  type MeetingScratchpadEntry,
+  getMeetingsCompletedResponseSchema,
+  getMeetingsUpcomingResponseSchema,
+  postMeetingCaptureResponseSchema,
   type MeetingDetail,
-  type MeetingPlaybackMedia
+  type MeetingHighlight,
+  type MeetingListItem,
+  type MeetingPlaybackMedia,
+  type MeetingScratchpadEntry,
+  type PostMeetingCaptureRequestParams
 } from '@repo/api-contract/v1/meeting/index'
 import {
   getMeetingDetailResponseSchema,
@@ -31,12 +36,6 @@ import {
   type PostMeetingSummaryGenerateRequestBody,
   type PostMeetingSummaryGenerateRequestParams
 } from '@repo/api-contract/v1/meeting/summary'
-import {
-  getMeetingsCompletedResponseSchema,
-  getMeetingsUpcomingResponseSchema,
-  postMeetingCaptureResponseSchema,
-  type MeetingListItem
-} from '@repo/api-contract/v1/meetings'
 
 import { _getApiClient, type _HttpRequestOptions } from '#src/index'
 
@@ -50,6 +49,7 @@ export type {
   PatchMeetingActionItemsRequestParams,
   PatchMeetingHighlightRequestBody,
   PatchMeetingHighlightRequestParams,
+  PostMeetingCaptureRequestParams,
   PostMeetingHighlightRequestBody,
   PostMeetingHighlightRequestParams,
   PostMeetingSummaryGenerateRequestBody,

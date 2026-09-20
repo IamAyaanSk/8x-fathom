@@ -11,6 +11,11 @@ import {
   postMeetingHighlightController
 } from '#src/v1/controllers/meeting/highlights'
 import {
+  getMeetingsCompletedController,
+  getMeetingsUpcomingController,
+  postMeetingCaptureController
+} from '#src/v1/controllers/meeting/index'
+import {
   getMeetingDetailController,
   getMeetingTranscriptController
 } from '#src/v1/controllers/meeting/playback'
@@ -21,11 +26,6 @@ import {
   postMeetingShareEnableController
 } from '#src/v1/controllers/meeting/share'
 import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting/summary'
-import {
-  getMeetingsCompletedController,
-  getMeetingsUpcomingController,
-  postMeetingCaptureController
-} from '#src/v1/controllers/meetings'
 import { getUsersController } from '#src/v1/controllers/users'
 import { requireSession } from '#src/v1/middlewares/require-session'
 

@@ -8,8 +8,11 @@ import type {
   PostMeetingHighlightResponse
 } from '@repo/api-contract/v1/meeting/highlights'
 import type {
+  GetMeetingsCompletedResponse,
+  GetMeetingsUpcomingResponse,
   MeetingHighlight,
-  MeetingScratchpadEntry
+  MeetingScratchpadEntry,
+  PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
 import type {
   GetMeetingDetailResponse,
@@ -23,11 +26,6 @@ import type {
   PostMeetingSummaryGenerateRequestBody as PostMeetingSummaryGenerateBody,
   PostMeetingSummaryGenerateResponse
 } from '@repo/api-contract/v1/meeting/summary'
-import type {
-  GetMeetingsCompletedResponse,
-  GetMeetingsUpcomingResponse,
-  PostMeetingCaptureResponse
-} from '@repo/api-contract/v1/meetings'
 import {
   type QueryClient,
   type UseMutationOptions,

@@ -20,11 +20,13 @@ import type {
   PutMeetingScratchpadEntryResponse
 } from '@repo/api-contract/v1/meeting/scratchpad'
 import type {
+  PostMeetingSummaryGenerateRequestBody as PostMeetingSummaryGenerateBody,
+  PostMeetingSummaryGenerateResponse
+} from '@repo/api-contract/v1/meeting/summary'
+import type {
   GetMeetingsCompletedResponse,
   GetMeetingsUpcomingResponse,
-  PostMeetingCaptureResponse,
-  PostMeetingSummaryGenerateBody,
-  PostMeetingSummaryGenerateResponse
+  PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meetings'
 import {
   type QueryClient,

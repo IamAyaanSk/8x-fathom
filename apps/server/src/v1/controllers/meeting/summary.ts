@@ -1,38 +1,36 @@
 import { generateMeetingSummary } from '@repo/ai'
 import {
-  postMeetingSummaryGenerateBodySchema,
-  type PostMeetingSummaryGenerateSuccessResponse
-} from '@repo/api-contract/v1/meetings'
+  postMeetingSummaryGenerateRequestBodySchema,
+  postMeetingSummaryGenerateRequestParamsSchema,
+  type PostMeetingSummaryGenerateResponse
+} from '@repo/api-contract/v1/meeting/summary'
 import { prisma } from '@repo/db'
 import { formatMeetingBaasTranscriptForAgent } from '@repo/meeting-dispatch'
-
-import '#src/types/express'
 import type { NextFunction, Request, Response } from 'express'
 
+import '#src/types/express'
 import { getR2ObjectUtf8 } from '#src/r2-storage'
 import { HttpError } from '#src/v1/errors/http-error'
 
-function _meetingIdFromRequest(req: Request): string | null {
-  const meetingId = req.params.meetingId
-  if (typeof meetingId !== 'string' || meetingId.length === 0) {
-    return null
-  }
-  return meetingId
-}
-
 const postMeetingSummaryGenerateController = async (
   req: Request,
-  res: Response<PostMeetingSummaryGenerateSuccessResponse>,
+  res: Response<PostMeetingSummaryGenerateResponse>,
   next: NextFunction
 ) => {
   try {
     const userId = req.session!.user.id
-    const meetingId = _meetingIdFromRequest(req)
-    if (!meetingId) {
-      throw new HttpError(400, 'Meeting id is required')
+
+    const validatedParams =
+      postMeetingSummaryGenerateRequestParamsSchema.safeParse(req.params)
+    if (!validatedParams.success) {
+      throw new HttpError(400, 'Invalid request parameters')
     }
 
-    const bodyResult = postMeetingSummaryGenerateBodySchema.safeParse(req.body)
+    const { meetingId } = validatedParams.data
+
+    const bodyResult = postMeetingSummaryGenerateRequestBodySchema.safeParse(
+      req.body
+    )
     if (!bodyResult.success) {
       throw new HttpError(400, 'Invalid summary generation request')
     }
@@ -64,22 +62,12 @@ const postMeetingSummaryGenerateController = async (
 
     const { template, detail } = bodyResult.data
 
-    let summary: string
-    try {
-      const result = await generateMeetingSummary({
-        transcript,
-        meetingTitle: meeting.title,
-        template,
-        additionalDirections: detail
-      })
-      summary = result.summary
-    } catch (error) {
-      const message =
-        error instanceof Error && error.message === 'Transcript is empty'
-          ? 'Meeting transcript is empty'
-          : 'Summary generation failed'
-      throw new HttpError(502, message)
-    }
+    const { summary } = await generateMeetingSummary({
+      transcript,
+      meetingTitle: meeting.title,
+      template,
+      additionalDirections: detail
+    })
 
     await prisma.meeting.update({
       where: { id: meeting.id },

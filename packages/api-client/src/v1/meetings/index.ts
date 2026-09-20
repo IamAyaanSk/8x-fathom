@@ -27,12 +27,15 @@ import {
   putMeetingScratchpadEntryResponseSchema
 } from '@repo/api-contract/v1/meeting/scratchpad'
 import {
+  postMeetingSummaryGenerateResponseSchema,
+  type PostMeetingSummaryGenerateRequestBody,
+  type PostMeetingSummaryGenerateRequestParams
+} from '@repo/api-contract/v1/meeting/summary'
+import {
   getMeetingsCompletedResponseSchema,
   getMeetingsUpcomingResponseSchema,
   postMeetingCaptureResponseSchema,
-  postMeetingSummaryGenerateResponseSchema,
-  type MeetingListItem,
-  type PostMeetingSummaryGenerateBody
+  type MeetingListItem
 } from '@repo/api-contract/v1/meetings'
 
 import { _getApiClient, type _HttpRequestOptions } from '#src/index'
@@ -49,7 +52,8 @@ export type {
   PatchMeetingHighlightRequestParams,
   PostMeetingHighlightRequestBody,
   PostMeetingHighlightRequestParams,
-  PostMeetingSummaryGenerateBody,
+  PostMeetingSummaryGenerateRequestBody,
+  PostMeetingSummaryGenerateRequestParams,
   PutMeetingScratchpadEntryRequestBody,
   PutMeetingScratchpadEntryRequestParams
 }
@@ -57,6 +61,8 @@ export type {
 // Backward-compatibility aliases
 export type PatchMeetingHighlightBody = PatchMeetingHighlightRequestBody
 export type PostMeetingHighlightBody = PostMeetingHighlightRequestBody
+export type PostMeetingSummaryGenerateBody =
+  PostMeetingSummaryGenerateRequestBody
 export type PutMeetingScratchpadEntryBody = PutMeetingScratchpadEntryRequestBody
 
 async function getMeetingsUpcoming(options: _HttpRequestOptions = {}) {

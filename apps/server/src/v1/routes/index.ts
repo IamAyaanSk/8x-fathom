@@ -9,7 +9,6 @@ import {
   getMeetingShareTranscriptController,
   postMeetingShareEnableController
 } from '#src/v1/controllers/meeting-share'
-import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting-summary'
 import { patchMeetingActionItemController } from '#src/v1/controllers/meeting/action-items'
 import { postMeetingAssistantController } from '#src/v1/controllers/meeting/assistant'
 import {
@@ -21,6 +20,7 @@ import {
   getMeetingTranscriptController
 } from '#src/v1/controllers/meeting/playback'
 import { putMeetingScratchpadEntryController } from '#src/v1/controllers/meeting/scratchpad'
+import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting/summary'
 import {
   getMeetingsCompletedController,
   getMeetingsUpcomingController,

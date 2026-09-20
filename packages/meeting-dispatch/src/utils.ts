@@ -1,5 +1,4 @@
 import { meetingBaasOutputTranscriptionSchema } from '@repo/shared-validations/meeting'
-
 import {
   BAAS_STATUS_MAP,
   BAAS_STATUS_RANK,
@@ -7,7 +6,7 @@ import {
   type BaasStatusToProcess,
   type MeetingProcessingStatus,
   type UIMeetStatus
-} from './constants.js'
+} from '@repo/shared-validations/meeting'
 
 function mapBaasStatus(status: string) {
   return BAAS_STATUS_MAP[status] ?? null

@@ -1,9 +1,8 @@
+import { meetingDetailSchema } from '@repo/shared-validations/meeting'
 import { z } from 'zod/v4'
 
 import { meetingTranscriptLineSchema } from '#src/meeting-baas-transcript'
 import { _createResponseApiZod } from '#src/utils'
-
-import { meetingDetailSchema } from './index.js'
 
 export const meetingRequestParamsSchema = z.object({
   meetingId: z.string()

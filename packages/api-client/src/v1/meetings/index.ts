@@ -15,11 +15,6 @@ import {
   getMeetingsCompletedResponseSchema,
   getMeetingsUpcomingResponseSchema,
   postMeetingCaptureResponseSchema,
-  type MeetingDetail,
-  type MeetingHighlight,
-  type MeetingListItem,
-  type MeetingPlaybackMedia,
-  type MeetingScratchpadEntry,
   type PostMeetingCaptureRequestParams
 } from '@repo/api-contract/v1/meeting/index'
 import {
@@ -36,6 +31,13 @@ import {
   type PostMeetingSummaryGenerateRequestBody,
   type PostMeetingSummaryGenerateRequestParams
 } from '@repo/api-contract/v1/meeting/summary'
+import type {
+  MeetingDetail,
+  MeetingHighlight,
+  MeetingListItem,
+  MeetingPlaybackMedia,
+  MeetingScratchpadEntry
+} from '@repo/shared-validations/meeting'
 
 import { _getApiClient, type _HttpRequestOptions } from '#src/index'
 

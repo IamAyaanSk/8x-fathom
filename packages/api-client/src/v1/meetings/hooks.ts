@@ -10,10 +10,12 @@ import type {
 import type {
   GetMeetingsCompletedResponse,
   GetMeetingsUpcomingResponse,
-  MeetingHighlight,
-  MeetingScratchpadEntry,
   PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
+import type {
+  MeetingHighlight,
+  MeetingScratchpadEntry
+} from '@repo/shared-validations/meeting'
 import type {
   GetMeetingDetailResponse,
   GetMeetingTranscriptResponse

@@ -2,10 +2,10 @@ import {
   postMeetingCaptureRequestParamsSchema,
   type GetMeetingsCompletedResponse,
   type GetMeetingsUpcomingResponse,
-  type MeetingListItem,
   type PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
 import { type Prisma, prisma } from '@repo/db'
+import type { MeetingListItem } from '@repo/shared-validations/meeting'
 import {
   dispatchBotForMeeting,
   DispatchError,
@@ -67,7 +67,10 @@ const getMeetingsUpcomingController = async (
     const rows = await prisma.meeting.findMany({
       where: {
         userId,
-        baasStatus: { notIn: ['completed', 'transcribing'] },
+        OR: [
+          { baasStatus: null },
+          { baasStatus: { notIn: ['completed', 'transcribing'] } }
+        ],
         endTime: { gt: now }
       },
       orderBy: { startTime: 'asc' },
@@ -93,13 +96,15 @@ const getMeetingsCompletedController = async (
 ) => {
   try {
     const userId = req.session!.user.id
+    const now = new Date()
 
     const rows = await prisma.meeting.findMany({
       where: {
         userId,
-        baasStatus: {
-          notIn: ['in_call_recording', 'in_waiting_room', 'joining']
-        }
+        OR: [
+          { endTime: { lte: now } },
+          { baasStatus: { in: ['completed', 'transcribing'] } }
+        ]
       },
       orderBy: { startTime: 'desc' },
       select: _meetingListSelect

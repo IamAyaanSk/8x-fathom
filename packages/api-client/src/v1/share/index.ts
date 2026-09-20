@@ -1,9 +1,9 @@
-import type { MeetingShareDetail } from '@repo/api-contract/v1/meeting/index'
 import {
   getMeetingShareDetailResponseSchema,
   getMeetingShareTranscriptResponseSchema,
   postMeetingShareEnableResponseSchema
 } from '@repo/api-contract/v1/meeting/share'
+import type { MeetingShareDetail } from '@repo/shared-validations/meeting'
 
 import { _getApiClient, type _HttpRequestOptions } from '#src/index'
 

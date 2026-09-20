@@ -2,11 +2,10 @@ import {
   meetingHighlightNoteSchema,
   meetingTimestampSecSchema
 } from '@repo/shared-validations'
+import { meetingHighlightSchema } from '@repo/shared-validations/meeting'
 import { z } from 'zod/v4'
 
 import { _createResponseApiZod } from '#src/utils'
-
-import { meetingHighlightSchema } from './index.js'
 
 export const postMeetingHighlightRequestParamsSchema = z.object({
   meetingId: z.string()

@@ -43,7 +43,6 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/meeting-dispatch": "workspace:*",
     "@repo/shared-validations": "workspace:*",
     "zod": "catalog:"
   },

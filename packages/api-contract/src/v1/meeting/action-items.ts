@@ -1,8 +1,7 @@
-import { z } from 'zod'
+import { meetingActionItemSchema } from '@repo/shared-validations/meeting'
+import { z } from 'zod/v4'
 
 import { _createResponseApiZod } from '#src/utils'
-
-import { meetingActionItemSchema } from './index.js'
 
 export const patchMeetingActionItemRequestBodySchema = z.object({
   completed: z.boolean()

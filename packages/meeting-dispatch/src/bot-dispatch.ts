@@ -1,10 +1,8 @@
 import { Prisma, prisma, type BaasBotStatus } from '@repo/db'
 import { MEETING_CAPTURE_LEAD_MS } from '@repo/shared-validations'
+import type { MeetingProcessingStatus } from '@repo/shared-validations/meeting'
 
-import {
-  type MeetingProcessingStatus,
-  DISPATCH_BATCH_SIZE
-} from './constants.js'
+import { DISPATCH_BATCH_SIZE } from './constants.js'
 import { DispatchError } from './errors.js'
 import { createMeetingBaasClient } from './meeting-baas-client.js'
 import { mapBaasStatus, canDispatchNewBot } from './utils.js'

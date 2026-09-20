@@ -1,6 +1,5 @@
 import '#src/env'
 import { isDevelopmentEnvironment } from '@repo/env'
-import { MEETING_BAAS_WEBHOOK_PATH } from '@repo/meeting-dispatch'
 import { toNodeHandler } from 'better-auth/node'
 import { json } from 'body-parser'
 import cookieParser from 'cookie-parser'
@@ -12,9 +11,9 @@ import morgan from 'morgan'
 import { auth } from '#src/auth'
 import { env } from '#src/env'
 import '#src/types/express'
-import { postMeetingBaasWebhookController } from '#src/v1/controllers/meeting/webhooks'
 import { errorMiddleware } from '#src/v1/middlewares/error'
 import v1Router from '#src/v1/routes/index'
+import { webhookRouter } from '#src/v1/routes/webhook'
 
 const app: Express = express()
 const port = env.PORT
@@ -33,16 +32,7 @@ app.use(morgan(isDevelopmentEnvironment(env.NODE_ENV) ? 'dev' : 'combined'))
 
 app.all('/api/auth/*splat', toNodeHandler(auth))
 
-app.post(
-  MEETING_BAAS_WEBHOOK_PATH,
-  json({
-    verify: (req, _res, buf) => {
-      const incomingReq = req as Request
-      incomingReq.rawBody = buf.toString('utf8')
-    }
-  }),
-  postMeetingBaasWebhookController
-)
+app.use('/api/webhooks', webhookRouter)
 
 app.use(json())
 app.use(cookieParser())

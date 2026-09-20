@@ -5,12 +5,12 @@ import {
   type PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
 import { type Prisma, prisma } from '@repo/db'
-import type { MeetingListItem } from '@repo/shared-validations/meeting'
 import {
   dispatchBotForMeeting,
   DispatchError,
   getMeetingUiStatus
 } from '@repo/meeting-dispatch'
+import type { MeetingListItem } from '@repo/shared-validations/meeting'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/env'

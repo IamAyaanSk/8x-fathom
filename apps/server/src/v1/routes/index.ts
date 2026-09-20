@@ -1,64 +1,19 @@
-import express from 'express'
+import { Router } from 'express'
 
-import {
-  getCalendarStatusController,
-  postCalendarSyncController
-} from '#src/v1/controllers/calendar'
-import { patchMeetingActionItemController } from '#src/v1/controllers/meeting/action-items'
-import { postMeetingAssistantController } from '#src/v1/controllers/meeting/assistant'
-import {
-  patchMeetingHighlightController,
-  postMeetingHighlightController
-} from '#src/v1/controllers/meeting/highlights'
-import {
-  getMeetingsCompletedController,
-  getMeetingsUpcomingController,
-  postMeetingCaptureController
-} from '#src/v1/controllers/meeting/index'
-import {
-  getMeetingDetailController,
-  getMeetingTranscriptController
-} from '#src/v1/controllers/meeting/playback'
-import { putMeetingScratchpadEntryController } from '#src/v1/controllers/meeting/scratchpad'
-import {
-  getMeetingShareDetailController,
-  getMeetingShareTranscriptController,
-  postMeetingShareEnableController
-} from '#src/v1/controllers/meeting/share'
-import { postMeetingSummaryGenerateController } from '#src/v1/controllers/meeting/summary'
 import { requireSession } from '#src/v1/middlewares/require-session'
+import { calendarRouter } from '#src/v1/routes/calendar'
+import { meetingRouter } from '#src/v1/routes/meeting/index'
+import { shareRouter } from '#src/v1/routes/share'
+import { webhookRouter } from '#src/v1/routes/webhook'
 
-const router = express.Router()
+const router = Router()
 
-router.get('/share/:shareSlug', getMeetingShareDetailController)
-router.get('/share/:shareSlug/transcript', getMeetingShareTranscriptController)
+// Public routes
+router.use('/share', shareRouter)
+router.use('/webhooks', webhookRouter)
 
-router.use(requireSession)
-router.get('/calendar/status', getCalendarStatusController)
-router.post('/calendar/sync', postCalendarSyncController)
-router.get('/meetings/upcoming', getMeetingsUpcomingController)
-router.get('/meetings/completed', getMeetingsCompletedController)
-router.post('/meetings/assistant', postMeetingAssistantController)
-router.get('/meetings/:meetingId', getMeetingDetailController)
-router.get('/meetings/:meetingId/transcript', getMeetingTranscriptController)
-router.post('/meetings/:meetingId/share', postMeetingShareEnableController)
-router.patch(
-  '/meetings/:meetingId/action-items/:actionItemId',
-  patchMeetingActionItemController
-)
-router.post('/meetings/:meetingId/highlights', postMeetingHighlightController)
-router.patch(
-  '/meetings/:meetingId/highlights/:highlightId',
-  patchMeetingHighlightController
-)
-router.put(
-  '/meetings/:meetingId/scratchpad',
-  putMeetingScratchpadEntryController
-)
-router.post('/meetings/:meetingId/capture', postMeetingCaptureController)
-router.post(
-  '/meetings/:meetingId/summary/generate',
-  postMeetingSummaryGenerateController
-)
+// Protected routes
+router.use('/calendar', requireSession, calendarRouter)
+router.use('/meetings', requireSession, meetingRouter)
 
 export default router

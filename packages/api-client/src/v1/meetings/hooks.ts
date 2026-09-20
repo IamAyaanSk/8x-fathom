@@ -13,10 +13,6 @@ import type {
   PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
 import type {
-  MeetingHighlight,
-  MeetingScratchpadEntry
-} from '@repo/shared-validations/meeting'
-import type {
   GetMeetingDetailResponse,
   GetMeetingTranscriptResponse
 } from '@repo/api-contract/v1/meeting/playback'
@@ -28,6 +24,10 @@ import type {
   PostMeetingSummaryGenerateRequestBody as PostMeetingSummaryGenerateBody,
   PostMeetingSummaryGenerateResponse
 } from '@repo/api-contract/v1/meeting/summary'
+import type {
+  MeetingHighlight,
+  MeetingScratchpadEntry
+} from '@repo/shared-validations/meeting'
 import {
   type QueryClient,
   type UseMutationOptions,

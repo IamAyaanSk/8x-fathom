@@ -88,3 +88,16 @@ export type MeetingPlaybackMedia = Pick<
   MeetingDetail,
   'recordingDurationSec' | 'recordingPlayback' | 'highlights'
 >
+
+export const meetingShareDetailSchema = meetingDetailSchema.pick({
+  title: true,
+  startTime: true,
+  endTime: true,
+  summary: true,
+  recordingDurationSec: true,
+  recordingPlayback: true,
+  highlights: true,
+  actionItems: true,
+  participants: true
+})
+export type MeetingShareDetail = z.infer<typeof meetingShareDetailSchema>

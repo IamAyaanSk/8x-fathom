@@ -8,15 +8,15 @@ import cron from 'node-cron'
 import {
   ARTIFACT_IMPORT_CRON_EXPRESSION,
   DISPATCH_CRON_EXPRESSION,
-  PENDING_PROCESSING_CRON_EXPRESSION,
-  STATUS_POLL_CRON_EXPRESSION
+  PENDING_PROCESSING_CRON_EXPRESSION
 } from '#src/constants'
 import { env } from '#src/env'
+import { RECONCILE_BOT_STATUS_CRON_EXPRESSION } from '#src/reconcile-bot-status/constants'
+import { reconcileBotStatus } from '#src/reconcile-bot-status/index'
 import {
   runArtifactImportTick,
   runDispatchTick,
-  runPendingProcessingTick,
-  runStatusPollTick
+  runPendingProcessingTick
 } from '#src/scheduler'
 
 const app: Express = express()
@@ -34,7 +34,7 @@ const server = app.listen(port, () => {
 })
 
 void runDispatchTick()
-void runStatusPollTick()
+void reconcileBotStatus()
 void runArtifactImportTick()
 void runPendingProcessingTick()
 
@@ -46,10 +46,10 @@ const dispatchTask = cron.schedule(
   { noOverlap: true }
 )
 
-const statusPollTask = cron.schedule(
-  STATUS_POLL_CRON_EXPRESSION,
+const reconcileBotStatusTask = cron.schedule(
+  RECONCILE_BOT_STATUS_CRON_EXPRESSION,
   () => {
-    void runStatusPollTick()
+    void reconcileBotStatus()
   },
   { noOverlap: true }
 )
@@ -72,7 +72,7 @@ const pendingProcessingTask = cron.schedule(
 
 function shutdown() {
   void Promise.resolve(dispatchTask.stop())
-    .then(() => statusPollTask.stop())
+    .then(() => reconcileBotStatusTask.stop())
     .then(() => artifactImportTask.stop())
     .then(() => pendingProcessingTask.stop())
     .finally(() => {

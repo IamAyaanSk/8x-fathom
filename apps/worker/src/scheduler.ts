@@ -3,7 +3,6 @@ import { dispatchDueMeetings } from '@repo/meeting-dispatch'
 import { env } from '#src/env'
 import { runImportingMeetingArtifacts } from '#src/process-importing-meetings'
 import { runPendingMeetingProcessing } from '#src/process-pending-meetings'
-import { runActiveBotStatusSync } from '#src/sync-active-bot-status'
 
 function _dispatchCallbackParams() {
   return {
@@ -27,18 +26,6 @@ async function runDispatchTick() {
     }
   } catch (error) {
     console.error('Dispatch tick failed', error)
-  }
-}
-
-async function runStatusPollTick() {
-  try {
-    const { checkedCount, updatedCount } = await runActiveBotStatusSync()
-    if (checkedCount === 0) {
-      return
-    }
-    console.log(`Status poll: checked ${checkedCount}, updated ${updatedCount}`)
-  } catch (error) {
-    console.error('Status poll failed', error)
   }
 }
 
@@ -70,9 +57,4 @@ async function runPendingProcessingTick() {
   }
 }
 
-export {
-  runArtifactImportTick,
-  runDispatchTick,
-  runPendingProcessingTick,
-  runStatusPollTick
-}
+export { runArtifactImportTick, runDispatchTick, runPendingProcessingTick }

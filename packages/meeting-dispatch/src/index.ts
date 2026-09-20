@@ -10,6 +10,7 @@ export { createMeetingBaasClient } from './meeting-baas-client.js'
 export { MEETING_BAAS_WEBHOOK_PATH } from './constants.js'
 export {
   mapWebhookStatusToProcessStatus,
+  mapBaasStatus,
   getBaasStatusRank,
   formatMeetingBaasTranscriptForAgent,
   getMeetingTranscriptData,

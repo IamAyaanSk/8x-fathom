@@ -50,7 +50,7 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS = [
   'joining',
   'in_waiting_room',
   'in_call_recording',
-  'completed'
+  'transcribing'
 ] as const
 type BaasWebHookStatusToProcess =
   (typeof BAAS_WEBHOOK_STATUS_TO_PROCESS)[number]
@@ -62,7 +62,7 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
   joining: 'joining',
   in_waiting_room: 'in_waiting_room',
   in_call_recording: 'in_call_recording',
-  completed: 'completed'
+  transcribing: 'transcribing'
 } as const
 
 const UI_MEET_STATUS = [

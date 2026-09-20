@@ -103,18 +103,6 @@ const postMeetingBaasWebhookController = async (
         return
       }
 
-      if (webhookBotStatus === 'completed') {
-        // ok we are transcribing now
-        await prisma.meeting.update({
-          where: { id: meeting.id },
-          data: {
-            baasStatus: 'transcribing'
-          }
-        })
-        res.status(200).json({ success: true, message: 'OK' })
-        return
-      }
-
       if (!meeting.baasStatus) {
         await prisma.meeting.update({
           where: { id: meeting.id },

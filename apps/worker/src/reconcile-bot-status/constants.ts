@@ -1,0 +1,2 @@
+export const RECONCILE_BOT_STATUS_BATCH_SIZE = 25
+export const RECONCILE_BOT_STATUS_CRON_EXPRESSION = '*/10 * * * *'

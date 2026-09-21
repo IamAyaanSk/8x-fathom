@@ -6,10 +6,13 @@ import { createRootRouteWithContext } from '@tanstack/react-router'
 
 import { RootLayout } from '#components/layout/root-layout'
 import { RootNotFound } from '#components/layout/root-not-found'
+import { RootPending } from '#components/layout/root-pending'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
   component: RootLayout,
+  pendingComponent: RootPending,
   notFoundComponent: RootNotFound
 })
+

@@ -18,7 +18,9 @@ const router = createRouter({
     queryClient
   },
   defaultPreload: 'intent',
-  scrollRestoration: true
+  scrollRestoration: true,
+  defaultPendingMs: 0,
+  defaultPendingMinMs: 150
 })
 
 // Register the router instance for type safety

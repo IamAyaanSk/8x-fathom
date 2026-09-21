@@ -1,4 +1,7 @@
-import { meetingBaasOutputTranscriptionSchema } from '@repo/shared-validations/meeting'
+import {
+  meetingBaasChatMessagesFileSchema,
+  meetingBaasOutputTranscriptionSchema
+} from '@repo/shared-validations/meeting'
 import {
   BAAS_STATUS_MAP,
   BAAS_STATUS_RANK,
@@ -9,11 +12,11 @@ import {
 } from '@repo/shared-validations/meeting'
 
 function mapBaasStatus(status: string) {
-  return BAAS_STATUS_MAP[status] ?? null
+  return BAAS_STATUS_MAP[status] ?? undefined
 }
 
 function mapWebhookStatusToProcessStatus(status: string) {
-  return BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP[status] ?? null
+  return BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP[status] ?? undefined
 }
 
 function getBaasStatusRank(status: BaasStatusToProcess) {
@@ -132,12 +135,46 @@ function getMeetingTranscriptData(rawTranscript: string) {
   }
 }
 
+function getMeetingChatMessagesData(rawChatMessages: string) {
+  const parsed = meetingBaasChatMessagesFileSchema.parse(
+    JSON.parse(rawChatMessages)
+  )
+
+  return [...parsed]
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+    .map((message) => ({
+      baasMessageId: message.message_id,
+      senderName: message.sender_name,
+      baasSenderId: message.sender_id ?? null,
+      text: message.text,
+      sentAt: new Date(message.timestamp)
+    }))
+}
+
+function isParticipantBot(name: string) {
+  const lowercasedName = name.toLowerCase()
+  const isNoteTakerInName = lowercasedName.includes('notetaker')
+  const isBotInName =
+    lowercasedName.includes('8x') ||
+    lowercasedName.includes('bot') ||
+    lowercasedName.includes('meetingbaas')
+
+  if (isNoteTakerInName || isBotInName) return true
+
+  return false
+}
+
 export {
   mapWebhookStatusToProcessStatus,
   mapBaasStatus,
+  getMeetingChatMessagesData,
   getMeetingTranscriptData,
   getBaasStatusRank,
   getMeetingUiStatus,
   formatMeetingBaasTranscriptForAgent,
-  canDispatchNewBot
+  canDispatchNewBot,
+  isParticipantBot
 }

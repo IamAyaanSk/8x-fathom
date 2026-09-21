@@ -50,7 +50,7 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS = [
   'joining',
   'in_waiting_room',
   'in_call_recording',
-  'completed'
+  'transcribing'
 ] as const
 type BaasWebHookStatusToProcess =
   (typeof BAAS_WEBHOOK_STATUS_TO_PROCESS)[number]
@@ -62,7 +62,7 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
   joining: 'joining',
   in_waiting_room: 'in_waiting_room',
   in_call_recording: 'in_call_recording',
-  completed: 'completed'
+  transcribing: 'transcribing'
 } as const
 
 const UI_MEET_STATUS = [
@@ -253,10 +253,37 @@ type MeetingBaasTranscriptUtterance = z.infer<
   typeof meetingBaasTranscriptUtteranceSchema
 >
 
+const baasSignedArtifactUrlsSchema = z.object({
+  video: z.url().optional().nullable(),
+  transcription: z.url().optional().nullable(),
+  rawTranscription: z.url().optional().nullable(),
+  audio: z.url().optional().nullable(),
+  chatMessages: z.url().optional().nullable()
+})
+
+type BaasSignedArtifactUrls = z.infer<typeof baasSignedArtifactUrlsSchema>
+
+const meetingBaasChatMessageSchema = z.object({
+  message_id: z.string().trim().min(1),
+  sender_name: z.string().trim().min(1),
+  sender_id: z.number().int().nullish(),
+  text: z.string(),
+  timestamp: z.iso.datetime()
+})
+
+const meetingBaasChatMessagesFileSchema = z.array(meetingBaasChatMessageSchema)
+
+type MeetingBaasChatMessage = z.infer<typeof meetingBaasChatMessageSchema>
+
 export {
+  baasSignedArtifactUrlsSchema,
+  meetingBaasChatMessageSchema,
+  meetingBaasChatMessagesFileSchema,
   meetingBaasOutputTranscriptionSchema,
   meetingBaasTranscriptUtteranceSchema,
   meetingBaasTranscriptWordSchema,
+  type BaasSignedArtifactUrls,
+  type MeetingBaasChatMessage,
   type MeetingBaasOutputTranscription,
   type MeetingBaasTranscriptUtterance
 }

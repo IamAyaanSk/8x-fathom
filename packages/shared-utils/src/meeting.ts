@@ -8,6 +8,9 @@ import {
   type MeetingProcessingStatus,
   type UIMeetStatus
 } from '@repo/shared-validations/meeting'
+import { DateTime } from 'luxon'
+
+import { MEETING_CAPTURE_LEAD_MS } from './constants.js'
 
 function mapBaasStatus(status: string) {
   return BAAS_STATUS_MAP[status] ?? undefined
@@ -60,6 +63,40 @@ function getMeetingUiStatus({
   return 'joining'
 }
 
+const ACTIVE_BOT_UI_STATUSES = new Set<UIMeetStatus>([
+  'joining',
+  'in_waiting_room',
+  'in_call_recording',
+  'transcribing',
+  'call_ended_processing'
+])
+
+function isActiveMeetingBotUiPhase(status: UIMeetStatus): boolean {
+  return ACTIVE_BOT_UI_STATUSES.has(status)
+}
+
+const MEETING_BOT_UI_LABELS: Record<UIMeetStatus, string> = {
+  starting_soon: 'Starting soon',
+  joining: 'Joining…',
+  in_waiting_room: 'In waiting room…',
+  in_call_recording: 'In call — recording',
+  transcribing: 'Transcribing…',
+  call_ended_processing: 'Call ended, processing…',
+  ready: 'Ready',
+  failed_to_join: 'Failed to join',
+  failed_processing: 'Failed processing'
+}
+
+function getMeetingBotUiLabel(
+  status: UIMeetStatus,
+  baasStatus?: BaasStatusToProcess | null
+): string {
+  if (status === 'joining' && baasStatus === 'in_waiting_room') {
+    return 'In waiting room…'
+  }
+  return MEETING_BOT_UI_LABELS[status]
+}
+
 type CanDispatchNewBotArgs = {
   baasStatus: BaasStatusToProcess | null
   processingStatus: MeetingProcessingStatus
@@ -84,6 +121,44 @@ function canDispatchNewBot({
     return true
   }
   return false
+}
+
+function _parseStartMs(startTimeIso: string): number | null {
+  const dt = DateTime.fromISO(startTimeIso)
+  return dt.isValid ? dt.toMillis() : null
+}
+
+function isInBotJoiningSoonWindow(
+  startTimeIso: string,
+  nowMs = DateTime.now().toMillis()
+): boolean {
+  const startMs = _parseStartMs(startTimeIso)
+  if (startMs == null) {
+    return false
+  }
+  return nowMs >= startMs - MEETING_CAPTURE_LEAD_MS && nowMs < startMs
+}
+
+function isMeetingEnded(
+  endTimeIso: string,
+  nowMs = DateTime.now().toMillis()
+): boolean {
+  const dt = DateTime.fromISO(endTimeIso)
+  if (!dt.isValid) {
+    return true
+  }
+  return dt.toMillis() <= nowMs
+}
+
+function isManualCaptureAllowed(
+  startTimeIso: string,
+  nowMs = DateTime.now().toMillis()
+): boolean {
+  const startMs = _parseStartMs(startTimeIso)
+  if (startMs == null) {
+    return false
+  }
+  return nowMs < startMs - MEETING_CAPTURE_LEAD_MS || nowMs >= startMs
 }
 
 function formatMeetingBaasTranscriptForAgent(rawTranscript: string) {
@@ -143,14 +218,15 @@ function getMeetingChatMessagesData(rawChatMessages: string) {
   return [...parsed]
     .sort(
       (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        DateTime.fromISO(a.timestamp).toMillis() -
+        DateTime.fromISO(b.timestamp).toMillis()
     )
     .map((message) => ({
       baasMessageId: message.message_id,
       senderName: message.sender_name,
       baasSenderId: message.sender_id ?? null,
       text: message.text,
-      sentAt: new Date(message.timestamp)
+      sentAt: DateTime.fromISO(message.timestamp).toJSDate()
     }))
 }
 
@@ -176,5 +252,12 @@ export {
   getMeetingUiStatus,
   formatMeetingBaasTranscriptForAgent,
   canDispatchNewBot,
-  isParticipantBot
+  isParticipantBot,
+  isInBotJoiningSoonWindow,
+  isMeetingEnded,
+  isManualCaptureAllowed,
+  ACTIVE_BOT_UI_STATUSES,
+  isActiveMeetingBotUiPhase,
+  MEETING_BOT_UI_LABELS,
+  getMeetingBotUiLabel
 }

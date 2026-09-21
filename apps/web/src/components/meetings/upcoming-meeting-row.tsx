@@ -1,6 +1,6 @@
 import { usePostMeetingCaptureMutation } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
-import { getMeetingBotUiLabel } from '@repo/api-contract/baas-bot-status'
+import { getMeetingBotUiLabel } from '@repo/shared-utils/meeting'
 import { Button, buttonVariants } from '@repo/ui-web/components/button'
 import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { cn } from '@repo/ui-web/lib/utils'

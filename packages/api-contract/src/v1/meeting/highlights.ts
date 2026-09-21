@@ -1,8 +1,8 @@
 import {
   meetingHighlightNoteSchema,
+  meetingHighlightSchema,
   meetingTimestampSecSchema
-} from '@repo/shared-validations'
-import { meetingHighlightSchema } from '@repo/shared-validations/meeting'
+} from '@repo/shared-validations/meeting'
 import { z } from 'zod/v4'
 
 import { _createResponseApiZod } from '#src/utils'

@@ -1,6 +1,6 @@
 import { prisma } from '@repo/db'
-
 import { getMeetingUiStatus } from '@repo/shared-utils/meeting'
+
 import { createMeetingBaasClient } from './meeting-baas-client.js'
 
 async function cancelJoiningBotForDeletedCalendarEvent(params: {

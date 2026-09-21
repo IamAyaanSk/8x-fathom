@@ -1,12 +1,12 @@
 // TODO: move to relevant apps
 
 import { Prisma, prisma, type BaasBotStatus } from '@repo/db'
-import { MEETING_CAPTURE_LEAD_MS } from '@repo/shared-validations'
+import { MEETING_CAPTURE_LEAD_MS } from '@repo/shared-utils/constants'
+import { canDispatchNewBot, mapBaasStatus } from '@repo/shared-utils/meeting'
 import type { MeetingProcessingStatus } from '@repo/shared-validations/meeting'
 
 import { DISPATCH_BATCH_SIZE } from './constants.js'
 import { DispatchError } from './errors.js'
-import { canDispatchNewBot, mapBaasStatus } from '@repo/shared-utils/meeting'
 import { createMeetingBaasClient } from './meeting-baas-client.js'
 
 type DispatchMode = 'scheduled' | 'capture'

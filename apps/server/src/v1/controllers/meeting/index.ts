@@ -5,10 +5,7 @@ import {
   type PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
 import { type Prisma, prisma } from '@repo/db'
-import {
-  dispatchBotForMeeting,
-  DispatchError
-} from '@repo/meeting-dispatch'
+import { dispatchBotForMeeting, DispatchError } from '@repo/meeting-dispatch'
 import { getMeetingUiStatus } from '@repo/shared-utils/meeting'
 import type { MeetingListItem } from '@repo/shared-validations/meeting'
 import type { NextFunction, Request, Response } from 'express'

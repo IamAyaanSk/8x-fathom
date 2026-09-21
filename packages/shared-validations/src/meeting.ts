@@ -1,10 +1,10 @@
 import { z } from 'zod/v4'
 
-import {
-  meetingHighlightNoteSchema,
-  meetingScratchpadTextSchema,
-  meetingTimestampSecSchema
-} from './meeting-timestamp-sec.js'
+export const meetingTimestampSecSchema = z.number().int().min(0)
+
+export const meetingScratchpadTextSchema = z.string().trim().min(1).max(4000)
+
+export const meetingHighlightNoteSchema = z.string().trim().max(500)
 
 // ============================================================================
 // 1. Status & Lifecycles

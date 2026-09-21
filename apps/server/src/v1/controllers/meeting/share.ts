@@ -7,11 +7,11 @@ import {
   type PostMeetingShareEnableResponse
 } from '@repo/api-contract/v1/meeting/share'
 import { prisma } from '@repo/db'
+import { calendarDurationSec } from '@repo/shared-utils/date'
 import {
   getMeetingTranscriptData,
   isParticipantBot
 } from '@repo/shared-utils/meeting'
-import { calendarDurationSec } from '@repo/shared-utils/date'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'

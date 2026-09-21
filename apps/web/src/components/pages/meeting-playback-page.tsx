@@ -1,5 +1,5 @@
 import { useMeetingDetailQuery } from '@repo/api-client/v1/meetings/hooks'
-import { getMeetingBotUiLabel } from '@repo/api-contract/baas-bot-status'
+import { getMeetingBotUiLabel } from '@repo/shared-utils/meeting'
 import { Button } from '@repo/ui-web/components/button'
 import {
   Tabs,

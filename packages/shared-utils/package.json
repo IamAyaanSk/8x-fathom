@@ -16,7 +16,10 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/shared-validations": "workspace:*"
+    "@repo/shared-validations": "workspace:*",
+    "@types/luxon": "catalog:",
+    "luxon": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

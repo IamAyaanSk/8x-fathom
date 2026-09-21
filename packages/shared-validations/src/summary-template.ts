@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 
-const summaryTemplateIdSchema = z.enum([
+export const summaryTemplateIdSchema = z.enum([
   'enhanced',
   'sales',
   'sales_sandler',
@@ -19,6 +19,4 @@ const summaryTemplateIdSchema = z.enum([
   'stand_up'
 ])
 
-type SummaryTemplateId = z.infer<typeof summaryTemplateIdSchema>
-
-export { summaryTemplateIdSchema, type SummaryTemplateId }
+export type SummaryTemplateId = z.infer<typeof summaryTemplateIdSchema>

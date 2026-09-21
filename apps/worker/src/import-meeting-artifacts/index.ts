@@ -15,11 +15,8 @@ import {
   meetingRecordingR2Key,
   meetingTranscriptR2Key
 } from '#src/import-meeting-artifacts/constants'
-import {
-  extendMeetingProcessingLease,
-  failMeetingProcessing
-} from '#src/meeting-processing-lifecycle'
 import { putR2ObjectFromUrl } from '#src/r2-storage'
+import { extendMeetingProcessingLease, failMeetingProcessing } from '#src/utils'
 
 type LockedImportingMeetingRow = {
   id: string

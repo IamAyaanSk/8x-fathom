@@ -1,14 +1,11 @@
-import '#src/env'
 import { parseMeetingBaasChatMessagesFileFromJson } from '@repo/api-contract/meeting-baas-chat-messages'
 import { prisma } from '@repo/db'
 
 import { getR2ObjectUtf8 } from '#src/r2-storage'
 
-function _errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Unknown error'
-}
-
-async function ingestMeetingChatMessages(meetingId: string): Promise<void> {
+export async function ingestMeetingChatMessages(
+  meetingId: string
+): Promise<void> {
   const meeting = await prisma.meeting.findUnique({
     where: { id: meetingId },
     select: {
@@ -58,10 +55,6 @@ async function ingestMeetingChatMessages(meetingId: string): Promise<void> {
       })
     })
   } catch (error) {
-    console.error(
-      `Chat messages ingest failed for ${meetingId}: ${_errorMessage(error)}`
-    )
+    console.error(`Chat messages ingest failed for ${meetingId}: `, error)
   }
 }
-
-export { ingestMeetingChatMessages }

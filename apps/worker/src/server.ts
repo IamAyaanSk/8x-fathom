@@ -5,15 +5,15 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import cron from 'node-cron'
 
-import { PENDING_PROCESSING_CRON_EXPRESSION } from '#src/constants'
 import { DISPATCH_CRON_EXPRESSION } from '#src/dispatch-bot/constants'
 import { dispatchBotForDueMeetings } from '#src/dispatch-bot/index'
 import { env } from '#src/env'
 import { ARTIFACT_IMPORT_CRON_EXPRESSION } from '#src/import-meeting-artifacts/constants'
 import { importMeetingArtifacts } from '#src/import-meeting-artifacts/index'
+import { PENDING_PROCESSING_CRON_EXPRESSION } from '#src/process-pending-meetings/constants'
+import { processPendingMeetings } from '#src/process-pending-meetings/index'
 import { RECONCILE_BOT_STATUS_CRON_EXPRESSION } from '#src/reconcile-bot-status/constants'
 import { reconcileBotStatus } from '#src/reconcile-bot-status/index'
-import { runPendingProcessingTick } from '#src/scheduler'
 
 const app: Express = express()
 const port = env.PORT
@@ -32,7 +32,7 @@ const server = app.listen(port, () => {
 void dispatchBotForDueMeetings()
 void reconcileBotStatus()
 void importMeetingArtifacts()
-void runPendingProcessingTick()
+void processPendingMeetings()
 
 const dispatchBotForDueMeetingsTask = cron.schedule(
   DISPATCH_CRON_EXPRESSION,
@@ -61,7 +61,7 @@ const importMeetingArtifactsTask = cron.schedule(
 const pendingProcessingTask = cron.schedule(
   PENDING_PROCESSING_CRON_EXPRESSION,
   () => {
-    void runPendingProcessingTick()
+    void processPendingMeetings()
   },
   { noOverlap: true }
 )

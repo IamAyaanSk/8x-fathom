@@ -4,7 +4,7 @@ import {
   type GetMeetingTranscriptResponse
 } from '@repo/api-contract/v1/meeting/playback'
 import { prisma } from '@repo/db'
-import { calendarDurationSec } from '@repo/shared-utils/date'
+import { calendarDurationSec, dateToSafeIso } from '@repo/shared-utils/date'
 import {
   getMeetingTranscriptData,
   getMeetingUiStatus,
@@ -123,8 +123,8 @@ const getMeetingDetailController = async (
       data: {
         id: meeting.id,
         title: meeting.title,
-        startTime: meeting.startTime.toISOString(),
-        endTime: meeting.endTime.toISOString(),
+        startTime: dateToSafeIso(meeting.startTime) ?? new Date().toISOString(),
+        endTime: dateToSafeIso(meeting.endTime) ?? new Date().toISOString(),
         htmlLink: meeting.htmlLink,
         uiPhase,
         // TODO: Remove them from FE in future
@@ -134,14 +134,14 @@ const getMeetingDetailController = async (
         summary: meeting.summary,
         shareSlug: meeting.shareSlug,
         recordingDurationSec,
-        recordingStartedAt: meeting.recordingStartedAt?.toISOString() ?? null,
+        recordingStartedAt: dateToSafeIso(meeting.recordingStartedAt),
         recordingPlayback,
         highlights: meeting.highlights,
         scratchpadEntries: meeting.scratchpadEntries.map((entry) => ({
           id: entry.id,
           timestampSec: entry.timestampSec,
           text: entry.text,
-          updatedAt: entry.updatedAt.toISOString()
+          updatedAt: dateToSafeIso(entry.updatedAt) ?? new Date().toISOString()
         })),
         actionItems: meeting.actionItems,
         participants: meeting.participants.filter(
@@ -151,7 +151,7 @@ const getMeetingDetailController = async (
           id: message.id,
           senderName: message.senderName,
           text: message.text,
-          sentAt: message.sentAt.toISOString()
+          sentAt: dateToSafeIso(message.sentAt) ?? new Date().toISOString()
         }))
       }
     })

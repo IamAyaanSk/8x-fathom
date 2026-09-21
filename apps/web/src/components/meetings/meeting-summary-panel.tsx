@@ -229,11 +229,25 @@ function MeetingSummaryPanel({
         />
 
         {!summary ? (
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            {canRecreateSummary
-              ? 'No summary yet. Use Recreate to generate one from the transcript.'
-              : 'Summary is not ready yet. It appears after the call is processed.'}
-          </p>
+          canRecreateSummary ? (
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              No summary yet. Use Recreate to generate one from the transcript.
+            </p>
+          ) : (
+            <div className="border-border bg-muted/30 flex items-center gap-3.5 rounded-xl border p-4 text-left">
+              <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
+                <Loader2 aria-hidden className="size-4 animate-spin" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-foreground text-sm font-medium">
+                  Generating call summary…
+                </p>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  This takes a few minutes while we analyze your meeting.
+                </p>
+              </div>
+            </div>
+          )
         ) : (
           _renderSummaryMarkdown(summary)
         )}

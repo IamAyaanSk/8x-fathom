@@ -1,4 +1,5 @@
 import { prisma } from '@repo/db'
+import { parseSafeDate } from '@repo/shared-utils/date'
 import {
   getBaasStatusRank,
   isParticipantBot,
@@ -20,11 +21,7 @@ function _getBaasRecordingStartedAtFromWebhook(event: MeetingBaasWebhookEvent) {
     event.event === 'bot.status_change' &&
     event.data.status.code === 'in_call_recording'
   ) {
-    if (event.data.status.start_time) {
-      return new Date(event.data.status.start_time * 1000)
-    }
-
-    return new Date()
+    return parseSafeDate(event.data.status.start_time)
   }
 
   return undefined

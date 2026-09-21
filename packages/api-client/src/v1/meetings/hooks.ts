@@ -162,10 +162,10 @@ function _meetingDetailRefetchInterval(query: {
   if (data?.success !== true) {
     return MEETING_DETAIL_STALE_MS
   }
-  if (data.data.recordingPlayback) {
-    return MEETING_PLAYBACK_URL_REFRESH_MS
-  }
   if (
+    data.data.processingStatus === 'importing' ||
+    data.data.processingStatus === 'pending' ||
+    data.data.processingStatus === 'processing' ||
     data.data.uiPhase === 'joining' ||
     data.data.uiPhase === 'in_waiting_room' ||
     data.data.uiPhase === 'in_call_recording' ||
@@ -173,6 +173,9 @@ function _meetingDetailRefetchInterval(query: {
     data.data.uiPhase === 'transcribing'
   ) {
     return MEETINGS_UPCOMING_ACTIVE_REFETCH_MS
+  }
+  if (data.data.recordingPlayback) {
+    return MEETING_PLAYBACK_URL_REFRESH_MS
   }
   return MEETING_DETAIL_STALE_MS
 }

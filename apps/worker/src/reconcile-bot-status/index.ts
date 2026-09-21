@@ -1,5 +1,6 @@
 import { prisma } from '@repo/db'
 import { createMeetingBaasClient } from '@repo/meeting-dispatch'
+import { parseSafeDate } from '@repo/shared-utils/date'
 import {
   getBaasStatusRank,
   isParticipantBot,
@@ -89,7 +90,7 @@ export async function reconcileBotStatus() {
         if (fetchedBaasStatus !== 'completed') {
           const recordingStartedAt =
             fetchedBaasStatus === 'in_call_recording'
-              ? new Date(getBotStatusResult.data.updated_at)
+              ? parseSafeDate(getBotStatusResult.data.updated_at)
               : undefined
 
           await prisma.meeting.update({

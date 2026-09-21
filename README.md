@@ -203,7 +203,8 @@ flowchart TD
 │   ├── env/                  # Environment variable schema validation (@repo/env)
 │   ├── meeting-dispatch/     # MeetingBaas Bot API v2 client and scheduler lock utilities
 │   ├── r2/                   # Cloudflare R2 bucket integration and S3 client helpers
-│   ├── shared-validations/   # Shared Zod validation primitives
+│   ├── shared-utils/         # Shared date, meeting lifecycle, transcript, and formatting utilities
+│   ├── shared-validations/   # Shared Zod domain & entity validation schemas
 │   ├── typescript-config/    # Shared base tsconfig configurations
 │   └── ui-web/               # shadcn/ui components, tokens, and global CSS styles
 │

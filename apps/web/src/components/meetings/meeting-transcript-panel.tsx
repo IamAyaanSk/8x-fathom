@@ -56,7 +56,7 @@ function MeetingTranscriptPanel({
     )
   }
 
-  const lines = data.data.lines
+  const lines = data?.data?.lines ?? []
 
   if (lines.length === 0) {
     return (
@@ -72,7 +72,7 @@ function MeetingTranscriptPanel({
         {lines.map((line, index) => {
           const isActive =
             currentTimeSec >= line.startSec &&
-            currentTimeSec < line.endSec + 0.5
+            currentTimeSec < (line.endSec ?? line.startSec) + 0.5
           const speaker = line.speaker?.trim()
 
           return (

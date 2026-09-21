@@ -17,7 +17,7 @@ const getMeetingDetailResponseSchema =
 
 const meetingTranscriptDataSchema = z.object({
   lines: z.array(meetingTranscriptLineSchema),
-  durationSec: z.number().int().min(0).nullable()
+  durationSec: z.number().min(0).nullish()
 })
 
 const getMeetingTranscriptResponseSchema = _createResponseApiZod(

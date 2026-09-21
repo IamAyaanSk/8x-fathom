@@ -135,7 +135,9 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
       <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">
         {isLiveRecording
           ? 'Use Highlight and Scratchpad while the bot records. The full recording appears here when processing finishes.'
-          : 'Recording is not available yet. Check back when processing finishes.'}
+          : meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining'
+            ? 'It may take up to 5 minutes for the bot to join the meeting.'
+            : 'Recording is not available yet. Check back when processing finishes.'}
       </p>
     </div>
   )

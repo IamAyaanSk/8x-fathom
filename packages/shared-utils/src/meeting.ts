@@ -185,27 +185,46 @@ function formatMeetingBaasTranscriptForAgent(rawTranscript: string) {
 }
 
 function getMeetingTranscriptData(rawTranscript: string) {
-  const parsedTranscript = meetingBaasOutputTranscriptionSchema.parse(
-    JSON.parse(rawTranscript)
-  )
+  let parsedJson: unknown
+  try {
+    parsedJson =
+      typeof rawTranscript === 'string'
+        ? JSON.parse(rawTranscript)
+        : rawTranscript
+  } catch {
+    return {
+      durationSec: null,
+      lines: []
+    }
+  }
 
-  const lines = [...parsedTranscript.result.utterances]
+  const parseResult = meetingBaasOutputTranscriptionSchema.safeParse(parsedJson)
+  if (!parseResult.success) {
+    return {
+      durationSec: null,
+      lines: []
+    }
+  }
+
+  const parsedTranscript = parseResult.data
+  const utterances = parsedTranscript.result?.utterances ?? []
+  const lines = [...utterances]
     .sort((a, b) => (a.start ?? 0) - (b.start ?? 0))
     .map((utterance) => {
-      const text = utterance.text.trim()
+      const text = utterance.text?.trim() ?? ''
       if (!text) return null
 
       return {
         startSec: utterance.start ?? 0,
         endSec: utterance.end ?? utterance.start ?? 0,
         speaker: utterance.speaker?.trim() ?? null,
-        text: utterance.text.trim()
+        text
       }
     })
-    .filter((line) => line !== null)
+    .filter((line): line is NonNullable<typeof line> => line !== null)
 
   return {
-    durationSec: parsedTranscript.result.total_duration ?? 0,
+    durationSec: parsedTranscript.result?.total_duration ?? null,
     lines
   }
 }

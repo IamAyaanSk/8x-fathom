@@ -245,14 +245,16 @@ export type MeetingBaasTranscriptUtterance = z.infer<
 >
 
 export const meetingBaasOutputTranscriptionSchema = z.object({
-  bot_id: z.string(),
+  bot_id: z.string().optional(),
   provider: z.string().optional(),
-  result: z.object({
-    utterances: z.array(meetingBaasTranscriptUtteranceSchema),
-    languages: z.array(z.string()).optional(),
-    total_utterances: z.number().optional(),
-    total_duration: z.number().optional()
-  }),
+  result: z
+    .object({
+      utterances: z.array(meetingBaasTranscriptUtteranceSchema).default([]),
+      languages: z.array(z.string()).optional(),
+      total_utterances: z.number().optional(),
+      total_duration: z.number().nullish()
+    })
+    .default({ utterances: [] }),
   created_at: z.string().optional()
 })
 
@@ -263,8 +265,8 @@ export type MeetingBaasOutputTranscription = z.infer<
 export const meetingTranscriptLineSchema = z.object({
   startSec: z.number(),
   endSec: z.number(),
-  speaker: z.string().nullable(),
-  text: z.string().min(1)
+  speaker: z.string().nullish(),
+  text: z.string()
 })
 
 export type MeetingTranscriptLine = z.infer<typeof meetingTranscriptLineSchema>

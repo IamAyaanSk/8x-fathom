@@ -7,7 +7,8 @@ import {
 
 const CAPTURE_HINT =
   'Use this to start capture now for this meet by sending bot.'
-const CAPTURE_BOT_JOINING_SOON_HINT = 'The bot will be joining the meet soon.'
+const CAPTURE_JOINING_HINT =
+  'It may take up to 5 minutes for the bot to join the meeting.'
 const CAPTURE_STARTED_LABEL = 'Capture started'
 const RETRY_HINT = 'Send a new bot to this call.'
 
@@ -28,6 +29,8 @@ function getUpcomingMeetingCaptureUi({
 }): UpcomingMeetingCaptureUi {
   const failedJoin = meeting.uiPhase === 'failed_to_join'
   const hasBot = meeting.baasBotId != null
+  const isJoining =
+    meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining'
   const botJoiningSoon = isInBotJoiningSoonWindow(meeting.startTime, nowMs)
   const manualCaptureAllowed = isManualCaptureAllowed(meeting.startTime, nowMs)
   const hasEnded = isMeetingEnded(meeting.endTime, nowMs)
@@ -47,18 +50,19 @@ function getUpcomingMeetingCaptureUi({
   }
 
   if (hasBot) {
+    const tooltip = isJoining ? CAPTURE_JOINING_HINT : CAPTURE_STARTED_LABEL
     return {
       canCapture: false,
-      tooltip: CAPTURE_STARTED_LABEL,
-      ariaLabel: CAPTURE_STARTED_LABEL
+      tooltip,
+      ariaLabel: tooltip
     }
   }
 
-  if (botJoiningSoon) {
+  if (botJoiningSoon || isJoining) {
     return {
       canCapture: false,
-      tooltip: CAPTURE_BOT_JOINING_SOON_HINT,
-      ariaLabel: CAPTURE_BOT_JOINING_SOON_HINT
+      tooltip: CAPTURE_JOINING_HINT,
+      ariaLabel: CAPTURE_JOINING_HINT
     }
   }
 

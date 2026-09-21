@@ -8,15 +8,17 @@ import {
 } from '@repo/api-contract/v1/meeting/share'
 import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
-import { getMeetingTranscriptData } from '@repo/meeting-dispatch'
+import {
+  getMeetingTranscriptData,
+  isParticipantBot
+} from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
 import { getR2ObjectUtf8 } from '#src/r2-storage'
 import {
   createMeetingShareSlug,
-  getMeetingPlaybackUrl,
-  isParticipantBot
+  getMeetingPlaybackUrl
 } from '#src/services/meeting/index'
 import { HttpError } from '#src/v1/errors/http-error'
 

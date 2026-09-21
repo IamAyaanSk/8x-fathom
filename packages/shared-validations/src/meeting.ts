@@ -6,8 +6,11 @@ import {
   meetingTimestampSecSchema
 } from './meeting-timestamp-sec.js'
 
-// Meeting status
-const BAAS_STATUS_TO_PROCESS = [
+// ============================================================================
+// 1. Status & Lifecycles
+// ============================================================================
+
+export const BAAS_STATUS_TO_PROCESS = [
   'joining',
   'in_waiting_room',
   'in_call_recording',
@@ -16,8 +19,9 @@ const BAAS_STATUS_TO_PROCESS = [
   'failed'
 ] as const
 
-type BaasStatusToProcess = (typeof BAAS_STATUS_TO_PROCESS)[number]
-const BAAS_STATUS_MAP: Record<string, BaasStatusToProcess> = {
+export type BaasStatusToProcess = (typeof BAAS_STATUS_TO_PROCESS)[number]
+
+export const BAAS_STATUS_MAP: Record<string, BaasStatusToProcess> = {
   joining: 'joining',
   in_waiting_room: 'in_waiting_room',
   in_call_recording: 'in_call_recording',
@@ -26,18 +30,7 @@ const BAAS_STATUS_MAP: Record<string, BaasStatusToProcess> = {
   failed: 'failed'
 }
 
-const MEETING_PROCESSING_STATUS = [
-  'idle',
-  'importing',
-  'pending',
-  'processing',
-  'ready',
-  'failed'
-] as const
-
-type MeetingProcessingStatus = (typeof MEETING_PROCESSING_STATUS)[number]
-
-const BAAS_STATUS_RANK: Record<BaasStatusToProcess, number> = {
+export const BAAS_STATUS_RANK: Record<BaasStatusToProcess, number> = {
   joining: 1,
   in_waiting_room: 2,
   in_call_recording: 3,
@@ -46,16 +39,17 @@ const BAAS_STATUS_RANK: Record<BaasStatusToProcess, number> = {
   failed: 6
 } as const
 
-const BAAS_WEBHOOK_STATUS_TO_PROCESS = [
+export const BAAS_WEBHOOK_STATUS_TO_PROCESS = [
   'joining',
   'in_waiting_room',
   'in_call_recording',
   'transcribing'
 ] as const
-type BaasWebHookStatusToProcess =
+
+export type BaasWebHookStatusToProcess =
   (typeof BAAS_WEBHOOK_STATUS_TO_PROCESS)[number]
 
-const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
+export const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
   string,
   BaasWebHookStatusToProcess
 > = {
@@ -65,7 +59,18 @@ const BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP: Record<
   transcribing: 'transcribing'
 } as const
 
-const UI_MEET_STATUS = [
+export const MEETING_PROCESSING_STATUS = [
+  'idle',
+  'importing',
+  'pending',
+  'processing',
+  'ready',
+  'failed'
+] as const
+
+export type MeetingProcessingStatus = (typeof MEETING_PROCESSING_STATUS)[number]
+
+export const UI_MEET_STATUS = [
   'joining',
   'ready',
   'failed_processing',
@@ -76,25 +81,16 @@ const UI_MEET_STATUS = [
   'transcribing',
   'in_waiting_room'
 ] as const
-type UIMeetStatus = (typeof UI_MEET_STATUS)[number]
 
-export {
-  BAAS_STATUS_TO_PROCESS,
-  BAAS_STATUS_MAP,
-  BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP,
-  BAAS_STATUS_RANK,
-  UI_MEET_STATUS,
-  MEETING_PROCESSING_STATUS,
-  type UIMeetStatus,
-  type MeetingProcessingStatus,
-  type BaasStatusToProcess
-}
+export type UIMeetStatus = (typeof UI_MEET_STATUS)[number]
 
 export const baasBotStatusSchema = z.enum(BAAS_STATUS_TO_PROCESS)
 export const meetingBotUiPhaseSchema = z.enum(UI_MEET_STATUS)
 export const meetingProcessingStatusSchema = z.enum(MEETING_PROCESSING_STATUS)
 
-// Meeting domain schemas
+// ============================================================================
+// 2. Meeting Domain Entities
+// ============================================================================
 
 export const meetingActionItemSchema = z.object({
   id: z.string(),
@@ -152,6 +148,10 @@ export type MeetingRecordingPlayback = z.infer<
   typeof meetingRecordingPlaybackSchema
 >
 
+// ============================================================================
+// 3. Meeting DTOs & Views
+// ============================================================================
+
 export const meetingDetailSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -174,6 +174,7 @@ export const meetingDetailSchema = z.object({
 })
 
 export type MeetingDetail = z.infer<typeof meetingDetailSchema>
+
 export type MeetingPlaybackMedia = Pick<
   MeetingDetail,
   'recordingDurationSec' | 'recordingPlayback' | 'highlights'
@@ -213,16 +214,22 @@ export const meetingsListDataSchema = z.object({
 
 export type MeetingsListData = z.infer<typeof meetingsListDataSchema>
 
-// Meeting transcript schemas
+// ============================================================================
+// 4. MeetingBaas Transcript & Output
+// ============================================================================
 
-const meetingBaasTranscriptWordSchema = z.object({
+export const meetingBaasTranscriptWordSchema = z.object({
   word: z.string(),
   start: z.number(),
   end: z.number(),
   confidence: z.number().optional()
 })
 
-const meetingBaasTranscriptUtteranceSchema = z.object({
+export type MeetingBaasTranscriptWord = z.infer<
+  typeof meetingBaasTranscriptWordSchema
+>
+
+export const meetingBaasTranscriptUtteranceSchema = z.object({
   text: z.string(),
   language: z.string().optional(),
   start: z.number().optional(),
@@ -233,7 +240,11 @@ const meetingBaasTranscriptUtteranceSchema = z.object({
   speaker: z.string().optional()
 })
 
-const meetingBaasOutputTranscriptionSchema = z.object({
+export type MeetingBaasTranscriptUtterance = z.infer<
+  typeof meetingBaasTranscriptUtteranceSchema
+>
+
+export const meetingBaasOutputTranscriptionSchema = z.object({
   bot_id: z.string(),
   provider: z.string().optional(),
   result: z.object({
@@ -245,15 +256,24 @@ const meetingBaasOutputTranscriptionSchema = z.object({
   created_at: z.string().optional()
 })
 
-type MeetingBaasOutputTranscription = z.infer<
+export type MeetingBaasOutputTranscription = z.infer<
   typeof meetingBaasOutputTranscriptionSchema
 >
 
-type MeetingBaasTranscriptUtterance = z.infer<
-  typeof meetingBaasTranscriptUtteranceSchema
->
+export const meetingTranscriptLineSchema = z.object({
+  startSec: z.number(),
+  endSec: z.number(),
+  speaker: z.string().nullable(),
+  text: z.string().min(1)
+})
 
-const baasSignedArtifactUrlsSchema = z.object({
+export type MeetingTranscriptLine = z.infer<typeof meetingTranscriptLineSchema>
+
+// ============================================================================
+// 5. MeetingBaas Artifacts & Chat Files
+// ============================================================================
+
+export const baasSignedArtifactUrlsSchema = z.object({
   video: z.url().optional().nullable(),
   transcription: z.url().optional().nullable(),
   rawTranscription: z.url().optional().nullable(),
@@ -261,9 +281,11 @@ const baasSignedArtifactUrlsSchema = z.object({
   chatMessages: z.url().optional().nullable()
 })
 
-type BaasSignedArtifactUrls = z.infer<typeof baasSignedArtifactUrlsSchema>
+export type BaasSignedArtifactUrls = z.infer<
+  typeof baasSignedArtifactUrlsSchema
+>
 
-const meetingBaasChatMessageSchema = z.object({
+export const meetingBaasChatMessageSchema = z.object({
   message_id: z.string().trim().min(1),
   sender_name: z.string().trim().min(1),
   sender_id: z.number().int().nullish(),
@@ -271,19 +293,114 @@ const meetingBaasChatMessageSchema = z.object({
   timestamp: z.iso.datetime()
 })
 
-const meetingBaasChatMessagesFileSchema = z.array(meetingBaasChatMessageSchema)
+export type MeetingBaasChatMessage = z.infer<
+  typeof meetingBaasChatMessageSchema
+>
 
-type MeetingBaasChatMessage = z.infer<typeof meetingBaasChatMessageSchema>
+export const meetingBaasChatMessagesFileSchema = z.array(
+  meetingBaasChatMessageSchema
+)
 
-export {
-  baasSignedArtifactUrlsSchema,
-  meetingBaasChatMessageSchema,
-  meetingBaasChatMessagesFileSchema,
-  meetingBaasOutputTranscriptionSchema,
-  meetingBaasTranscriptUtteranceSchema,
-  meetingBaasTranscriptWordSchema,
-  type BaasSignedArtifactUrls,
-  type MeetingBaasChatMessage,
-  type MeetingBaasOutputTranscription,
-  type MeetingBaasTranscriptUtterance
-}
+export type MeetingBaasChatMessagesFile = z.infer<
+  typeof meetingBaasChatMessagesFileSchema
+>
+
+// ============================================================================
+// 6. MeetingBaas Webhooks
+// ============================================================================
+
+export const meetingBaasWebhookHeadersSchema = z.object({
+  'svix-id': z.string().min(1),
+  'svix-timestamp': z.string().min(1),
+  'svix-signature': z.string().min(1)
+})
+
+export type MeetingBaasWebhookHeaders = z.infer<
+  typeof meetingBaasWebhookHeadersSchema
+>
+
+export const meetingBaasWebhookExtraSchema = z
+  .object({
+    meetingId: z.string().optional()
+  })
+  .loose()
+  .nullable()
+  .optional()
+
+export type MeetingBaasWebhookExtra = z.infer<
+  typeof meetingBaasWebhookExtraSchema
+>
+
+export const meetingBaasParticipantSchema = z.object({
+  name: z.string(),
+  id: z.number().nullable(),
+  display_name: z.string().optional(),
+  profile_picture: z.string().optional()
+})
+
+export type MeetingBaasParticipant = z.infer<
+  typeof meetingBaasParticipantSchema
+>
+
+export const meetingBaasStatusChangeWebhookSchema = z.object({
+  event: z.literal('bot.status_change'),
+  data: z.object({
+    bot_id: z.string(),
+    status: z.object({
+      code: z.string(),
+      created_at: z.string().optional(),
+      start_time: z.number().optional()
+    })
+  }),
+  extra: meetingBaasWebhookExtraSchema
+})
+
+export type MeetingBaasStatusChangeWebhook = z.infer<
+  typeof meetingBaasStatusChangeWebhookSchema
+>
+
+export const meetingBaasCompletedWebhookSchema = z.object({
+  event: z.literal('bot.completed'),
+  data: z
+    .object({
+      bot_id: z.string(),
+      video: z.url().nullish(),
+      transcription: z.url().nullish(),
+      raw_transcription: z.url().nullish(),
+      audio: z.url().nullish(),
+      chat_messages: z.url().nullish(),
+      participants: z.array(meetingBaasParticipantSchema).optional(),
+      joined_at: z.string().nullable().optional(),
+      data_deleted: z.boolean().optional()
+    })
+    .loose(),
+  extra: meetingBaasWebhookExtraSchema
+})
+
+export type MeetingBaasCompletedWebhook = z.infer<
+  typeof meetingBaasCompletedWebhookSchema
+>
+
+export const meetingBaasFailedWebhookSchema = z.object({
+  event: z.literal('bot.failed'),
+  data: z.object({
+    bot_id: z.string(),
+    error_code: z.string().optional(),
+    error_message: z.string().optional()
+  }),
+  extra: meetingBaasWebhookExtraSchema
+})
+
+export type MeetingBaasFailedWebhook = z.infer<
+  typeof meetingBaasFailedWebhookSchema
+>
+
+export const meetingBaasWebhookEventSchema = z.discriminatedUnion('event', [
+  meetingBaasStatusChangeWebhookSchema,
+  meetingBaasCompletedWebhookSchema,
+  meetingBaasFailedWebhookSchema
+])
+
+export type MeetingBaasWebhookEvent = z.infer<
+  typeof meetingBaasWebhookEventSchema
+>

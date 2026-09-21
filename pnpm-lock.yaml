@@ -436,9 +436,6 @@ importers:
       '@repo/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@repo/api-contract':
-        specifier: workspace:*
-        version: link:../../packages/api-contract
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/database

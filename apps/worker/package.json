@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@repo/ai": "workspace:*",
-    "@repo/api-contract": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
     "@repo/meeting-dispatch": "workspace:*",

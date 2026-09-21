@@ -1,14 +1,14 @@
-import {
-  meetingBaasWebhookEventSchema,
-  meetingBaasWebhookHeadersSchema,
-  type MeetingBaasWebhookEvent
-} from '@repo/api-contract/meeting-baas-webhook'
 import { prisma } from '@repo/db'
 import {
   getBaasStatusRank,
   isParticipantBot,
   mapWebhookStatusToProcessStatus
 } from '@repo/meeting-dispatch'
+import {
+  meetingBaasWebhookEventSchema,
+  meetingBaasWebhookHeadersSchema,
+  type MeetingBaasWebhookEvent
+} from '@repo/shared-validations/meeting'
 import type { NextFunction, Request, Response } from 'express'
 import { Webhook } from 'svix'
 

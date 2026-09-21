@@ -7,26 +7,6 @@
     "#src/*": "./dist/*.js"
   },
   "exports": {
-    "./baas-bot-status": {
-      "types": "./src/baas-bot-status.ts",
-      "default": "./dist/baas-bot-status.js"
-    },
-    "./meeting-baas-artifacts": {
-      "types": "./src/meeting-baas-artifacts.ts",
-      "default": "./dist/meeting-baas-artifacts.js"
-    },
-    "./meeting-baas-webhook": {
-      "types": "./src/meeting-baas-webhook.ts",
-      "default": "./dist/meeting-baas-webhook.js"
-    },
-    "./meeting-baas-transcript": {
-      "types": "./src/meeting-baas-transcript.ts",
-      "default": "./dist/meeting-baas-transcript.js"
-    },
-    "./transcript-embedding-chunks": {
-      "types": "./src/transcript-embedding-chunks.ts",
-      "default": "./dist/transcript-embedding-chunks.js"
-    },
     "./v1/*": {
       "types": "./src/v1/*.ts",
       "default": "./dist/v1/*.js"

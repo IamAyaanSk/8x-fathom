@@ -9,7 +9,6 @@ import {
 import { MeetingAskFathomPanel } from '#components/meetings/meeting-ask-fathom-panel'
 import { MeetingSummaryPanel } from '#components/meetings/meeting-summary-panel'
 import { MeetingTranscriptPanel } from '#components/meetings/meeting-transcript-panel'
-import { getMeetingAssistantApi } from '#lib/meeting-assistant-api'
 
 type MeetingRecordingTabsProps = {
   meeting: MeetingDetail
@@ -67,7 +66,7 @@ function MeetingRecordingTabs({
       </TabsContent>
       <TabsContent value="ask" className="pt-6">
         <MeetingAskFathomPanel
-          assistantApiUrl={getMeetingAssistantApi(meeting.id)}
+          meetingId={meeting.id}
           disabledReason={
             askReady
               ? undefined

@@ -1,6 +1,6 @@
 ---
 description: API contract, Express server, Prisma, and client package patterns
-globs: "{apps/server/**,packages/api-contract/**,packages/api-client/**,packages/database/**,packages/shared-validations/**}"
+globs: "{apps/server/**,apps/worker/**,packages/api-contract/**,packages/api-client/**,packages/database/**,packages/shared-validations/**,packages/shared-utils/**}"
 alwaysApply: false
 ---
 
@@ -14,24 +14,25 @@ Use `_createResponseApiZod` in `api-contract`. Controllers return:
 res.json({ success: true, message: '...', data })
 ```
 
-Type controllers with `*SuccessResponse` from the contract.
+Type controllers with `*SuccessResponse` or `Response<*Response>` from the contract.
 
-## Zod
+## Zod & Shared Utils
 
 - Prefer `import { z } from 'zod/v4'` in shared packages and server-related code.
-- Reuse `@repo/shared-validations` for emails, names, trimmed strings, etc.
+- Reuse domain entities and validations from `@repo/shared-validations`.
+- Reuse meeting status mappers, transcript data parsers, and date helpers from `@repo/shared-utils`.
 
 ## Server
 
-- Routes: `apps/server/src/v1/routes/` → mount on `/api/v1`.
-- Controllers: async, `try/catch`, `next(error)` on failure.
+- Routes: `apps/server/src/v1/routes/` → mount on `/api/v1` with modular sub-routers under `routes/meeting/`.
+- Controllers: async, `try/catch`, `next(error)` on failure, organized by domain under `controllers/meeting/`.
 - DB: `import { prisma } from '@repo/db'` only here (or server-local services).
 - Imports: `#src/*` per `apps/server/package.json`.
 - **Better Auth:** `toNodeHandler(auth)` on `/api/auth/*splat` (Express 5) **before** `json()` / `body-parser`. Session via `fromNodeHeaders` + `auth.api.getSession`. Google-only; `accessType: 'offline'`. Calendar tokens: `auth.api.getAccessToken`.
 - **Calendar inbound webhook:** Better Auth plugin + `createAuthEndpoint` (not a one-off Express route). After Calendar scopes, Google `events.watch` → that endpoint. Incremental sync with `syncToken`. Sync now / page load remain required fallbacks. MeetingBaas calendar APIs are forbidden.
-- **MeetingBaas:** `@meeting-baas/sdk` v2 **bots only** (`createBot`, `getBotStatus`). Callbacks on a dedicated public path; verify Svix (`svix-id`, `svix-timestamp`, `svix-signature`) with `MEETINGBAAS_WEBHOOK_SECRET`. Do not use MeetingBaas BYO storage. `bot.completed` signed URLs are copied to R2 by the worker import tick; we presign reads.
-- **Worker:** `apps/worker` (separate Express deploy). Cron + `@repo/meeting-dispatch`: due `Meeting`s via `FOR UPDATE SKIP LOCKED` → `createBot`. Import tick: `processingStatus: importing` signed URLs → R2 keys → `pending`. Server capture uses the same package. Processor: poll `Meeting.processingStatus` — no jobs table.
-- Shared bot UI mapping lives in `api-contract` (see `AGENTS.md` § Bot dispatch & status).
+- **MeetingBaas:** `@meeting-baas/sdk` v2 **bots only** (`createBot`, `getBotStatus`). Callbacks on dedicated `/webhooks/meetingbaas`; verify Svix (`svix-id`, `svix-timestamp`, `svix-signature`) with `MEETINGBAAS_WEBHOOK_SECRET`. Do not use MeetingBaas BYO storage. `bot.completed` signed URLs are copied to R2 by the worker import tick; we presign reads.
+- **Worker:** `apps/worker` (separate Express deploy). Organized into `dispatch-bot`, `reconcile-bot-status`, `import-meeting-artifacts`, and `process-pending-meetings`. Cron + `@repo/meeting-dispatch`: due `Meeting`s via `FOR UPDATE SKIP LOCKED` → `createBot`. Import tick: `processingStatus: importing` signed URLs → R2 keys → `pending`. Server capture uses the same package. Processor: poll `Meeting.processingStatus` — no jobs table.
+- Shared bot UI mapping lives in `@repo/shared-utils/meeting` (see `AGENTS.md` § Bot dispatch & status).
 
 ## api-client
 

@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "catalog:",
+    "@repo/shared-utils": "workspace:*",
     "@repo/shared-validations": "workspace:*",
     "ai": "catalog:",
     "workers-ai-provider": "catalog:",

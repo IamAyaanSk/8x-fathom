@@ -1,8 +1,6 @@
-import {
-  SUMMARY_TEMPLATE_GROUPS,
-  summaryTemplateLabel,
-  type SummaryTemplateId
-} from '@repo/shared-validations'
+import { SUMMARY_TEMPLATE_GROUPS } from '@repo/shared-utils/constants'
+import { summaryTemplateLabel } from '@repo/shared-utils/summary'
+import type { SummaryTemplateId } from '@repo/shared-validations/summary'
 import { Button } from '@repo/ui-web/components/button'
 import {
   Dialog,

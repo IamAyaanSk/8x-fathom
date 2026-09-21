@@ -1,5 +1,5 @@
 import { useMeetingDetailQuery } from '@repo/api-client/v1/meetings/hooks'
-import { getMeetingBotUiLabel } from '@repo/api-contract/baas-bot-status'
+import { getMeetingBotUiLabel } from '@repo/shared-utils/meeting'
 import { Button } from '@repo/ui-web/components/button'
 import {
   Tabs,
@@ -88,6 +88,12 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
 
   const meeting = data.data
   const isLiveRecording = meeting.uiPhase === 'in_call_recording'
+  const isProcessing =
+    meeting.processingStatus === 'importing' ||
+    meeting.processingStatus === 'pending' ||
+    meeting.processingStatus === 'processing' ||
+    meeting.uiPhase === 'call_ended_processing' ||
+    meeting.uiPhase === 'transcribing'
   const hasRecordingPlayback = meeting.recordingPlayback != null
   const defaultDetailTab = isLiveRecording ? 'ongoing' : 'recording'
   const statusLabel = getMeetingBotUiLabel(meeting.uiPhase, meeting.baasStatus)
@@ -109,13 +115,29 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
         onSeek={handleSeek}
       />
     </>
+  ) : isProcessing ? (
+    <div className="bg-card ring-border flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-2xl px-6 text-center ring-1 shadow-sm">
+      <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
+        <Loader2 className="size-6 animate-spin" />
+      </div>
+      <div className="flex max-w-md flex-col gap-1">
+        <p className="text-foreground text-base font-semibold">
+          Generating call summary…
+        </p>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          This takes a few minutes while we process audio, extract action items, and prepare your recording.
+        </p>
+      </div>
+    </div>
   ) : (
     <div className="bg-card ring-border flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-2xl px-6 text-center ring-1">
       <p className="text-foreground text-sm font-medium">{statusLabel}</p>
       <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">
         {isLiveRecording
           ? 'Use Highlight and Scratchpad while the bot records. The full recording appears here when processing finishes.'
-          : 'Recording is not available yet. Check back when processing finishes.'}
+          : meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining'
+            ? 'It may take up to 5 minutes for the bot to join the meeting.'
+            : 'Recording is not available yet. Check back when processing finishes.'}
       </p>
     </div>
   )

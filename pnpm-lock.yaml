@@ -254,6 +254,9 @@ importers:
       '@repo/r2':
         specifier: workspace:*
         version: link:../../packages/r2
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -342,6 +345,9 @@ importers:
       '@repo/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -372,6 +378,9 @@ importers:
       lucide-react:
         specifier: 'catalog:'
         version: 1.26.0(react@19.2.8)
+      luxon:
+        specifier: 'catalog:'
+        version: 3.7.2
       react:
         specifier: 'catalog:'
         version: 19.2.8
@@ -403,6 +412,9 @@ importers:
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
+      '@types/luxon':
+        specifier: 'catalog:'
+        version: 3.7.5
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.3
@@ -433,9 +445,6 @@ importers:
       '@repo/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@repo/api-contract':
-        specifier: workspace:*
-        version: link:../../packages/api-contract
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/database
@@ -448,6 +457,9 @@ importers:
       '@repo/r2':
         specifier: workspace:*
         version: link:../../packages/r2
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -494,6 +506,9 @@ importers:
       '@ai-sdk/openai-compatible':
         specifier: 'catalog:'
         version: 3.0.49(zod@4.4.3)
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../shared-validations
@@ -525,6 +540,12 @@ importers:
       '@repo/api-contract':
         specifier: workspace:*
         version: link:../api-contract
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../shared-utils
+      '@repo/shared-validations':
+        specifier: workspace:*
+        version: link:../shared-validations
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(react@19.2.8)
@@ -553,6 +574,9 @@ importers:
 
   packages/api-contract:
     dependencies:
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../shared-validations
@@ -628,12 +652,12 @@ importers:
       '@meeting-baas/sdk':
         specifier: 'catalog:'
         version: 6.2.9(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
-      '@repo/api-contract':
-        specifier: workspace:*
-        version: link:../api-contract
       '@repo/db':
         specifier: workspace:*
         version: link:../database
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../shared-validations
@@ -662,6 +686,34 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: 'catalog:'
         version: 3.1132.0
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      rimraf:
+        specifier: 'catalog:'
+        version: 6.1.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/shared-utils:
+    dependencies:
+      '@repo/shared-validations':
+        specifier: workspace:*
+        version: link:../shared-validations
+      '@types/luxon':
+        specifier: 'catalog:'
+        version: 3.7.5
+      luxon:
+        specifier: 'catalog:'
+        version: 3.7.2
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

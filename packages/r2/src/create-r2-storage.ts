@@ -4,6 +4,8 @@ import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
+import { R2UploadError } from './error.js'
+
 type R2StorageConfig = {
   endpoint: string
   accessKeyId: string
@@ -79,11 +81,17 @@ function createR2Storage(config: R2StorageConfig): R2Storage {
     })
 
     if (!response.ok) {
-      throw new Error(`Artifact download failed (${response.status})`)
+      throw new R2UploadError(
+        response.status,
+        `Artifact download failed (${response.status})`
+      )
     }
 
     if (!response.body) {
-      throw new Error('Artifact download body is empty')
+      throw new R2UploadError(
+        response.status,
+        'Artifact download body is empty'
+      )
     }
 
     const contentType = response.headers.get('content-type') ?? undefined

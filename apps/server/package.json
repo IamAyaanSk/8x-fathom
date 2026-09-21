@@ -29,6 +29,7 @@
     "@repo/env": "workspace:*",
     "@repo/meeting-dispatch": "workspace:*",
     "@repo/r2": "workspace:*",
+    "@repo/shared-utils": "workspace:*",
     "@repo/shared-validations": "workspace:*",
     "@types/luxon": "catalog:",
     "ai": "catalog:",

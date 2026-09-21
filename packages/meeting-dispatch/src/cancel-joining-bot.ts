@@ -1,5 +1,5 @@
-import { getMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import { prisma } from '@repo/db'
+import { getMeetingUiStatus } from '@repo/shared-utils/meeting'
 
 import { createMeetingBaasClient } from './meeting-baas-client.js'
 
@@ -24,14 +24,15 @@ async function cancelJoiningBotForDeletedCalendarEvent(params: {
     return false
   }
 
-  const uiPhase = getMeetingBotUiPhase({
-    baasBotId: meeting.baasBotId,
+  const uiPhase = getMeetingUiStatus({
     baasStatus: meeting.baasStatus,
-    recordingStartedAt: null,
     processingStatus: 'idle'
   })
 
-  if (uiPhase !== 'joining' || !meeting.baasBotId) {
+  if (
+    (uiPhase !== 'joining' && uiPhase !== 'in_waiting_room') ||
+    !meeting.baasBotId
+  ) {
     return false
   }
 

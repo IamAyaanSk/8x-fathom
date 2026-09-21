@@ -1,7 +1,7 @@
 import {
   summaryTemplateIdSchema,
   type SummaryTemplateId
-} from '@repo/shared-validations'
+} from '@repo/shared-validations/summary'
 
 export { summaryTemplateIdSchema, type SummaryTemplateId }
 

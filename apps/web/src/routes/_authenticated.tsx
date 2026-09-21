@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { AuthenticatedLayout } from '#components/layout/authenticated-layout'
+import { RootPending } from '#components/layout/root-pending'
 import { authClient } from '#lib/auth-client'
 
 export const Route = createFileRoute('/_authenticated')({
@@ -11,5 +12,6 @@ export const Route = createFileRoute('/_authenticated')({
     }
     return { session: data }
   },
+  pendingComponent: RootPending,
   component: AuthenticatedLayout
 })

@@ -3,3 +3,4 @@ export {
   type R2Storage,
   type R2StorageConfig
 } from './create-r2-storage.js'
+export { R2UploadError } from './error.js'

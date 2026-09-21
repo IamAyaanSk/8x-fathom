@@ -18,7 +18,6 @@ import { MeetingAskFathomSheet } from '#components/meetings/meeting-ask-fathom-s
 import { MeetingCallsTabs } from '#components/meetings/meeting-calls-tabs'
 import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
-import { LIBRARY_MEETING_ASSISTANT_API } from '#lib/meeting-assistant-api'
 import { categorizeMeetingsForTabs, isReadyCall } from '#lib/meeting-call-tabs'
 
 const GOOGLE_CALENDAR_EVENTS_READONLY_SCOPE =
@@ -120,7 +119,9 @@ function HomePage() {
             <p className="text-muted-foreground text-sm leading-relaxed">
               Link Google Calendar so we can find upcoming calls with video
               links. Please select the same Google account used for sign-in ({' '}
-              <span className="text-foreground font-medium">{session.user.email}</span>
+              <span className="text-foreground font-medium">
+                {session.user.email}
+              </span>
               ).
             </p>
           </div>
@@ -217,10 +218,7 @@ function HomePage() {
 
   const toolbarEnd = (
     <>
-      <MeetingAskFathomSheet
-        assistantApiUrl={LIBRARY_MEETING_ASSISTANT_API}
-        disabledReason={askFathomDisabledReason}
-      />
+      <MeetingAskFathomSheet disabledReason={askFathomDisabledReason} />
       {syncButton}
     </>
   )

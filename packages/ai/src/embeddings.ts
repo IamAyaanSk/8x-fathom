@@ -2,6 +2,8 @@ import { embed, type Embedding, type EmbeddingModelUsage } from 'ai'
 
 import { embeddingModel } from './model.js'
 
+export const TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS = 1024
+
 export async function generateEmbedding(query: string): Promise<{
   embedding: Embedding
   tokenUsage: EmbeddingModelUsage
@@ -42,4 +44,20 @@ export async function generateEmbeddings(values: string[]): Promise<{
     embeddings,
     tokenUsage: { tokens: totalTokens }
   }
+}
+
+export function embeddingToPgVectorLiteral(embedding: readonly number[]) {
+  if (embedding.length !== TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS) {
+    throw new Error(
+      `Expected embedding length ${TRANSCRIPT_EMBEDDING_VECTOR_DIMENSIONS}, received ${embedding.length}`
+    )
+  }
+
+  for (const value of embedding) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw new Error('Embedding contains a non-finite number')
+    }
+  }
+
+  return `[${embedding.join(',')}]`
 }

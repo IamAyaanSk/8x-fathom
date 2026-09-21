@@ -5,19 +5,15 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import cron from 'node-cron'
 
-import {
-  ARTIFACT_IMPORT_CRON_EXPRESSION,
-  DISPATCH_CRON_EXPRESSION,
-  PENDING_PROCESSING_CRON_EXPRESSION,
-  STATUS_POLL_CRON_EXPRESSION
-} from '#src/constants'
+import { DISPATCH_CRON_EXPRESSION } from '#src/dispatch-bot/constants'
+import { dispatchBotForDueMeetings } from '#src/dispatch-bot/index'
 import { env } from '#src/env'
-import {
-  runArtifactImportTick,
-  runDispatchTick,
-  runPendingProcessingTick,
-  runStatusPollTick
-} from '#src/scheduler'
+import { ARTIFACT_IMPORT_CRON_EXPRESSION } from '#src/import-meeting-artifacts/constants'
+import { importMeetingArtifacts } from '#src/import-meeting-artifacts/index'
+import { PENDING_PROCESSING_CRON_EXPRESSION } from '#src/process-pending-meetings/constants'
+import { processPendingMeetings } from '#src/process-pending-meetings/index'
+import { RECONCILE_BOT_STATUS_CRON_EXPRESSION } from '#src/reconcile-bot-status/constants'
+import { reconcileBotStatus } from '#src/reconcile-bot-status/index'
 
 const app: Express = express()
 const port = env.PORT
@@ -33,31 +29,31 @@ const server = app.listen(port, () => {
   console.log(`Worker listening on port ${port}`)
 })
 
-void runDispatchTick()
-void runStatusPollTick()
-void runArtifactImportTick()
-void runPendingProcessingTick()
+void dispatchBotForDueMeetings()
+void reconcileBotStatus()
+void importMeetingArtifacts()
+void processPendingMeetings()
 
-const dispatchTask = cron.schedule(
+const dispatchBotForDueMeetingsTask = cron.schedule(
   DISPATCH_CRON_EXPRESSION,
   () => {
-    void runDispatchTick()
+    void dispatchBotForDueMeetings()
   },
   { noOverlap: true }
 )
 
-const statusPollTask = cron.schedule(
-  STATUS_POLL_CRON_EXPRESSION,
+const reconcileBotStatusTask = cron.schedule(
+  RECONCILE_BOT_STATUS_CRON_EXPRESSION,
   () => {
-    void runStatusPollTick()
+    void reconcileBotStatus()
   },
   { noOverlap: true }
 )
 
-const artifactImportTask = cron.schedule(
+const importMeetingArtifactsTask = cron.schedule(
   ARTIFACT_IMPORT_CRON_EXPRESSION,
   () => {
-    void runArtifactImportTick()
+    void importMeetingArtifacts()
   },
   { noOverlap: true }
 )
@@ -65,15 +61,15 @@ const artifactImportTask = cron.schedule(
 const pendingProcessingTask = cron.schedule(
   PENDING_PROCESSING_CRON_EXPRESSION,
   () => {
-    void runPendingProcessingTick()
+    void processPendingMeetings()
   },
   { noOverlap: true }
 )
 
 function shutdown() {
-  void Promise.resolve(dispatchTask.stop())
-    .then(() => statusPollTask.stop())
-    .then(() => artifactImportTask.stop())
+  void Promise.resolve(dispatchBotForDueMeetingsTask.stop())
+    .then(() => reconcileBotStatusTask.stop())
+    .then(() => importMeetingArtifactsTask.stop())
     .then(() => pendingProcessingTask.stop())
     .finally(() => {
       server.close(() => {

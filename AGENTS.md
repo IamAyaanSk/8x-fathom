@@ -26,7 +26,7 @@ Routes (file-based): `/login`, `/` (list), `/meetings/$id` (tabs: Ongoing | Reco
 
 - Bots are dispatched **automatically** by the worker scheduler. No start-capture button.
 - Calendar sync only creates/updates `Meeting` rows for events with a `meetingUrl` (Meet / Zoom / Teams).
-- Store a small lifecycle on `Meeting.baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `completed` \| `failed`). Map MeetingBaas API codes onto that enum in `@repo/api-contract`. Derive UI from the same mapper.
+- Store a small lifecycle on `Meeting.baasStatus` (`joining` \| `in_waiting_room` \| `in_call_recording` \| `transcribing` \| `completed` \| `failed`, nullable pre-dispatch). Map MeetingBaas API codes onto that enum in `@repo/shared-utils/meeting`. Derive UI from the same mapper.
 
 | UI state               | Stored `baasStatus` / `processingStatus`                                                                                                                                                                                                                                                                  |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -79,7 +79,7 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | F5  | Worker dispatch `createBot` at start − buffer                       | done        |
 | F7  | Baas callback, worker AI, `processingStatus: ready`                 | done        |
 | F8  | Playback + transcript sync + share                                  | done        |
-| F6  | Ongoing call: status poll, highlight, scratchpad                    | not started |
+| F6  | Ongoing call: status poll, highlight, scratchpad                    | done        |
 | F9  | Q&A RAG chatbot                                                     | done        |
 
 ## Monorepo
@@ -97,11 +97,14 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 | `apps/server`                    | Express 5 API at `/api/v1`; Better Auth at `/api/auth`; bot dispatch + capture |
 | `apps/worker`                    | Express scheduler; DB row-lock dispatch via `@repo/meeting-dispatch`           |
 | `packages/meeting-dispatch`      | MeetingBaas `createBot` + `FOR UPDATE SKIP LOCKED` dispatch                    |
-| `packages/api-contract`          | Zod schemas + inferred types for API payloads                                  |
+| `packages/api-contract`          | Zod schemas + inferred types for API request/response payloads                 |
 | `packages/api-client`            | Axios calls + TanStack Query `queryOptions` / hooks                            |
 | `packages/database` (`@repo/db`) | Prisma 7 + PostgreSQL (`PrismaPg` adapter)                                     |
 | `packages/env`                   | `unsafeValidateEnv` + `NODE_ENV` helpers                                       |
-| `packages/shared-validations`    | Reusable Zod field schemas                                                     |
+| `packages/shared-validations`    | Reusable Zod entity & domain schemas                                           |
+| `packages/shared-utils`          | Shared date, meeting lifecycle, transcript, and formatting utilities           |
+| `packages/r2`                    | Cloudflare R2 client + presigned S3 storage helpers                            |
+| `packages/ai`                    | Vercel AI SDK agents, summary templates, pgvector embeddings                   |
 | `packages/ui-web`                | shadcn/ui-style components + `globals.css`                                     |
 | `packages/typescript-config`     | Shared `base.json` tsconfig                                                    |
 
@@ -110,10 +113,11 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 Respect dependency direction:
 
 ```
-shared-validations → api-contract → api-client → apps/web
+shared-validations → shared-utils → api-contract → api-client → apps/web
 @repo/db → apps/server, apps/worker
 @repo/env → apps/*
 @repo/api-contract → apps/server, apps/worker, packages/api-client, packages/meeting-dispatch
+@repo/shared-utils → apps/server, apps/worker, packages/meeting-dispatch, apps/web
 @repo/meeting-dispatch → apps/server, apps/worker
 @repo/ui-web → apps/web
 ```
@@ -127,14 +131,15 @@ shared-validations → api-contract → api-client → apps/web
 ### 1. `packages/api-contract`
 
 - Import Zod from `zod/v4`.
-- Reuse fields from `@repo/shared-validations` where possible.
+- Reuse domain entities and fields from `@repo/shared-validations` and `@repo/shared-utils`.
+- Keep contracts modular under `src/v1/meeting/<sub-resource>.ts` (`action-items.ts`, `assistant.ts`, `highlights.ts`, `playback.ts`, `scratchpad.ts`, `share.ts`, `summary.ts`, `index.ts`).
 - Wrap success payloads with `_createResponseApiZod` (`packages/api-contract/src/utils.ts`) so responses are `{ message, success: true, data }` or `{ message, success: false }`.
 - Export: schema, `GetXxxResponse`, and `GetXxxSuccessResponse` (`Extract<..., { success: true }>`) for controllers.
 
 ### 2. `apps/server`
 
-- Mount versioned routes under `src/v1/routes/`; wire in `src/v1/routes/index.ts`.
-- Controllers live in `src/v1/controllers/` as named async functions (`getUsersController`), typed `Response<SuccessType>`, errors via `next(error)`.
+- Mount versioned routes under `src/v1/routes/`; wire in `src/v1/routes/index.ts` and sub-routers under `src/v1/routes/meeting/`.
+- Controllers live in `src/v1/controllers/` as named async functions organized by feature under `src/v1/controllers/meeting/`, typed `Response<SuccessType>`, errors via `next(error)`.
 - Use `prisma` from `@repo/db` only in controllers/services — not in contract or client packages.
 - Validate env in `src/env.ts` with `unsafeValidateEnv` from `@repo/env` (load `.env` via `loadEnvFile()` on server).
 - Internal imports: `#src/*` (see `package.json` `imports`).

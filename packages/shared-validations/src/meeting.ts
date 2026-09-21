@@ -253,10 +253,22 @@ type MeetingBaasTranscriptUtterance = z.infer<
   typeof meetingBaasTranscriptUtteranceSchema
 >
 
+const baasSignedArtifactUrlsSchema = z.object({
+  video: z.url().optional().nullable(),
+  transcription: z.url().optional().nullable(),
+  rawTranscription: z.url().optional().nullable(),
+  audio: z.url().optional().nullable(),
+  chatMessages: z.url().optional().nullable()
+})
+
+type BaasSignedArtifactUrls = z.infer<typeof baasSignedArtifactUrlsSchema>
+
 export {
+  baasSignedArtifactUrlsSchema,
   meetingBaasOutputTranscriptionSchema,
   meetingBaasTranscriptUtteranceSchema,
   meetingBaasTranscriptWordSchema,
+  type BaasSignedArtifactUrls,
   type MeetingBaasOutputTranscription,
   type MeetingBaasTranscriptUtterance
 }

@@ -1,4 +1,3 @@
-export const DISPATCH_CRON_EXPRESSION = '*/90 * * * * *'
 export const PENDING_PROCESSING_CRON_EXPRESSION = '0 */5 * * * *'
 export const ARTIFACT_IMPORT_CRON_EXPRESSION = '*/15 * * * * *'
 export const PENDING_PROCESSING_BATCH_SIZE = 3

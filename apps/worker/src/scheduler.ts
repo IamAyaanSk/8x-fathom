@@ -1,33 +1,5 @@
-import { dispatchDueMeetings } from '@repo/meeting-dispatch'
-
-import { env } from '#src/env'
 import { runImportingMeetingArtifacts } from '#src/process-importing-meetings'
 import { runPendingMeetingProcessing } from '#src/process-pending-meetings'
-
-function _dispatchCallbackParams() {
-  return {
-    meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
-    callbackBaseUrl: env.BASE_URL,
-    webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET,
-    transcriptionApiKey: env.DEEPGRAM_API_KEY
-  }
-}
-
-async function runDispatchTick() {
-  try {
-    const { dispatchedCount, errors } = await dispatchDueMeetings(
-      _dispatchCallbackParams()
-    )
-    console.log(
-      `Dispatch tick: dispatched ${dispatchedCount} meeting${dispatchedCount === 1 ? '' : 's'}`
-    )
-    for (const item of errors) {
-      console.error(`Dispatch error for ${item.meetingId}: ${item.message}`)
-    }
-  } catch (error) {
-    console.error('Dispatch tick failed', error)
-  }
-}
 
 async function runArtifactImportTick() {
   try {
@@ -57,4 +29,4 @@ async function runPendingProcessingTick() {
   }
 }
 
-export { runArtifactImportTick, runDispatchTick, runPendingProcessingTick }
+export { runArtifactImportTick, runPendingProcessingTick }

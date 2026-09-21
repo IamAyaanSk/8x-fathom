@@ -7,17 +7,14 @@ import cron from 'node-cron'
 
 import {
   ARTIFACT_IMPORT_CRON_EXPRESSION,
-  DISPATCH_CRON_EXPRESSION,
   PENDING_PROCESSING_CRON_EXPRESSION
 } from '#src/constants'
+import { DISPATCH_CRON_EXPRESSION } from '#src/dispatch-bot/constants'
+import { dispatchBotForDueMeetings } from '#src/dispatch-bot/index'
 import { env } from '#src/env'
 import { RECONCILE_BOT_STATUS_CRON_EXPRESSION } from '#src/reconcile-bot-status/constants'
 import { reconcileBotStatus } from '#src/reconcile-bot-status/index'
-import {
-  runArtifactImportTick,
-  runDispatchTick,
-  runPendingProcessingTick
-} from '#src/scheduler'
+import { runArtifactImportTick, runPendingProcessingTick } from '#src/scheduler'
 
 const app: Express = express()
 const port = env.PORT
@@ -33,15 +30,15 @@ const server = app.listen(port, () => {
   console.log(`Worker listening on port ${port}`)
 })
 
-void runDispatchTick()
+void dispatchBotForDueMeetings()
 void reconcileBotStatus()
 void runArtifactImportTick()
 void runPendingProcessingTick()
 
-const dispatchTask = cron.schedule(
+const dispatchBotForDueMeetingsTask = cron.schedule(
   DISPATCH_CRON_EXPRESSION,
   () => {
-    void runDispatchTick()
+    void dispatchBotForDueMeetings()
   },
   { noOverlap: true }
 )
@@ -71,7 +68,7 @@ const pendingProcessingTask = cron.schedule(
 )
 
 function shutdown() {
-  void Promise.resolve(dispatchTask.stop())
+  void Promise.resolve(dispatchBotForDueMeetingsTask.stop())
     .then(() => reconcileBotStatusTask.stop())
     .then(() => artifactImportTask.stop())
     .then(() => pendingProcessingTask.stop())

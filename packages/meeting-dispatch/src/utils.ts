@@ -1,4 +1,7 @@
-import { meetingBaasOutputTranscriptionSchema } from '@repo/shared-validations/meeting'
+import {
+  meetingBaasChatMessagesFileSchema,
+  meetingBaasOutputTranscriptionSchema
+} from '@repo/shared-validations/meeting'
 import {
   BAAS_STATUS_MAP,
   BAAS_STATUS_RANK,
@@ -132,9 +135,29 @@ function getMeetingTranscriptData(rawTranscript: string) {
   }
 }
 
+function getMeetingChatMessagesData(rawChatMessages: string) {
+  const parsed = meetingBaasChatMessagesFileSchema.parse(
+    JSON.parse(rawChatMessages)
+  )
+
+  return [...parsed]
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+    .map((message) => ({
+      baasMessageId: message.message_id,
+      senderName: message.sender_name,
+      baasSenderId: message.sender_id ?? null,
+      text: message.text,
+      sentAt: new Date(message.timestamp)
+    }))
+}
+
 export {
   mapWebhookStatusToProcessStatus,
   mapBaasStatus,
+  getMeetingChatMessagesData,
   getMeetingTranscriptData,
   getBaasStatusRank,
   getMeetingUiStatus,

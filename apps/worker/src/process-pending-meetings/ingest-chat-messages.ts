@@ -1,5 +1,5 @@
-import { parseMeetingBaasChatMessagesFileFromJson } from '@repo/api-contract/meeting-baas-chat-messages'
 import { prisma } from '@repo/db'
+import { getMeetingChatMessagesData } from '@repo/meeting-dispatch'
 
 import { getR2ObjectUtf8 } from '#src/r2-storage'
 
@@ -29,7 +29,7 @@ export async function ingestMeetingChatMessages(
 
   try {
     const rawJson = await getR2ObjectUtf8(meeting.chatMessagesR2Key)
-    const rows = parseMeetingBaasChatMessagesFileFromJson(rawJson)
+    const rows = getMeetingChatMessagesData(rawJson)
 
     await prisma.$transaction(async (tx) => {
       await tx.meetingChatMessage.deleteMany({

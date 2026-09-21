@@ -263,12 +263,27 @@ const baasSignedArtifactUrlsSchema = z.object({
 
 type BaasSignedArtifactUrls = z.infer<typeof baasSignedArtifactUrlsSchema>
 
+const meetingBaasChatMessageSchema = z.object({
+  message_id: z.string().trim().min(1),
+  sender_name: z.string().trim().min(1),
+  sender_id: z.number().int().nullish(),
+  text: z.string(),
+  timestamp: z.iso.datetime()
+})
+
+const meetingBaasChatMessagesFileSchema = z.array(meetingBaasChatMessageSchema)
+
+type MeetingBaasChatMessage = z.infer<typeof meetingBaasChatMessageSchema>
+
 export {
   baasSignedArtifactUrlsSchema,
+  meetingBaasChatMessageSchema,
+  meetingBaasChatMessagesFileSchema,
   meetingBaasOutputTranscriptionSchema,
   meetingBaasTranscriptUtteranceSchema,
   meetingBaasTranscriptWordSchema,
   type BaasSignedArtifactUrls,
+  type MeetingBaasChatMessage,
   type MeetingBaasOutputTranscription,
   type MeetingBaasTranscriptUtterance
 }

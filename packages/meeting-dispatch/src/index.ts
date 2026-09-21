@@ -11,6 +11,7 @@ export { MEETING_BAAS_WEBHOOK_PATH } from './constants.js'
 export {
   mapWebhookStatusToProcessStatus,
   mapBaasStatus,
+  getMeetingChatMessagesData,
   getBaasStatusRank,
   formatMeetingBaasTranscriptForAgent,
   getMeetingTranscriptData,

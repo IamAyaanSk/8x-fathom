@@ -6,13 +6,13 @@ import {
 import { prisma } from '@repo/db'
 import {
   getBaasStatusRank,
+  isParticipantBot,
   mapWebhookStatusToProcessStatus
 } from '@repo/meeting-dispatch'
 import type { NextFunction, Request, Response } from 'express'
 import { Webhook } from 'svix'
 
 import { env } from '#src/env'
-import { isParticipantBot } from '#src/services/meeting/index'
 import { HttpError } from '#src/v1/errors/http-error'
 
 function _getBaasRecordingStartedAtFromWebhook(event: MeetingBaasWebhookEvent) {

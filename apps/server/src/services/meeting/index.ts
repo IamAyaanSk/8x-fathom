@@ -27,19 +27,6 @@ function extractMeetingUrlFromGoogleEvent(event: calendar_v3.Schema$Event) {
   return null
 }
 
-function isParticipantBot(name: string) {
-  const lowercasedName = name.toLowerCase()
-  const isNoteTakerInName = lowercasedName.includes('notetaker')
-  const isBotInName =
-    lowercasedName.includes('8x') ||
-    lowercasedName.includes('bot') ||
-    lowercasedName.includes('meetingbaas')
-
-  if (isNoteTakerInName || isBotInName) return true
-
-  return false
-}
-
 async function getMeetingPlaybackUrl(recordingR2Key: string | null) {
   if (!recordingR2Key) {
     return null
@@ -123,7 +110,6 @@ async function searchMeetingTranscripts({
 
 export {
   extractMeetingUrlFromGoogleEvent,
-  isParticipantBot,
   getMeetingPlaybackUrl,
   createMeetingShareSlug,
   searchMeetingTranscripts

@@ -178,7 +178,6 @@ export async function processMeeting(meetingId: string): Promise<void> {
 
   if (
     meetingAfterEmbeddingIngestion &&
-    meetingAfterEmbeddingIngestion.chatMessagesIngestedAt !== null &&
     meetingAfterEmbeddingIngestion.summary !== null &&
     meetingAfterEmbeddingIngestion.actionItemsExtractedAt !== null &&
     meetingAfterEmbeddingIngestion.transcriptEmbeddingsExtractedAt !== null

@@ -146,19 +146,35 @@ export async function importMeetingArtifacts() {
             transcriptR2Key = key
           }
 
-          if (urls?.chatMessages && !chatMessagesR2Key) {
-            await extendMeetingProcessingLease(
-              meetingId,
-              ARTIFACT_IMPORT_LEASE_MS
-            )
+          // It is expensive if we fail below, hence persisit the video storage key
+          await prisma.meeting.update({
+            where: { id: meeting.id },
+            data: {
+              recordingR2Key
+            }
+          })
 
-            const key = meetingChatMessagesR2Key(meeting.id)
-            await putR2ObjectFromUrl(
-              key,
-              urls.chatMessages,
-              ARTIFACT_IMPORT_FETCH_TIMEOUT_MS
+          // This is non critical so we dont want to fail whole pipeline if this fails
+          try {
+            if (urls?.chatMessages && !chatMessagesR2Key) {
+              await extendMeetingProcessingLease(
+                meetingId,
+                ARTIFACT_IMPORT_LEASE_MS
+              )
+
+              const key = meetingChatMessagesR2Key(meeting.id)
+              await putR2ObjectFromUrl(
+                key,
+                urls.chatMessages,
+                ARTIFACT_IMPORT_FETCH_TIMEOUT_MS
+              )
+              chatMessagesR2Key = key
+            }
+          } catch (error) {
+            console.error(
+              `Artifact chat messages import failed for ${meetingId}:`,
+              error
             )
-            chatMessagesR2Key = key
           }
 
           await prisma.meeting.update({

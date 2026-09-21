@@ -1,5 +1,10 @@
 import { prisma } from '@repo/db'
-import { createMeetingBaasClient, mapBaasStatus } from '@repo/meeting-dispatch'
+import {
+  createMeetingBaasClient,
+  getBaasStatusRank,
+  isParticipantBot,
+  mapBaasStatus
+} from '@repo/meeting-dispatch'
 
 import { env } from '#src/env'
 import { RECONCILE_BOT_STATUS_BATCH_SIZE } from '#src/reconcile-bot-status/constants'
@@ -66,7 +71,17 @@ export async function reconcileBotStatus() {
 
         const fetchedBaasStatus = mapBaasStatus(getBotStatusResult.data.status)
 
-        if (meeting.baasStatus === fetchedBaasStatus) {
+        if (!fetchedBaasStatus || meeting.baasStatus === fetchedBaasStatus) {
+          checkedCount++
+          continue
+        }
+
+        if (
+          fetchedBaasStatus &&
+          meeting.baasStatus &&
+          getBaasStatusRank(fetchedBaasStatus) <
+            getBaasStatusRank(meeting.baasStatus)
+        ) {
           checkedCount++
           continue
         }
@@ -117,8 +132,13 @@ export async function reconcileBotStatus() {
             raw_transcription,
             audio,
             chat_messages,
-            participants
+            participants: fetchedParticipants
           } = getBotArtifactsResult.data
+
+          const participants =
+            fetchedParticipants?.filter(
+              (participant) => !isParticipantBot(participant.name)
+            ) ?? []
 
           await prisma.meeting.update({
             where: { id: meeting.id },

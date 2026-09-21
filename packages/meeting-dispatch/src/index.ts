@@ -15,5 +15,6 @@ export {
   getBaasStatusRank,
   formatMeetingBaasTranscriptForAgent,
   getMeetingTranscriptData,
-  getMeetingUiStatus
+  getMeetingUiStatus,
+  isParticipantBot
 } from './utils.js'

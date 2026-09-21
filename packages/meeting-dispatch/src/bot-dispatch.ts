@@ -6,8 +6,8 @@ import type { MeetingProcessingStatus } from '@repo/shared-validations/meeting'
 
 import { DISPATCH_BATCH_SIZE } from './constants.js'
 import { DispatchError } from './errors.js'
+import { canDispatchNewBot, mapBaasStatus } from '@repo/shared-utils/meeting'
 import { createMeetingBaasClient } from './meeting-baas-client.js'
-import { mapBaasStatus, canDispatchNewBot } from './utils.js'
 
 type DispatchMode = 'scheduled' | 'capture'
 

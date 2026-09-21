@@ -8,7 +8,7 @@ import {
   getMeetingTranscriptData,
   getMeetingUiStatus,
   isParticipantBot
-} from '@repo/meeting-dispatch'
+} from '@repo/shared-utils/meeting'
 import { calendarDurationSec } from '@repo/shared-utils/date'
 import type { NextFunction, Request, Response } from 'express'
 

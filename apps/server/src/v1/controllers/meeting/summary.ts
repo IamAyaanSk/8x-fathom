@@ -5,7 +5,7 @@ import {
   type PostMeetingSummaryGenerateResponse
 } from '@repo/api-contract/v1/meeting/summary'
 import { prisma } from '@repo/db'
-import { formatMeetingBaasTranscriptForAgent } from '@repo/meeting-dispatch'
+import { formatMeetingBaasTranscriptForAgent } from '@repo/shared-utils/meeting'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'

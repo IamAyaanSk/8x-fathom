@@ -4,7 +4,7 @@ import {
   generateMeetingSummary
 } from '@repo/ai'
 import { prisma } from '@repo/db'
-import { formatMeetingBaasTranscriptForAgent } from '@repo/meeting-dispatch'
+import { formatMeetingBaasTranscriptForAgent } from '@repo/shared-utils/meeting'
 
 import { ingestMeetingChatMessages } from '#src/process-pending-meetings/ingest-chat-messages'
 import { ingestMeetingEmbeddings } from '#src/process-pending-meetings/ingest-embeddings'

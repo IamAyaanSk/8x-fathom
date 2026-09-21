@@ -15,6 +15,9 @@
     "build": "tsc",
     "check-types": "tsc --noEmit"
   },
+  "dependencies": {
+    "@repo/shared-validations": "workspace:*"
+  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "catalog:",

@@ -1,8 +1,6 @@
 import {
   meetingBaasChatMessagesFileSchema,
-  meetingBaasOutputTranscriptionSchema
-} from '@repo/shared-validations/meeting'
-import {
+  meetingBaasOutputTranscriptionSchema,
   BAAS_STATUS_MAP,
   BAAS_STATUS_RANK,
   BAAS_WEBHOOK_STATUS_TO_PROCESS_MAP,
@@ -27,6 +25,7 @@ type GetMeetingUiStatusArgs = {
   baasStatus: BaasStatusToProcess | null
   processingStatus: MeetingProcessingStatus
 }
+
 function getMeetingUiStatus({
   baasStatus,
   processingStatus
@@ -65,6 +64,7 @@ type CanDispatchNewBotArgs = {
   baasStatus: BaasStatusToProcess | null
   processingStatus: MeetingProcessingStatus
 }
+
 function canDispatchNewBot({
   processingStatus,
   baasStatus

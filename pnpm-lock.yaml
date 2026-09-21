@@ -448,6 +448,9 @@ importers:
       '@repo/r2':
         specifier: workspace:*
         version: link:../../packages/r2
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../../packages/shared-validations
@@ -634,6 +637,9 @@ importers:
       '@repo/db':
         specifier: workspace:*
         version: link:../database
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../shared-utils
       '@repo/shared-validations':
         specifier: workspace:*
         version: link:../shared-validations
@@ -677,6 +683,10 @@ importers:
         version: 6.0.3
 
   packages/shared-utils:
+    dependencies:
+      '@repo/shared-validations':
+        specifier: workspace:*
+        version: link:../shared-validations
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

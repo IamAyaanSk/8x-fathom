@@ -10,7 +10,7 @@ import { prisma } from '@repo/db'
 import {
   getMeetingTranscriptData,
   isParticipantBot
-} from '@repo/meeting-dispatch'
+} from '@repo/shared-utils/meeting'
 import { calendarDurationSec } from '@repo/shared-utils/date'
 import type { NextFunction, Request, Response } from 'express'
 

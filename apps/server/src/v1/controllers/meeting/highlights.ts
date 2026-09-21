@@ -7,7 +7,7 @@ import {
   type PostMeetingHighlightResponse
 } from '@repo/api-contract/v1/meeting/highlights'
 import { prisma } from '@repo/db'
-import { getMeetingUiStatus } from '@repo/meeting-dispatch'
+import { getMeetingUiStatus } from '@repo/shared-utils/meeting'
 import type { NextFunction, Request, Response } from 'express'
 
 import { HttpError } from '#src/v1/errors/http-error'

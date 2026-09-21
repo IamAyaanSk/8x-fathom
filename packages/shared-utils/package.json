@@ -1,12 +1,12 @@
 {
-  "name": "@repo/date",
+  "name": "@repo/shared-utils",
   "version": "1.0.0",
-  "description": "Date utilities",
+  "description": "Shared utilities",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
     }
   },
   "scripts": {
@@ -14,6 +14,12 @@
     "dev": "tsc --watch",
     "build": "tsc",
     "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/shared-validations": "workspace:*",
+    "@types/luxon": "catalog:",
+    "luxon": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

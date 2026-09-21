@@ -1,4 +1,3 @@
-import { isActiveMeetingBotUiPhase } from '@repo/api-contract/baas-bot-status'
 import type { PatchMeetingActionItemResponse } from '@repo/api-contract/v1/meeting/action-items'
 import type {
   PatchMeetingHighlightRequestBody,
@@ -24,6 +23,7 @@ import type {
   PostMeetingSummaryGenerateRequestBody as PostMeetingSummaryGenerateBody,
   PostMeetingSummaryGenerateResponse
 } from '@repo/api-contract/v1/meeting/summary'
+import { isActiveMeetingBotUiPhase } from '@repo/shared-utils/meeting'
 import type {
   MeetingHighlight,
   MeetingScratchpadEntry

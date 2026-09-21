@@ -3,13 +3,13 @@ import {
   type GetMeetingDetailResponse,
   type GetMeetingTranscriptResponse
 } from '@repo/api-contract/v1/meeting/playback'
-import { calendarDurationSec } from '@repo/date'
 import { prisma } from '@repo/db'
+import { calendarDurationSec } from '@repo/shared-utils/date'
 import {
   getMeetingTranscriptData,
   getMeetingUiStatus,
   isParticipantBot
-} from '@repo/meeting-dispatch'
+} from '@repo/shared-utils/meeting'
 import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'

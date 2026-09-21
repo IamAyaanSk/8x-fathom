@@ -18,6 +18,7 @@
   "dependencies": {
     "@meeting-baas/sdk": "catalog:",
     "@repo/db": "workspace:*",
+    "@repo/shared-utils": "workspace:*",
     "@repo/shared-validations": "workspace:*"
   },
   "devDependencies": {

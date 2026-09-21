@@ -1,5 +1,5 @@
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
-import { getMeetingBotUiLabel } from '@repo/api-contract/baas-bot-status'
+import { getMeetingBotUiLabel } from '@repo/shared-utils/meeting'
 import { Link } from '@tanstack/react-router'
 
 import {

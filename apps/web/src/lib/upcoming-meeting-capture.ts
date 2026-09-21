@@ -3,7 +3,7 @@ import {
   isInBotJoiningSoonWindow,
   isManualCaptureAllowed,
   isMeetingEnded
-} from '@repo/shared-validations'
+} from '@repo/shared-utils/meeting'
 
 const CAPTURE_HINT =
   'Use this to start capture now for this meet by sending bot.'

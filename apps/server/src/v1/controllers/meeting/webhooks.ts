@@ -3,7 +3,7 @@ import {
   getBaasStatusRank,
   isParticipantBot,
   mapWebhookStatusToProcessStatus
-} from '@repo/meeting-dispatch'
+} from '@repo/shared-utils/meeting'
 import {
   meetingBaasWebhookEventSchema,
   meetingBaasWebhookHeadersSchema,

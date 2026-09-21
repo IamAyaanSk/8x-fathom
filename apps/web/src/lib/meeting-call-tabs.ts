@@ -1,5 +1,6 @@
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
-import { isMeetingEnded } from '@repo/shared-validations'
+import { isMeetingEnded } from '@repo/shared-utils/meeting'
+import { DateTime } from 'luxon'
 
 type MeetingCallTab = 'upcoming' | 'live' | 'my-calls'
 
@@ -76,7 +77,9 @@ function categorizeMeetingsForTabs({
   }
 
   const myCalls = [...myCallsById.values()].sort(
-    (left, right) => Date.parse(right.startTime) - Date.parse(left.startTime)
+    (left, right) =>
+      DateTime.fromISO(right.startTime).toMillis() -
+      DateTime.fromISO(left.startTime).toMillis()
   )
 
   return { upcoming, live, myCalls }

@@ -1,9 +1,8 @@
-import {
-  summaryTemplateIdSchema,
-  type SummaryTemplateId
-} from './summary-template.js'
+import type { SummaryTemplateId } from '@repo/shared-validations/summary'
 
-const SUMMARY_TEMPLATE_LABELS: Record<SummaryTemplateId, string> = {
+export const MEETING_CAPTURE_LEAD_MS = 120_000
+
+export const SUMMARY_TEMPLATE_LABELS: Record<SummaryTemplateId, string> = {
   enhanced: 'General',
   sales: 'Sales',
   sales_sandler: 'Sandler',
@@ -22,12 +21,12 @@ const SUMMARY_TEMPLATE_LABELS: Record<SummaryTemplateId, string> = {
   stand_up: 'Stand-up'
 }
 
-type SummaryTemplateGroup = {
+export type SummaryTemplateGroup = {
   label: string
   templateIds: readonly SummaryTemplateId[]
 }
 
-const SUMMARY_TEMPLATE_GROUPS: readonly SummaryTemplateGroup[] = [
+export const SUMMARY_TEMPLATE_GROUPS: readonly SummaryTemplateGroup[] = [
   { label: 'General', templateIds: ['enhanced'] },
   {
     label: 'Sales',
@@ -56,29 +55,3 @@ const SUMMARY_TEMPLATE_GROUPS: readonly SummaryTemplateGroup[] = [
     templateIds: ['project_kick_off', 'project_update', 'q_and_a']
   }
 ]
-
-function summaryTemplateLabel(templateId: SummaryTemplateId): string {
-  return SUMMARY_TEMPLATE_LABELS[templateId]
-}
-
-function _assertTemplateGroupsCoverAllIds(): void {
-  const covered = new Set<SummaryTemplateId>()
-  for (const group of SUMMARY_TEMPLATE_GROUPS) {
-    for (const id of group.templateIds) {
-      covered.add(id)
-    }
-  }
-  for (const id of summaryTemplateIdSchema.options) {
-    if (!covered.has(id)) {
-      throw new Error(`Missing summary template group for ${id}`)
-    }
-  }
-}
-
-_assertTemplateGroupsCoverAllIds()
-
-export {
-  SUMMARY_TEMPLATE_GROUPS,
-  SUMMARY_TEMPLATE_LABELS,
-  summaryTemplateLabel
-}

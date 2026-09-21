@@ -11,6 +11,10 @@
     "./meeting": {
       "types": "./src/meeting.ts",
       "default": "./dist/meeting.js"
+    },
+    "./summary": {
+      "types": "./src/summary-template.ts",
+      "default": "./dist/summary-template.js"
     }
   },
   "scripts": {

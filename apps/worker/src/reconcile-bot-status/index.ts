@@ -1,10 +1,10 @@
 import { prisma } from '@repo/db'
+import { createMeetingBaasClient } from '@repo/meeting-dispatch'
 import {
-  createMeetingBaasClient,
   getBaasStatusRank,
   isParticipantBot,
   mapBaasStatus
-} from '@repo/meeting-dispatch'
+} from '@repo/shared-utils/meeting'
 
 import { env } from '#src/env'
 import { RECONCILE_BOT_STATUS_BATCH_SIZE } from '#src/reconcile-bot-status/constants'

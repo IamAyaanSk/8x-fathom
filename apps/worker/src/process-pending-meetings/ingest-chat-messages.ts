@@ -1,5 +1,5 @@
 import { prisma } from '@repo/db'
-import { getMeetingChatMessagesData } from '@repo/meeting-dispatch'
+import { getMeetingChatMessagesData } from '@repo/shared-utils/meeting'
 
 import { getR2ObjectUtf8 } from '#src/r2-storage'
 

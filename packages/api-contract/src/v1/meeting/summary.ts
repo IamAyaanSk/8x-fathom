@@ -1,4 +1,4 @@
-import { summaryTemplateIdSchema } from '@repo/shared-validations'
+import { summaryTemplateIdSchema } from '@repo/shared-validations/summary'
 import { z } from 'zod/v4'
 
 import { _createResponseApiZod } from '#src/utils'

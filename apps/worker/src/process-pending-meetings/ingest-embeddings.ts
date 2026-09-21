@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 
 import { embeddingToPgVectorLiteral, generateEmbeddings } from '@repo/ai'
 import { prisma } from '@repo/db'
-import { getMeetingTranscriptData } from '@repo/meeting-dispatch'
+import { getMeetingTranscriptData } from '@repo/shared-utils/meeting'
 
 import { UnrecoverableTranscriptArtifactError } from '#src/error'
 import { TRANSCRIPT_CHUNK_MAX_CHARS } from '#src/process-pending-meetings/constants'

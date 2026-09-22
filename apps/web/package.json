@@ -6,6 +6,7 @@
   "imports": {
     "#components/*": "./src/components/*.tsx",
     "#components/auth/*": "./src/components/auth/*.tsx",
+    "#components/landing/*": "./src/components/landing/*.tsx",
     "#components/layout/*": "./src/components/layout/*.tsx",
     "#components/pages/*": "./src/components/pages/*.tsx",
     "#lib/*": "./src/lib/*.ts",

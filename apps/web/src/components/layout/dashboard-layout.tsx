@@ -41,7 +41,7 @@ function DashboardLayout({ children, user }: DashboardLayoutProps) {
       <header className="border-border border-b">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4">
           <Link
-            to="/"
+            to="/meetings"
             className="flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-90"
           >
             <Waves

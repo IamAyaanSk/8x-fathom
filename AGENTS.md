@@ -69,18 +69,18 @@ Implement **one slice per task**. Mark done in this list when the vertical slice
 
 **Priority after F4:** table order below (not numeric ID order). Ship bot join (F5) and post-processing (F7) before live-call UX; **F6 is second-to-last** (before F9).
 
-| ID  | Slice                                                               | Status      |
-| --- | ------------------------------------------------------------------- | ----------- |
-| F0  | Context files (this document + cursor rules + README)               | done        |
-| F1  | Schema, pgvector, env, catalog deps                                 | done        |
-| F2  | Google auth, sessions, protected API                                | done        |
-| F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | done        |
-| F4  | Events / library list UI                                            | done        |
-| F5  | Worker dispatch `createBot` at start − buffer                       | done        |
-| F7  | Baas callback, worker AI, `processingStatus: ready`                 | done        |
-| F8  | Playback + transcript sync + share                                  | done        |
-| F6  | Ongoing call: status poll, highlight, scratchpad                    | done        |
-| F9  | Q&A RAG chatbot                                                     | done        |
+| ID  | Slice                                                               | Status |
+| --- | ------------------------------------------------------------------- | ------ |
+| F0  | Context files (this document + cursor rules + README)               | done   |
+| F1  | Schema, pgvector, env, catalog deps                                 | done   |
+| F2  | Google auth, sessions, protected API                                | done   |
+| F3  | Calendar connect, list/store events, Better Auth webhook + Sync now | done   |
+| F4  | Events / library list UI                                            | done   |
+| F5  | Worker dispatch `createBot` at start − buffer                       | done   |
+| F7  | Baas callback, worker AI, `processingStatus: ready`                 | done   |
+| F8  | Playback + transcript sync + share                                  | done   |
+| F6  | Ongoing call: status poll, highlight, scratchpad                    | done   |
+| F9  | Q&A RAG chatbot                                                     | done   |
 
 ## Monorepo
 

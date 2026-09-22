@@ -76,7 +76,7 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
             Try again
           </Button>
           <Link
-            to="/"
+            to="/meetings"
             className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center rounded-md px-4 text-sm font-medium"
           >
             Back to library
@@ -116,7 +116,7 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
       />
     </>
   ) : isProcessing ? (
-    <div className="bg-card ring-border flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-2xl px-6 text-center ring-1 shadow-sm">
+    <div className="bg-card ring-border flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-2xl px-6 text-center shadow-sm ring-1">
       <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
         <Loader2 className="size-6 animate-spin" />
       </div>
@@ -125,7 +125,8 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
           Generating call summary…
         </p>
         <p className="text-muted-foreground text-sm leading-relaxed">
-          This takes a few minutes while we process audio, extract action items, and prepare your recording.
+          This takes a few minutes while we process audio, extract action items,
+          and prepare your recording.
         </p>
       </div>
     </div>
@@ -206,7 +207,7 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
       <Link
-        to="/"
+        to="/meetings"
         className="text-muted-foreground hover:text-foreground mb-6 inline-flex w-fit items-center gap-2 text-sm"
       >
         <ArrowLeft aria-hidden className="size-4" />

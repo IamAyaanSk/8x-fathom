@@ -15,4 +15,3 @@ export const Route = createRootRouteWithContext<{
   pendingComponent: RootPending,
   notFoundComponent: RootNotFound
 })
-

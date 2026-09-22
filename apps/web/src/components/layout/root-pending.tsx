@@ -11,7 +11,7 @@ function RootPending() {
         />
       </div>
       <div className="flex flex-col items-center gap-1">
-        <span className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+        <span className="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
           8X FATHOM
         </span>
       </div>

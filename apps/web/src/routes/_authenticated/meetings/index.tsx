@@ -8,7 +8,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { HomePage } from '#components/pages/home-page'
 
-export const Route = createFileRoute('/_authenticated/')({
+export const Route = createFileRoute('/_authenticated/meetings/')({
   loader: async ({ context: { queryClient } }) => {
     const status = await queryClient
       .ensureQueryData(calendarStatusQueryOptions())

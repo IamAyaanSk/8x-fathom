@@ -1,6 +1,6 @@
 import { authClient } from '#lib/auth-client'
 
-function getAppCallbackUrl(path = '/'): string {
+function getAppCallbackUrl(path = '/meetings'): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   return `${window.location.origin}${normalizedPath}`
 }
@@ -8,7 +8,7 @@ function getAppCallbackUrl(path = '/'): string {
 async function startGoogleSignIn(): Promise<{ error: Error | null }> {
   const { data, error } = await authClient.signIn.social({
     provider: 'google',
-    callbackURL: getAppCallbackUrl('/')
+    callbackURL: getAppCallbackUrl('/meetings')
   })
 
   if (error) {
@@ -29,7 +29,7 @@ async function startGoogleCalendarLink(): Promise<{ error: Error | null }> {
   const { data, error } = await authClient.linkSocial({
     provider: 'google',
     scopes: ['https://www.googleapis.com/auth/calendar.events.readonly'],
-    callbackURL: getAppCallbackUrl('/')
+    callbackURL: getAppCallbackUrl('/meetings')
   })
 
   if (error) {

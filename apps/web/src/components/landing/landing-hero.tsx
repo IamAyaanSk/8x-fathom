@@ -18,15 +18,11 @@ function LandingHero({ isAuthenticated }: LandingHeroProps) {
           loading="eager"
         />
 
-        <div className="absolute inset-0 bg-black/15" />
+        <div className="from-background/40 to-background/40 pointer-events-none absolute inset-0 bg-linear-to-r via-transparent via-15% via-85%" />
 
-        <div className="from-background/70 to-background/70 pointer-events-none absolute inset-0 bg-linear-to-r via-transparent via-20% via-80%" />
+        <div className="from-background/80 via-background/20 pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b to-transparent" />
 
-        <div className="from-background/90 via-background/30 pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b to-transparent" />
-
-        <div className="from-background via-background/80 pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-linear-to-t via-40% to-transparent sm:h-80 md:h-96" />
-
-        <div className="to-background/30 pointer-events-none absolute inset-0 bg-radial-[circle_at_50%_35%] from-transparent via-transparent" />
+        <div className="from-background via-background/70 pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t via-35% to-transparent sm:h-64" />
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 pt-40 pb-56 text-center sm:px-6 sm:pt-48 sm:pb-72 lg:px-8 lg:pt-52 lg:pb-80">
@@ -37,11 +33,11 @@ function LandingHero({ isAuthenticated }: LandingHeroProps) {
           </span>
         </div>
 
-        <h1 className="text-3xl leading-[1.12] font-semibold tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl">
+        <h1 className="text-3xl leading-[1.12] font-semibold tracking-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)] sm:text-5xl md:text-6xl">
           Never take meeting notes again.
         </h1>
 
-        <p className="mt-6 max-w-xl text-base leading-relaxed font-normal text-white/90 drop-shadow-sm sm:text-lg">
+        <p className="mt-6 max-w-xl text-base leading-relaxed font-normal text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.75)] sm:text-lg">
           8x Fathom auto-joins your Google Meet calls, writes accurate summaries
           with timestamped action items, and lets you query your meeting
           history.

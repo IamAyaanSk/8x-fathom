@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { Heart, Waves } from 'lucide-react'
+import { Waves } from 'lucide-react'
+
+import { MadeWithLoveByAyaan } from '#components/layout/made-with-love-by-ayaan'
 
 function LandingFooter() {
   return (
@@ -56,10 +58,7 @@ function LandingFooter() {
 
         <div className="border-border/40 text-muted-foreground mt-10 flex flex-col items-center justify-between gap-4 border-t pt-8 text-xs sm:flex-row">
           <p>© {new Date().getFullYear()} 8x Fathom. All rights reserved.</p>
-          <p className="flex items-center gap-1.5">
-            Made with <Heart className="size-3.5 fill-red-500 text-red-500" />{' '}
-            by <span className="text-foreground font-medium">Ayaan</span>
-          </p>
+          <MadeWithLoveByAyaan />
         </div>
       </div>
     </footer>

@@ -7,6 +7,7 @@ import {
 } from '@repo/api-contract/v1/meeting/index'
 import { type Prisma, prisma } from '@repo/db'
 import { dispatchBotForMeeting, DispatchError } from '@repo/meeting-dispatch'
+import { calendarDurationSec } from '@repo/shared-utils/date'
 import { getMeetingUiStatus } from '@repo/shared-utils/meeting'
 import type { MeetingListItem } from '@repo/shared-validations/meeting'
 import type { NextFunction, Request, Response } from 'express'
@@ -33,7 +34,10 @@ type MeetingListRow = Prisma.MeetingGetPayload<{
   select: typeof _meetingListSelect
 }>
 
-function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
+function _toMeetingListItem(
+  row: MeetingListRow,
+  recordingDurationSec?: number | null
+): MeetingListItem {
   return {
     id: row.id,
     title: row.title,
@@ -49,7 +53,8 @@ function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
     uiPhase: getMeetingUiStatus({
       baasStatus: row.baasStatus,
       processingStatus: row.processingStatus
-    })
+    }),
+    recordingDurationSec: recordingDurationSec ?? null
   }
 }
 
@@ -142,11 +147,15 @@ const getMeetingsCompletedController = async (
       select: _meetingListSelect
     })
 
+    const meetings = rows.map((row) =>
+      _toMeetingListItem(row, calendarDurationSec(row.startTime, row.endTime))
+    )
+
     res.json({
       success: true,
       message: 'Past meetings fetched successfully',
       data: {
-        meetings: rows.map(_toMeetingListItem)
+        meetings
       }
     })
   } catch (error) {

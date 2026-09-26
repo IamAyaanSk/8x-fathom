@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import {
   getMeetingsCompletedController,
+  getMeetingsLiveController,
   getMeetingsUpcomingController,
   postMeetingCaptureController
 } from '#src/v1/controllers/meeting/index'
@@ -17,6 +18,7 @@ const router = Router()
 
 // Meeting list & capture routes
 router.get('/upcoming', getMeetingsUpcomingController)
+router.get('/live', getMeetingsLiveController)
 router.get('/completed', getMeetingsCompletedController)
 router.post('/:meetingId/capture', postMeetingCaptureController)
 

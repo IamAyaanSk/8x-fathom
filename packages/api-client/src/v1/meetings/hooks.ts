@@ -8,6 +8,7 @@ import type {
 } from '@repo/api-contract/v1/meeting/highlights'
 import type {
   GetMeetingsCompletedResponse,
+  GetMeetingsLiveResponse,
   GetMeetingsUpcomingResponse,
   PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
@@ -42,6 +43,7 @@ import {
   getMeetingDetail,
   getMeetingTranscript,
   getMeetingsCompleted,
+  getMeetingsLive,
   getMeetingsUpcoming,
   patchMeetingActionItem,
   patchMeetingHighlight,
@@ -66,6 +68,7 @@ const MEETING_PLAYBACK_URL_REFRESH_MS = 50 * 60 * 1000
 const meetingsQueryKeys = {
   all: ['meetings'] as const,
   upcoming: () => [...meetingsQueryKeys.all, 'upcoming'] as const,
+  live: () => [...meetingsQueryKeys.all, 'live'] as const,
   completed: () => [...meetingsQueryKeys.all, 'completed'] as const,
   detail: (meetingId: string) =>
     [...meetingsQueryKeys.all, 'detail', meetingId] as const,
@@ -110,6 +113,41 @@ function meetingsUpcomingQueryOptions(options?: UseMeetingsUpcomingOptions) {
 
 function useMeetingsUpcomingQuery(options?: UseMeetingsUpcomingOptions) {
   return useQuery(meetingsUpcomingQueryOptions(options))
+}
+
+type UseMeetingsLiveOptions = Omit<
+  UseQueryOptions<GetMeetingsLiveResponse>,
+  'queryKey' | 'queryFn'
+>
+
+const MEETINGS_LIVE_CACHE_MS = 10_000
+const MEETINGS_LIVE_ACTIVE_REFETCH_MS = 5_000
+
+function _liveRefetchInterval(query: {
+  state: { data: GetMeetingsLiveResponse | undefined }
+}) {
+  const data = query.state.data
+  if (data?.success !== true) {
+    return MEETINGS_LIVE_CACHE_MS
+  }
+  return data.data.meetings.length > 0
+    ? MEETINGS_LIVE_ACTIVE_REFETCH_MS
+    : MEETINGS_LIVE_CACHE_MS
+}
+
+function meetingsLiveQueryOptions(options?: UseMeetingsLiveOptions) {
+  return queryOptions({
+    queryKey: meetingsQueryKeys.live(),
+    queryFn: getMeetingsLive,
+    staleTime: MEETINGS_LIVE_CACHE_MS,
+    gcTime: MEETINGS_LIVE_CACHE_MS,
+    refetchInterval: _liveRefetchInterval,
+    ...options
+  })
+}
+
+function useMeetingsLiveQuery(options?: UseMeetingsLiveOptions) {
+  return useQuery(meetingsLiveQueryOptions(options))
 }
 
 type UseMeetingsCompletedOptions = Omit<
@@ -551,11 +589,13 @@ export {
   meetingDetailQueryOptions,
   meetingTranscriptQueryOptions,
   meetingsCompletedQueryOptions,
+  meetingsLiveQueryOptions,
   meetingsQueryKeys,
   meetingsUpcomingQueryOptions,
   useMeetingDetailQuery,
   useMeetingTranscriptQuery,
   useMeetingsCompletedQuery,
+  useMeetingsLiveQuery,
   useMeetingsUpcomingQuery,
   usePatchMeetingActionItemMutation,
   usePatchMeetingHighlightMutation,

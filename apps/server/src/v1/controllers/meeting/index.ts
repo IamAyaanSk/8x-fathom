@@ -1,6 +1,7 @@
 import {
   postMeetingCaptureRequestParamsSchema,
   type GetMeetingsCompletedResponse,
+  type GetMeetingsLiveResponse,
   type GetMeetingsUpcomingResponse,
   type PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
@@ -66,7 +67,11 @@ const getMeetingsUpcomingController = async (
         userId,
         OR: [
           { baasStatus: null },
-          { baasStatus: { notIn: ['completed', 'transcribing'] } }
+          {
+            baasStatus: {
+              notIn: ['in_call_recording', 'completed', 'transcribing']
+            }
+          }
         ],
         endTime: { gt: now }
       },
@@ -77,6 +82,35 @@ const getMeetingsUpcomingController = async (
     res.json({
       success: true,
       message: 'Upcoming meetings fetched successfully',
+      data: {
+        meetings: rows.map(_toMeetingListItem)
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getMeetingsLiveController = async (
+  req: Request,
+  res: Response<GetMeetingsLiveResponse>,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.session!.user.id
+
+    const rows = await prisma.meeting.findMany({
+      where: {
+        userId,
+        baasStatus: 'in_call_recording'
+      },
+      orderBy: { startTime: 'asc' },
+      select: _meetingListSelect
+    })
+
+    res.json({
+      success: true,
+      message: 'Live meetings fetched successfully',
       data: {
         meetings: rows.map(_toMeetingListItem)
       }
@@ -98,6 +132,7 @@ const getMeetingsCompletedController = async (
     const rows = await prisma.meeting.findMany({
       where: {
         userId,
+        baasStatus: { not: 'in_call_recording' },
         OR: [
           { endTime: { lte: now } },
           { baasStatus: { in: ['completed', 'transcribing'] } }
@@ -174,6 +209,7 @@ const postMeetingCaptureController = async (
 
 export {
   getMeetingsCompletedController,
+  getMeetingsLiveController,
   getMeetingsUpcomingController,
   postMeetingCaptureController
 }

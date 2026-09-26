@@ -16,5 +16,19 @@
         "timeout": 15
       }
     ]
+  },
+  "block-env-access": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/block-env-access.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

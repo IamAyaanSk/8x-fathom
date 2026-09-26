@@ -79,11 +79,11 @@ function LandingFeatures({ isAuthenticated }: LandingFeaturesProps) {
           </p>
         </div>
 
-        <div className="border-border/50 divide-border/40 grid grid-cols-1 divide-y overflow-hidden rounded-2xl border bg-zinc-950/40 shadow-xl backdrop-blur-sm md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div className="border-border/50 divide-border/40 bg-card/60 grid grid-cols-1 divide-y overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm md:grid-cols-3 md:divide-x md:divide-y-0">
           {WORKFLOW.map((item) => (
             <div
               key={item.step}
-              className="flex flex-col justify-between p-8 transition-colors hover:bg-zinc-900/20 sm:p-10"
+              className="flex flex-col justify-between p-8 transition-colors hover:bg-muted/30 sm:p-10"
             >
               <div>
                 <div className="mb-8 flex items-center justify-between">
@@ -122,7 +122,7 @@ function LandingFeatures({ isAuthenticated }: LandingFeaturesProps) {
           {CAPABILITIES.map((cap, index) => (
             <div
               key={cap.title}
-              className="border-border/40 hover:border-border/70 group relative flex flex-col rounded-2xl border bg-zinc-950/30 p-8 transition-all hover:bg-zinc-900/30"
+              className="border-border/50 hover:border-border bg-card/70 group relative flex flex-col rounded-2xl border p-8 shadow-xs transition-all hover:bg-card"
             >
               <div className="mb-6 flex items-center justify-between">
                 <span className="text-muted-foreground/60 font-mono text-xs tracking-wider uppercase">
@@ -141,7 +141,7 @@ function LandingFeatures({ isAuthenticated }: LandingFeaturesProps) {
         </div>
       </section>
 
-      <section className="border-border/50 relative overflow-hidden rounded-3xl border bg-zinc-950/60 p-10 text-center shadow-2xl backdrop-blur-md sm:p-16 lg:p-20">
+      <section className="border-border/50 bg-card/80 relative overflow-hidden rounded-3xl border p-10 text-center shadow-2xl backdrop-blur-md sm:p-16 lg:p-20">
         <div className="from-primary/10 pointer-events-none absolute inset-0 bg-radial-[circle_at_50%_0%] via-transparent to-transparent" />
         <div className="from-border/40 to-border/40 via-primary/30 pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r" />
 

@@ -8,7 +8,7 @@ type AuthShellProps = {
 
 function AuthShell({ children }: AuthShellProps) {
   return (
-    <div className="dark bg-background text-foreground min-h-dvh">
+    <div className="bg-background text-foreground min-h-dvh">
       <div className="mx-auto flex min-h-dvh max-w-6xl flex-col px-4 py-10">
         <header className="flex justify-center">
           <p className="flex items-center gap-2 text-lg font-semibold tracking-tight">

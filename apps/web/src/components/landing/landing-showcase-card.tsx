@@ -176,7 +176,7 @@ function LandingShowcaseCard() {
         </p>
       </div>
 
-      <div className="border-border/50 inline-flex max-w-full gap-1 overflow-x-auto rounded-xl border bg-zinc-950/60 p-1.5 backdrop-blur-md">
+      <div className="border-border/60 bg-muted/60 inline-flex max-w-full gap-1 overflow-x-auto rounded-xl border p-1.5 backdrop-blur-md">
         {FEATURE_PILLARS.map((pillar) => {
           const isActive = pillar.id === activePillar.id
           return (
@@ -188,7 +188,7 @@ function LandingShowcaseCard() {
               }}
               className={`rounded-lg px-4 py-2 text-xs font-medium whitespace-nowrap transition-all sm:text-sm ${
                 isActive
-                  ? 'border-border/70 text-foreground border bg-zinc-800/90 font-semibold shadow-sm'
+                  ? 'border-border/70 text-foreground bg-card border font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground border border-transparent'
               }`}
             >
@@ -199,21 +199,21 @@ function LandingShowcaseCard() {
       </div>
 
       <div className="mt-10 sm:mt-12">
-        <div className="border-border/70 relative rounded-2xl border bg-zinc-950/90 p-1.5 shadow-[0_28px_80px_-20px_rgba(0,0,0,0.85)] ring-1 ring-white/10">
-          <div className="border-border/40 overflow-hidden rounded-xl border bg-black/60">
-            <div className="border-border/40 flex items-center justify-between border-b bg-zinc-900/60 px-4 py-3">
+        <div className="border-border/70 bg-card relative rounded-2xl border p-1.5 shadow-xl ring-1 ring-border/50">
+          <div className="border-border/40 bg-card overflow-hidden rounded-xl border">
+            <div className="border-border/40 bg-muted/40 flex items-center justify-between border-b px-4 py-3">
               <div className="flex items-center gap-2">
-                <span className="size-2.5 rounded-full bg-zinc-700/80" />
-                <span className="size-2.5 rounded-full bg-zinc-700/80" />
-                <span className="size-2.5 rounded-full bg-zinc-700/80" />
+                <span className="bg-muted-foreground/30 size-2.5 rounded-full" />
+                <span className="bg-muted-foreground/30 size-2.5 rounded-full" />
+                <span className="bg-muted-foreground/30 size-2.5 rounded-full" />
               </div>
-              <div className="border-border/40 text-muted-foreground/80 rounded-md border bg-zinc-950/60 px-3 py-1 font-mono text-xs">
+              <div className="border-border/40 text-muted-foreground bg-background rounded-md border px-3 py-1 font-mono text-xs">
                 {activePillar.url}
               </div>
               <div className="w-8" />
             </div>
 
-            <div className="relative overflow-hidden bg-black/60">
+            <div className="bg-muted/20 relative overflow-hidden">
               <img
                 src={activePillar.image}
                 alt={activePillar.imageAlt}

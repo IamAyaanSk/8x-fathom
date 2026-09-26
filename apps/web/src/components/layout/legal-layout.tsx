@@ -10,7 +10,7 @@ type LegalLayoutProps = {
 
 function LegalLayout({ children, title }: LegalLayoutProps) {
   return (
-    <div className="dark bg-background text-foreground min-h-dvh">
+    <div className="bg-background text-foreground min-h-dvh">
       <div className="mx-auto flex min-h-dvh max-w-3xl flex-col px-4 py-10">
         <header className="border-border flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
           <Link

@@ -1,7 +1,6 @@
 import { useCalendarStatusQuery } from '@repo/api-client/v1/calendar/hooks'
 import { useMeetingsCompletedQuery } from '@repo/api-client/v1/meetings/hooks'
 import { Button } from '@repo/ui-web/components/button'
-import { Sparkles } from 'lucide-react'
 
 import { MeetingAskFathomSheet } from '#components/meetings/meeting-ask-fathom-sheet'
 

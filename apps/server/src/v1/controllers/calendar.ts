@@ -6,6 +6,7 @@ import type {
 import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
+import { isDemoUserEmail } from '#src/services/demo/index'
 import {
   hasCalendarScope,
   setupCalendarWatch,
@@ -18,6 +19,16 @@ const getCalendarStatusController = async (
   next: NextFunction
 ) => {
   try {
+    const userEmail = req.session!.user.email
+    if (isDemoUserEmail(userEmail)) {
+      res.json({
+        success: true,
+        message: 'Calendar status fetched successfully',
+        data: { connected: false, lastSyncedAt: null }
+      })
+      return
+    }
+
     const userId = req.session!.user.id
     const account = await prisma.account.findFirst({
       where: {
@@ -69,6 +80,19 @@ const postCalendarSyncController = async (
   next: NextFunction
 ) => {
   try {
+    const userEmail = req.session!.user.email
+    if (isDemoUserEmail(userEmail)) {
+      res.json({
+        success: true,
+        message: 'Calendar sync is simulated in demo mode',
+        data: {
+          syncedCount: 0,
+          lastSyncedAt: new Date().toISOString()
+        }
+      })
+      return
+    }
+
     const userId = req.session!.user.id
     await setupCalendarWatch(userId).catch(() => undefined)
     const result = await syncCalendarEvents(userId)

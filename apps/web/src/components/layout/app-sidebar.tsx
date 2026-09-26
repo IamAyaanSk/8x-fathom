@@ -25,6 +25,7 @@ import { CalendarDays, LogOut, Radio, Video, Waves } from 'lucide-react'
 
 import { MadeWithLoveByAyaan } from '#components/layout/made-with-love-by-ayaan'
 import { authClient } from '#lib/auth-client'
+import { isDemoUser } from '#lib/demo'
 
 type AppSidebarProps = {
   user: {
@@ -47,6 +48,7 @@ function getUserInitials(name: string, email: string): string {
 }
 
 function AppSidebar({ user }: AppSidebarProps) {
+  const isDemo = isDemoUser(user.email)
   const navigate = useNavigate()
   const location = useLocation()
   const { isMobile, setOpenMobile } = useSidebar()
@@ -54,15 +56,16 @@ function AppSidebar({ user }: AppSidebarProps) {
   const { data: calendarStatus } = useCalendarStatusQuery()
   const connected =
     calendarStatus?.success === true && calendarStatus.data.connected
+  const canAccess = connected || isDemo
 
   const { data: upcomingData } = useMeetingsUpcomingQuery({
-    enabled: connected === true
+    enabled: canAccess
   })
   const { data: liveData } = useMeetingsLiveQuery({
-    enabled: connected === true
+    enabled: canAccess
   })
   const { data: completedData } = useMeetingsCompletedQuery({
-    enabled: connected === true
+    enabled: canAccess
   })
 
   const upcomingCount =

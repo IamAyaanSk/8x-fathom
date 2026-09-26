@@ -46,4 +46,37 @@ async function startGoogleCalendarLink(): Promise<{ error: Error | null }> {
   return { error: new Error('No OAuth redirect URL was returned.') }
 }
 
-export { getAppCallbackUrl, startGoogleCalendarLink, startGoogleSignIn }
+const DEMO_USER_EMAIL = (
+  (import.meta.env.VITE_DEMO_USER_EMAIL as string | undefined) || ''
+).trim()
+const DEMO_USER_PASSWORD = (
+  (import.meta.env.VITE_DEMO_USER_PASSWORD as string | undefined) || ''
+).trim()
+
+async function signInAsDemo(): Promise<{ error: Error | null }> {
+  if (!DEMO_USER_EMAIL || !DEMO_USER_PASSWORD) {
+    return { error: new Error('Demo credentials are not configured.') }
+  }
+
+  const { error } = await authClient.signIn.email({
+    email: DEMO_USER_EMAIL,
+    password: DEMO_USER_PASSWORD,
+    callbackURL: getAppCallbackUrl('/meetings')
+  })
+
+  if (error) {
+    return {
+      error: new Error(error.message ?? 'Could not sign in as demo user.')
+    }
+  }
+
+  window.location.assign(getAppCallbackUrl('/meetings'))
+  return { error: null }
+}
+
+export {
+  getAppCallbackUrl,
+  signInAsDemo,
+  startGoogleCalendarLink,
+  startGoogleSignIn
+}

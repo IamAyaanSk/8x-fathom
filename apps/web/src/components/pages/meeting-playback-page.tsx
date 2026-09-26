@@ -25,6 +25,7 @@ import { MeetingLivePage } from '#components/meetings/meeting-live-page'
 import { MeetingSummaryPanel } from '#components/meetings/meeting-summary-panel'
 import { MeetingTranscriptPanel } from '#components/meetings/meeting-transcript-panel'
 import { MeetingVideoPlayer } from '#components/meetings/meeting-video-player'
+import { useIsDemoUser } from '#hooks/use-is-demo'
 import { useNow } from '#hooks/use-now'
 import { formatMeetingDetailDate } from '#lib/format-meeting-detail-date'
 import { getRecordingElapsedSec } from '#lib/recording-elapsed-sec'
@@ -34,6 +35,7 @@ type MeetingPlaybackPageProps = {
 }
 
 function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
+  const isDemo = useIsDemoUser()
   const { data, isPending, isError, refetch } = useMeetingDetailQuery(meetingId)
   const enableShare = usePostMeetingShareEnableMutation()
   const nowMs = useNow(1000)
@@ -236,6 +238,11 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
                   <MeetingSummaryPanel
                     meeting={meeting}
                     canRecreateSummary={meeting.processingStatus === 'ready'}
+                    recreateDisabledReason={
+                      isDemo
+                        ? 'Recreating summaries is unavailable for the demo account. Sign in with Google for complete access.'
+                        : undefined
+                    }
                   />
 
                   <div className="border-border/60 border-t pt-8">
@@ -250,9 +257,11 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
                     <MeetingAskFathomPanel
                       meetingId={meeting.id}
                       disabledReason={
-                        meeting.processingStatus === 'ready'
-                          ? undefined
-                          : 'Ask Fathom is available after this call is processed.'
+                        isDemo
+                          ? 'Fathom AI is unavailable for the demo account. Sign in with Google for complete access.'
+                          : meeting.processingStatus === 'ready'
+                            ? undefined
+                            : 'Ask Fathom is available after this call is processed.'
                       }
                     />
                   </div>
@@ -285,7 +294,11 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
                 </div>
                 <MeetingAskFathomPanel
                   meetingId={meeting.id}
-                  disabledReason="Ask Fathom is not available because this call could not be processed."
+                  disabledReason={
+                    isDemo
+                      ? 'Fathom AI is unavailable for the demo account. Sign in with Google for complete access.'
+                      : 'Ask Fathom is not available because this call could not be processed.'
+                  }
                 />
               </div>
             </div>

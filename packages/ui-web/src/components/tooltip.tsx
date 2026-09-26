@@ -21,10 +21,15 @@ function Tooltip({ content, children, side = 'top' }: TooltipProps) {
     <TooltipPrimitive.Root>
       <TooltipPrimitive.Trigger render={children} />
       <TooltipPrimitive.Portal>
-        <TooltipPrimitive.Positioner side={side} sideOffset={6}>
+        <TooltipPrimitive.Positioner
+          side={side}
+          sideOffset={6}
+          className="z-50"
+          style={{ zIndex: 50 }}
+        >
           <TooltipPrimitive.Popup
             className={cn(
-              'bg-popover text-popover-foreground ring-border z-50 max-w-xs rounded-lg px-3 py-2 text-xs leading-relaxed shadow-md ring-1'
+              'bg-popover text-popover-foreground ring-border z-1000 w-fit max-w-80 rounded-lg px-3 py-2 text-xs leading-relaxed shadow-md ring-1'
             )}
           >
             {content}

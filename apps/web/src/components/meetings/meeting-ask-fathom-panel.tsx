@@ -262,10 +262,20 @@ function MeetingAskFathomPanel({
   }
 
   if (disabledReason) {
+    const isDemo = disabledReason.toLowerCase().includes('demo')
     return (
-      <p className="text-muted-foreground text-sm leading-relaxed">
+      <div
+        className={
+          isDemo
+            ? 'bg-demo/10 border-demo/30 text-demo-foreground flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm'
+            : 'text-muted-foreground text-sm leading-relaxed'
+        }
+      >
+        {isDemo ? (
+          <span className="shrink-0 text-base leading-none">🧪</span>
+        ) : null}
         {disabledReason}
-      </p>
+      </div>
     )
   }
 

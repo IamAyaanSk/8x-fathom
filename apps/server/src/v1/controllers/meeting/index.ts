@@ -15,6 +15,8 @@ import type { NextFunction, Request, Response } from 'express'
 import '#src/env'
 import '#src/types/express'
 import { env } from '#src/env'
+import { isDemoUserEmail } from '#src/services/demo/index'
+import { CALENDAR_SYNC_WINDOW_DAYS } from '#src/services/google-calendar/constants'
 import { HttpError } from '#src/v1/errors/http-error'
 
 const _meetingListSelect = {
@@ -66,6 +68,9 @@ const getMeetingsUpcomingController = async (
   try {
     const userId = req.session!.user.id
     const now = new Date()
+    const upcomingWindowEndsAt = new Date(
+      now.getTime() + CALENDAR_SYNC_WINDOW_DAYS * 24 * 60 * 60 * 1000
+    )
 
     const rows = await prisma.meeting.findMany({
       where: {
@@ -78,6 +83,7 @@ const getMeetingsUpcomingController = async (
             }
           }
         ],
+        startTime: { gte: now, lt: upcomingWindowEndsAt },
         endTime: { gt: now }
       },
       orderBy: { startTime: 'asc' },
@@ -197,6 +203,11 @@ const postMeetingCaptureController = async (
   next: NextFunction
 ) => {
   try {
+    const userEmail = req.session!.user.email
+    if (isDemoUserEmail(userEmail)) {
+      throw new HttpError(403, 'Bot capture is disabled in demo mode')
+    }
+
     const userId = req.session!.user.id
 
     const validatedParams = postMeetingCaptureRequestParamsSchema.safeParse(

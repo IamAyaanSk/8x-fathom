@@ -81,6 +81,8 @@
   --shadow-opacity: var(--shadow-opacity);
   --shadow-color: var(--shadow-color);
   --color-shadow-color: var(--shadow-color);
+  --color-demo: var(--demo);
+  --color-demo-foreground: var(--demo-foreground);
 }
 
 :root {
@@ -142,6 +144,9 @@
     1px 4px 5px 0px hsl(0 0% 0% / 0.03), 1px 8px 10px -1px hsl(0 0% 0% / 0.03);
   --shadow-2xl: 1px 4px 5px 0px hsl(0 0% 0% / 0.07);
   --tracking-normal: 0.5px;
+  /* Demo mode — amber/yellow */
+  --demo: oklch(0.84 0.155 84);
+  --demo-foreground: oklch(0.42 0.1 70);
 }
 
 .dark {
@@ -202,6 +207,9 @@
   --shadow-xl:
     1px 4px 5px 0px hsl(0 0% 0% / 0.03), 1px 8px 10px -1px hsl(0 0% 0% / 0.03);
   --shadow-2xl: 1px 4px 5px 0px hsl(0 0% 0% / 0.07);
+  /* Demo mode — amber/yellow */
+  --demo: oklch(0.78 0.14 80);
+  --demo-foreground: oklch(0.95 0.06 85);
 }
 
 @layer base {

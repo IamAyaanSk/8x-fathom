@@ -1,6 +1,7 @@
 import { usePostMeetingSummaryGenerateMutation } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
+import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { Check, Copy, Loader2, Sparkles } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
@@ -15,6 +16,7 @@ type MeetingSummaryPanelProps = {
       Pick<MeetingDetail, 'id' | 'uiPhase' | 'baasStatus' | 'processingStatus'>
     >
   canRecreateSummary: boolean
+  recreateDisabledReason?: string
   readOnly?: boolean
   onSeek?: (timestampSec: number) => void
 }
@@ -198,6 +200,7 @@ function _summaryGenerateErrorMessage(error: Error): string {
 function MeetingSummaryPanel({
   meeting,
   canRecreateSummary,
+  recreateDisabledReason,
   readOnly = false
 }: MeetingSummaryPanelProps) {
   const meetingId = meeting.id
@@ -279,21 +282,33 @@ function MeetingSummaryPanel({
 
           <div className="flex items-center gap-1.5">
             {!readOnly && canRecreateSummary && meetingId ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 gap-1 px-2.5 text-xs shadow-2xs"
-                disabled={generateSummary.isPending}
-                onClick={openRecreateDialog}
+              <Tooltip
+                content={
+                  recreateDisabledReason ??
+                  'Recreate this summary from the transcript.'
+                }
               >
-                {generateSummary.isPending ? (
-                  <Loader2 aria-hidden className="size-3 animate-spin" />
-                ) : (
-                  <Sparkles aria-hidden className="size-3" />
-                )}
-                <span>Recreate</span>
-              </Button>
+                <span className="inline-flex">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1 px-2.5 text-xs shadow-2xs"
+                    disabled={
+                      generateSummary.isPending ||
+                      recreateDisabledReason != null
+                    }
+                    onClick={openRecreateDialog}
+                  >
+                    {generateSummary.isPending ? (
+                      <Loader2 aria-hidden className="size-3 animate-spin" />
+                    ) : (
+                      <Sparkles aria-hidden className="size-3" />
+                    )}
+                    <span>Recreate</span>
+                  </Button>
+                </span>
+              </Tooltip>
             ) : null}
 
             {!readOnly && summary ? (

@@ -6,6 +6,7 @@ import { cn } from '@repo/ui-web/lib/utils'
 import { Link } from '@tanstack/react-router'
 import { CircleDot, ExternalLink, Loader2, Radio } from 'lucide-react'
 
+import { useIsDemoUser } from '#hooks/use-is-demo'
 import { useNow } from '#hooks/use-now'
 import {
   formatMeetingTimeRange,
@@ -18,6 +19,7 @@ type UpcomingMeetingRowProps = {
 }
 
 function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
+  const isDemo = useIsDemoUser()
   const now = useNow()
   const captureMutation = usePostMeetingCaptureMutation()
   const title =
@@ -29,6 +31,10 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
     nowMs: now,
     isCapturing
   })
+  const canCapture = capture.canCapture && !isDemo
+  const tooltipContent = isDemo
+    ? 'Recording bots are unavailable for the demo account. Sign in with Google for complete access.'
+    : capture.tooltip
   const timeRange = formatMeetingTimeRange(meeting.startTime, meeting.endTime)
   const statusLabel = getUpcomingMeetingStatus(meeting, now)
   const failedJoin = meeting.uiPhase === 'failed_to_join'
@@ -67,14 +73,14 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
             <span>View live call</span>
           </Link>
         ) : (
-          <Tooltip content={capture.tooltip}>
+          <Tooltip content={tooltipContent}>
             <span className="inline-flex">
               <Button
                 type="button"
                 variant="default"
                 size="sm"
                 className="gap-1.5 rounded-full px-4 text-xs font-medium shadow-xs"
-                disabled={!capture.canCapture}
+                disabled={!canCapture}
                 aria-label={capture.ariaLabel}
                 onClick={() => {
                   captureMutation.mutate(meeting.id)

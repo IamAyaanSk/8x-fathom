@@ -5,20 +5,23 @@ import { Button } from '@repo/ui-web/components/button'
 import { Loader2 } from 'lucide-react'
 
 import { MyCallsGrid } from '#components/meetings/my-calls-grid'
+import { useIsDemoUser } from '#hooks/use-is-demo'
 import { useNow } from '#hooks/use-now'
 
 function MyCallsPage() {
+  const isDemo = useIsDemoUser()
   const now = useNow()
   const { data: statusData, isPending: statusPending } =
     useCalendarStatusQuery()
   const connected = statusData?.success === true && statusData.data.connected
+  const canAccess = connected || isDemo
 
   const {
     data: completedData,
     isPending: completedPending,
     isError: completedError,
     refetch: refetchCompleted
-  } = useMeetingsCompletedQuery({ enabled: connected === true })
+  } = useMeetingsCompletedQuery({ enabled: canAccess })
 
   const myCalls: MeetingListItem[] =
     completedData?.success === true ? completedData.data.meetings : []

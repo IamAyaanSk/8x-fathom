@@ -1,0 +1,19 @@
+{
+  "name": "8x-fathom-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone seed/migration scripts for 8x Fathom — run independently, not part of the monorepo build.",
+  "type": "module",
+  "scripts": {
+    "copy-demo-seed": "tsx copy-demo-seed.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "@types/pg": "^8.11.6",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

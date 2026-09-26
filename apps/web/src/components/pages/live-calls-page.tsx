@@ -14,18 +14,21 @@ import { Link } from '@tanstack/react-router'
 import { Loader2, Radio } from 'lucide-react'
 
 import { UpcomingMeetingRow } from '#components/meetings/upcoming-meeting-row'
+import { useIsDemoUser } from '#hooks/use-is-demo'
 
 function LiveCallsPage() {
+  const isDemo = useIsDemoUser()
   const { data: statusData, isPending: statusPending } =
     useCalendarStatusQuery()
   const connected = statusData?.success === true && statusData.data.connected
+  const canAccess = connected || isDemo
 
   const {
     data: liveData,
     isPending: livePending,
     isError: liveError,
     refetch: refetchLive
-  } = useMeetingsLiveQuery({ enabled: connected === true })
+  } = useMeetingsLiveQuery({ enabled: canAccess })
 
   const liveMeetings: MeetingListItem[] =
     liveData?.success === true ? liveData.data.meetings : []

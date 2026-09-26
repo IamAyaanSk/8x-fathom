@@ -6,10 +6,13 @@ import {
 import { meetingsQueryKeys } from '@repo/api-client/v1/meetings/hooks'
 import type { GetCalendarStatusResponse } from '@repo/api-contract/v1/calendar'
 import { Button } from '@repo/ui-web/components/button'
+import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { cn } from '@repo/ui-web/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { RefreshCw } from 'lucide-react'
 import { type ComponentProps, useEffect, useState } from 'react'
+
+import { useIsDemoUser } from '#hooks/use-is-demo'
 
 type CalendarSyncButtonProps = {
   variant?: ComponentProps<typeof Button>['variant']
@@ -102,6 +105,7 @@ function CalendarSyncButton({
   showSyncedTime = false,
   syncedTimePosition = 'right'
 }: CalendarSyncButtonProps) {
+  const isDemo = useIsDemoUser()
   const queryClient = useQueryClient()
   const { data: statusData } = useCalendarStatusQuery()
   const connected = statusData?.success === true && statusData.data.connected
@@ -144,7 +148,12 @@ function CalendarSyncButton({
   })
 
   const isPending = syncMutation.isPending
-  const isDisabled = !connected || isPending
+  const isDisabled = isDemo || !connected || isPending
+  const disabledReason = isDemo
+    ? 'Calendar sync is unavailable for the demo account. Sign in with Google for complete access.'
+    : !connected
+      ? 'Connect Google Calendar to sync your events.'
+      : undefined
 
   const syncLabel = isPending ? 'Syncing…' : label
 
@@ -185,10 +194,17 @@ function CalendarSyncButton({
     </Button>
   )
 
-  const wrappedButton = iconOnly ? (
-    <span className="inline-flex">{buttonElement}</span>
+  const wrappedButton =
+    iconOnly || disabledReason ? (
+      <span className="inline-flex">{buttonElement}</span>
+    ) : (
+      buttonElement
+    )
+
+  const tooltipButton = disabledReason ? (
+    <Tooltip content={disabledReason}>{wrappedButton}</Tooltip>
   ) : (
-    buttonElement
+    wrappedButton
   )
 
   if (showSyncedTime) {
@@ -212,11 +228,11 @@ function CalendarSyncButton({
         {syncedTimePosition === 'left' ? (
           <>
             {syncedTextElement}
-            {wrappedButton}
+            {tooltipButton}
           </>
         ) : (
           <>
-            {wrappedButton}
+            {tooltipButton}
             {syncedTextElement}
           </>
         )}
@@ -224,7 +240,7 @@ function CalendarSyncButton({
     )
   }
 
-  return wrappedButton
+  return tooltipButton
 }
 
 export { CalendarSyncButton }

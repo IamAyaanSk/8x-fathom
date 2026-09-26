@@ -13,6 +13,8 @@ import type { ReactNode } from 'react'
 import { AppSidebar } from '#components/layout/app-sidebar'
 import { CalendarSyncButton } from '#components/meetings/calendar-sync-button'
 import { MeetingAskFathomSheet } from '#components/meetings/meeting-ask-fathom-sheet'
+import { useIsDemoUser } from '#hooks/use-is-demo'
+import { isDemoUser } from '#lib/demo'
 
 type DashboardLayoutProps = {
   children: ReactNode
@@ -24,6 +26,7 @@ type DashboardLayoutProps = {
 }
 
 function DashboardHeader() {
+  const isDemo = useIsDemoUser()
   const location = useLocation()
   const { isMobile, setOpenMobile } = useSidebar()
 
@@ -31,19 +34,21 @@ function DashboardHeader() {
   const connected = statusData?.success === true && statusData.data.connected
 
   const { data: completedData, isPending: completedPending } =
-    useMeetingsCompletedQuery({ enabled: connected === true })
+    useMeetingsCompletedQuery({ enabled: connected === true || isDemo })
 
   const past =
     completedData?.success === true ? completedData.data.meetings : []
   const hasReadyCalls = past.some((m) => m.uiPhase === 'ready')
 
-  const askDisabledReason = !connected
-    ? 'Connect your calendar first'
-    : completedPending
-      ? 'AI is available after calls load.'
-      : hasReadyCalls
-        ? undefined
-        : 'AI is available after at least one call is processed.'
+  const askDisabledReason = isDemo
+    ? 'Demo account: sign in with Google for complete access.'
+    : !connected
+      ? 'Connect your calendar first'
+      : completedPending
+        ? 'AI is available after calls load.'
+        : hasReadyCalls
+          ? undefined
+          : 'AI is available after at least one call is processed.'
 
   const isMeetingDetail =
     location.pathname.startsWith('/meetings/') &&
@@ -100,7 +105,7 @@ function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-2.5 sm:gap-3">
-        {!isMeetingDetail && connected ? (
+        {!isMeetingDetail && (connected || isDemo) ? (
           <CalendarSyncButton iconOnly showSyncedTime />
         ) : null}
 
@@ -113,7 +118,6 @@ function DashboardHeader() {
                 size="sm"
                 variant="outline"
                 disabled={askDisabledReason != null}
-                title={askDisabledReason ?? 'Ask your meetings with AI'}
                 className="h-8 cursor-pointer gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs"
               >
                 <Sparkles className="size-3.5" />
@@ -128,10 +132,23 @@ function DashboardHeader() {
 }
 
 function DashboardLayout({ children, user }: DashboardLayoutProps) {
+  const isDemo = isDemoUser(user.email)
+
   return (
     <SidebarProvider>
       <AppSidebar user={user} />
       <SidebarInset>
+        {isDemo ? (
+          <div className="bg-demo/15 border-demo/30 text-demo-foreground flex items-center justify-between border-b px-4 py-2.5 text-xs font-medium sm:px-6">
+            <div className="flex items-center gap-2">
+              <span className="bg-demo size-1.5 animate-pulse rounded-full" />
+              <span>
+                This is demo account and mutation capabilities are limited. Sign
+                up with google account for complete access.
+              </span>
+            </div>
+          </div>
+        ) : null}
         <DashboardHeader />
         <main className="flex flex-1 flex-col">{children}</main>
       </SidebarInset>

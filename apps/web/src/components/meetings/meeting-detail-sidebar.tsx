@@ -1,6 +1,7 @@
 import { usePatchMeetingActionItemMutation } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
+import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { cn } from '@repo/ui-web/lib/utils'
 import {
   Check,
@@ -14,6 +15,7 @@ import {
 import { useState } from 'react'
 
 import { MeetingTimestampLink } from '#components/meetings/meeting-timestamp-link'
+import { useIsDemoUser } from '#hooks/use-is-demo'
 import { formatChatMessageTime } from '#lib/format-chat-message-time'
 import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
 
@@ -30,6 +32,7 @@ function MeetingDetailSidebar({
   onSeek,
   className
 }: MeetingDetailSidebarProps) {
+  const isDemo = useIsDemoUser()
   const title =
     meeting.title.trim().length > 0 ? meeting.title : 'Untitled call'
   const patchActionItem = usePatchMeetingActionItemMutation()
@@ -163,27 +166,43 @@ function MeetingDetailSidebar({
                 key={item.id}
                 className="flex items-start gap-2.5 text-xs leading-snug"
               >
-                <button
-                  type="button"
-                  className={cn(
-                    'border-border mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border transition-colors',
-                    item.completed &&
-                      'border-primary bg-primary text-primary-foreground'
-                  )}
-                  aria-label={
-                    item.completed
-                      ? 'Mark action item incomplete'
-                      : 'Mark action item complete'
+                <Tooltip
+                  content={
+                    isDemo
+                      ? 'Action item updates are unavailable for the demo account. Sign in with Google for complete access.'
+                      : item.completed
+                        ? 'Mark action item incomplete'
+                        : 'Mark action item complete'
                   }
-                  disabled={patchActionItem.isPending}
-                  onClick={() => {
-                    toggleActionItem(item.id, !item.completed)
-                  }}
                 >
-                  {item.completed ? (
-                    <Check aria-hidden className="size-2.5" strokeWidth={3} />
-                  ) : null}
-                </button>
+                  <span className="inline-flex">
+                    <button
+                      type="button"
+                      className={cn(
+                        'border-border mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border transition-colors',
+                        item.completed &&
+                          'border-primary bg-primary text-primary-foreground'
+                      )}
+                      aria-label={
+                        item.completed
+                          ? 'Mark action item incomplete'
+                          : 'Mark action item complete'
+                      }
+                      disabled={patchActionItem.isPending || isDemo}
+                      onClick={() => {
+                        toggleActionItem(item.id, !item.completed)
+                      }}
+                    >
+                      {item.completed ? (
+                        <Check
+                          aria-hidden
+                          className="size-2.5"
+                          strokeWidth={3}
+                        />
+                      ) : null}
+                    </button>
+                  </span>
+                </Tooltip>
                 <div className="min-w-0 flex-1">
                   <span
                     className={cn(

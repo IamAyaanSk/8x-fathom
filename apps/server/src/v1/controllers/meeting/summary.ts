@@ -10,6 +10,7 @@ import type { NextFunction, Request, Response } from 'express'
 
 import '#src/types/express'
 import { getR2ObjectUtf8 } from '#src/r2-storage'
+import { isDemoUserEmail } from '#src/services/demo/index'
 import { HttpError } from '#src/v1/errors/http-error'
 
 const postMeetingSummaryGenerateController = async (
@@ -18,6 +19,11 @@ const postMeetingSummaryGenerateController = async (
   next: NextFunction
 ) => {
   try {
+    const userEmail = req.session!.user.email
+    if (isDemoUserEmail(userEmail)) {
+      throw new HttpError(403, 'Summary generation is disabled in demo mode')
+    }
+
     const userId = req.session!.user.id
 
     const validatedParams =

@@ -6,6 +6,7 @@ import {
 import { prisma } from '@repo/db'
 import type { NextFunction, Request, Response } from 'express'
 
+import { isDemoUserEmail } from '#src/services/demo/index'
 import { HttpError } from '#src/v1/errors/http-error'
 
 const patchMeetingActionItemController = async (
@@ -14,6 +15,11 @@ const patchMeetingActionItemController = async (
   next: NextFunction
 ) => {
   try {
+    const userEmail = req.session!.user.email
+    if (isDemoUserEmail(userEmail)) {
+      throw new HttpError(403, 'Action item updates are disabled in demo mode')
+    }
+
     const userId = req.session!.user.id
 
     const validatedRequestParams =

@@ -24,6 +24,7 @@ import { UpcomingMeetingRow } from '#components/meetings/upcoming-meeting-row'
 import { UpcomingSummaryCard } from '#components/meetings/upcoming-summary-card'
 import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
+import { isDemoUser } from '#lib/demo'
 import { getGreeting } from '#lib/format-meeting-time'
 import {
   getMeetingDayGroupLabel,
@@ -37,6 +38,7 @@ const authenticatedRoute = getRouteApi('/_authenticated')
 
 function UpcomingCallsPage() {
   const { session } = authenticatedRoute.useRouteContext()
+  const isDemo = isDemoUser(session.user.email)
   const now = useNow()
   const {
     data: statusData,
@@ -49,16 +51,17 @@ function UpcomingCallsPage() {
   const [connectError, setConnectError] = useState<string | null>(null)
 
   const connected = statusData?.success === true && statusData.data.connected
+  const canLoadMeetings = connected || isDemo
 
   const {
     data: upcomingData,
     isPending: upcomingPending,
     isError: upcomingError,
     refetch: refetchUpcoming
-  } = useMeetingsUpcomingQuery({ enabled: connected === true })
+  } = useMeetingsUpcomingQuery({ enabled: canLoadMeetings })
 
   const { data: completedData } = useMeetingsCompletedQuery({
-    enabled: connected === true
+    enabled: canLoadMeetings
   })
 
   async function handleConnectCalendar() {
@@ -144,7 +147,7 @@ function UpcomingCallsPage() {
     )
   }
 
-  if (!connected) {
+  if (!connected && !isDemo) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-20">
         <div className="flex w-full max-w-md flex-col items-center gap-6 text-center">

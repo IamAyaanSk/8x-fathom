@@ -7,6 +7,7 @@ import { prisma } from '@repo/db'
 import { pipeAgentUIStreamToResponse, validateUIMessages } from 'ai'
 import type { NextFunction, Request, Response } from 'express'
 
+import { isDemoUserEmail } from '#src/services/demo/index'
 import { searchMeetingTranscripts } from '#src/services/meeting/index'
 import { HttpError } from '#src/v1/errors/http-error'
 
@@ -16,6 +17,11 @@ const postMeetingAssistantController = async (
   next: NextFunction
 ) => {
   try {
+    const userEmail = req.session!.user.email
+    if (isDemoUserEmail(userEmail)) {
+      throw new HttpError(403, 'Fathom AI is disabled in demo mode')
+    }
+
     const userId = req.session!.user.id
 
     const bodyResult = postMeetingAssistantRequestBodySchema.safeParse(req.body)

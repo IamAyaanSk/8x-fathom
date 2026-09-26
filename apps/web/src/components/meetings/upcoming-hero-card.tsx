@@ -57,35 +57,36 @@ function UpcomingHeroCard({ meeting, nowMs }: UpcomingHeroCardProps) {
     captureMutation.isError && captureMutation.variables === meeting.id
 
   return (
-    <div className="bg-card relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-2xl p-6 shadow-xs sm:p-7">
-      <div className="flex items-center justify-between">
-        <span className="text-primary font-sans text-xs font-bold tracking-wider uppercase">
-          Next up
+    <div className="bg-card border-border/70 relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-2xl border p-6 shadow-xs sm:p-7">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-primary text-xs font-semibold tracking-wider uppercase">
+          Next Meeting
         </span>
-        <span className="text-muted-foreground text-xs font-medium">
-          {startingIn}
-        </span>
+        {startingIn ? (
+          <span className="text-muted-foreground text-xs font-medium">
+            {startingIn}
+          </span>
+        ) : null}
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3">
         <h2 className="text-foreground line-clamp-2 text-2xl font-bold tracking-tight sm:text-3xl">
           {title}
         </h2>
 
-        <div className="flex flex-col gap-1 text-sm">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm">
           <div className="text-foreground flex items-center gap-1.5 font-medium">
-            <Clock className="text-muted-foreground size-4" />
+            <Clock className="text-muted-foreground size-4 shrink-0" />
             <span>{timeRange}</span>
           </div>
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <span>{dayLabel}</span>
-            <span>·</span>
-            <span>{durationLabel}</span>
-          </div>
+          <span className="text-muted-foreground/40">·</span>
+          <span>{dayLabel}</span>
+          <span className="text-muted-foreground/40">·</span>
+          <span>{durationLabel}</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 pt-1">
         <div className="flex flex-wrap items-center gap-3">
           {isLiveCall ? (
             <Link
@@ -128,18 +129,20 @@ function UpcomingHeroCard({ meeting, nowMs }: UpcomingHeroCardProps) {
             </Tooltip>
           )}
 
-          <a
-            href={meeting.meetingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              buttonVariants({ variant: 'link', size: 'sm' }),
-              'gap-1 text-xs'
-            )}
-          >
-            <ExternalLink className="size-3.5" />
-            <span>Open meet</span>
-          </a>
+          {meeting.meetingUrl ? (
+            <a
+              href={meeting.meetingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'border-border/80 text-foreground hover:bg-muted/50 gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-2xs transition-colors'
+              )}
+            >
+              <ExternalLink className="text-muted-foreground size-3.5" />
+              <span>Open meet</span>
+            </a>
+          ) : null}
         </div>
 
         {actionError ? (

@@ -13,7 +13,7 @@ function UpcomingSummaryCard({
   totalUpcomingCount
 }: UpcomingSummaryCardProps) {
   return (
-    <div className="bg-card flex h-full flex-col justify-between overflow-hidden rounded-2xl p-6 shadow-xs sm:p-7">
+    <div className="bg-card border-border/70 flex h-full flex-col justify-between overflow-hidden rounded-2xl border p-6 shadow-xs sm:p-7">
       <div className="flex flex-col gap-4">
         <div className="pb-1">
           <h3 className="text-foreground text-base font-semibold tracking-tight">

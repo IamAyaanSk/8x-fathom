@@ -68,7 +68,7 @@ function DashboardHeader() {
           : 'Upcoming Calls'
 
   return (
-    <header className="border-border/70 bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b p-[35.5px] px-4 supports-backdrop-filter:backdrop-blur-md sm:px-6">
+    <header className="border-border/70 bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b px-4 supports-backdrop-filter:backdrop-blur-md sm:px-6">
       <div className="flex items-center gap-2.5">
         {isMobile ? (
           <Button

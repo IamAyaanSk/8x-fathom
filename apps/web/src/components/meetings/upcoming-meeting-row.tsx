@@ -45,28 +45,33 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
     captureMutation.isError && captureMutation.variables === meeting.id
 
   return (
-    <li className="hover:bg-muted/30 flex flex-wrap items-center justify-between gap-4 px-6 py-4.5 transition-colors sm:px-7">
+    <li className="hover:bg-muted/30 flex flex-col justify-between gap-3 px-4 py-3.5 transition-colors sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-4">
       <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-base leading-snug font-semibold">
+        <p className="text-foreground truncate text-sm leading-snug font-semibold sm:text-base">
           {title}
         </p>
-        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 text-xs sm:text-sm">
-          <span>{timeRange}</span>
-          <span>·</span>
-          {isLiveCall ? (
-            <span className="bg-destructive inline-block size-1.5 animate-pulse rounded-full" />
-          ) : null}
-          <span className="text-xs">{statusLabel}</span>
+        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+          <span className="text-foreground/80 font-medium whitespace-nowrap">
+            {timeRange}
+          </span>
+          <span className="text-muted-foreground/40">·</span>
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+            {isLiveCall ? (
+              <span className="bg-destructive inline-block size-1.5 animate-pulse rounded-full" />
+            ) : null}
+            <span>{statusLabel}</span>
+          </span>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+
+      <div className="flex shrink-0 items-center gap-2.5 self-start sm:self-auto">
         {isLiveCall ? (
           <Link
             to="/meetings/$meetingId"
             params={{ meetingId: meeting.id }}
             className={cn(
               buttonVariants({ variant: 'default', size: 'sm' }),
-              'gap-1.5 rounded-full px-4 text-xs font-medium shadow-xs'
+              'gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs'
             )}
           >
             <Radio className="text-destructive size-3.5 animate-pulse" />
@@ -79,7 +84,7 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
                 type="button"
                 variant="default"
                 size="sm"
-                className="gap-1.5 rounded-full px-4 text-xs font-medium shadow-xs"
+                className="gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs"
                 disabled={!canCapture}
                 aria-label={capture.ariaLabel}
                 onClick={() => {
@@ -101,19 +106,22 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
           </Tooltip>
         )}
 
-        <a
-          href={meeting.meetingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(
-            buttonVariants({ variant: 'link', size: 'sm' }),
-            'gap-1 text-xs'
-          )}
-        >
-          <ExternalLink className="size-3.5" />
-          <span>Open meet</span>
-        </a>
+        {meeting.meetingUrl ? (
+          <a
+            href={meeting.meetingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'border-border/80 text-foreground hover:bg-muted/50 gap-1.5 rounded-full px-3 text-xs font-medium shadow-2xs transition-colors'
+            )}
+          >
+            <ExternalLink className="text-muted-foreground size-3.5" />
+            <span>Open meet</span>
+          </a>
+        ) : null}
       </div>
+
       {actionError ? (
         <p className="text-destructive w-full text-xs">
           {failedJoin

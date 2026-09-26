@@ -135,24 +135,17 @@ function AppSidebar({ user }: AppSidebarProps) {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isLiveActive}
-                  className={cn(liveCount > 0 && 'text-primary font-semibold')}
-                >
+                <SidebarMenuButton asChild isActive={isLiveActive}>
                   <Link to="/meetings/live" onClick={handleLinkClick}>
                     <Radio
                       className={cn(
                         'size-4 shrink-0',
-                        liveCount > 0 && 'text-destructive animate-pulse'
+                        liveCount > 0
+                          ? 'text-destructive animate-pulse'
+                          : 'text-sidebar-foreground/70'
                       )}
                     />
                     <span>Live Calls</span>
-                    {liveCount > 0 ? (
-                      <SidebarMenuBadge className="bg-destructive/15 text-destructive font-semibold">
-                        {liveCount} LIVE
-                      </SidebarMenuBadge>
-                    ) : null}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

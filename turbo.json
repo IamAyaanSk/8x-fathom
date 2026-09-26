@@ -28,7 +28,10 @@
     "BASE_URL",
     "VITE_API_URL",
     "DEMO_USER_EMAIL",
-    "VITE_DEMO_USER_EMAIL"
+    "VITE_DEMO_USER_EMAIL",
+    "DEMO_USER_PASSWORD",
+    "SOURCE_DATABASE_URL",
+    "TARGET_DATABASE_URL"
   ],
   "tasks": {
     "//#lint": {},

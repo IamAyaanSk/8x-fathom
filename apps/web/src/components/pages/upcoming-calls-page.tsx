@@ -1,5 +1,8 @@
 import { useCalendarStatusQuery } from '@repo/api-client/v1/calendar/hooks'
-import { useMeetingsUpcomingQuery } from '@repo/api-client/v1/meetings/hooks'
+import {
+  useMeetingsCompletedQuery,
+  useMeetingsUpcomingQuery
+} from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
 import {
@@ -16,10 +19,16 @@ import { useState } from 'react'
 
 import { GoogleMark } from '#components/auth/google-mark'
 import { CalendarSyncButton } from '#components/meetings/calendar-sync-button'
+import { UpcomingHeroCard } from '#components/meetings/upcoming-hero-card'
 import { UpcomingMeetingRow } from '#components/meetings/upcoming-meeting-row'
+import { UpcomingSummaryCard } from '#components/meetings/upcoming-summary-card'
 import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
-import { groupMeetingsByDay } from '#lib/meeting-day-groups'
+import { getGreeting } from '#lib/format-meeting-time'
+import {
+  getMeetingDayGroupLabel,
+  groupMeetingsByDay
+} from '#lib/meeting-day-groups'
 
 const GOOGLE_CALENDAR_EVENTS_READONLY_SCOPE =
   'https://www.googleapis.com/auth/calendar.events.readonly'
@@ -48,6 +57,10 @@ function UpcomingCallsPage() {
     refetch: refetchUpcoming
   } = useMeetingsUpcomingQuery({ enabled: connected === true })
 
+  const { data: completedData } = useMeetingsCompletedQuery({
+    enabled: connected === true
+  })
+
   async function handleConnectCalendar() {
     setIsConnecting(true)
     setConnectError(null)
@@ -66,6 +79,34 @@ function UpcomingCallsPage() {
 
   const upcomingMeetings =
     upcomingData?.success === true ? upcomingData.data.meetings : []
+
+  const completedMeetings =
+    completedData?.success === true ? completedData.data.meetings : []
+
+  const todayUpcomingCount = upcomingMeetings.filter(
+    (m) => getMeetingDayGroupLabel(m.startTime, now) === 'Today'
+  ).length
+
+  const tomorrowUpcomingCount = upcomingMeetings.filter(
+    (m) => getMeetingDayGroupLabel(m.startTime, now) === 'Tomorrow'
+  ).length
+
+  const todayCompletedCount = completedMeetings.filter(
+    (m) => getMeetingDayGroupLabel(m.startTime, now) === 'Today'
+  ).length
+
+  const todayTotalCount = todayUpcomingCount + todayCompletedCount
+  const totalUpcomingCount = upcomingMeetings.length
+
+  const sortedUpcoming = [...upcomingMeetings].sort(
+    (a, b) => Date.parse(a.startTime) - Date.parse(b.startTime)
+  )
+  const nextMeeting = sortedUpcoming[0]
+
+  const greeting = getGreeting(new Date(now))
+  const firstName = session.user.name
+    ? session.user.name.trim().split(/\s+/)[0]
+    : undefined
 
   const groups = groupMeetingsByDay(upcomingMeetings, now)
 
@@ -227,21 +268,58 @@ function UpcomingCallsPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {groups.map((group) => (
-            <section key={group.label} className="flex flex-col gap-3">
-              <h3 className="text-muted-foreground font-sans text-xs font-semibold tracking-wider uppercase">
-                {group.label}
+          <div className="pb-1">
+            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
+              {greeting}
+              {firstName ? `, ${firstName}` : ''}
+            </h1>
+          </div>
+
+          <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3">
+            {nextMeeting ? (
+              <div className="lg:col-span-2">
+                <UpcomingHeroCard meeting={nextMeeting} nowMs={now} />
+              </div>
+            ) : null}
+
+            <div className={nextMeeting ? 'lg:col-span-1' : 'lg:col-span-3'}>
+              <UpcomingSummaryCard
+                todayTotalCount={todayTotalCount}
+                todayUpcomingCount={todayUpcomingCount}
+                todayCompletedCount={todayCompletedCount}
+                tomorrowUpcomingCount={tomorrowUpcomingCount}
+                totalUpcomingCount={totalUpcomingCount}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6 pt-2">
+            <div className="border-border flex items-center justify-between border-b pb-3">
+              <h3 className="text-foreground text-base font-semibold tracking-tight sm:text-lg">
+                All upcoming calls ({upcomingMeetings.length})
               </h3>
-              <ul className="border-border border-t">
-                {group.meetings.map((meeting: MeetingListItem) => (
-                  <UpcomingMeetingRow key={meeting.id} meeting={meeting} />
-                ))}
-              </ul>
-            </section>
-          ))}
-          <p className="text-muted-foreground text-xs">
-            Only meetings up to 2 days ahead are synced from your calendar.
-          </p>
+              <span className="text-muted-foreground text-xs">Next 2 days</span>
+            </div>
+
+            <div className="flex flex-col gap-8">
+              {groups.map((group) => (
+                <section key={group.label} className="flex flex-col gap-3">
+                  <h4 className="text-muted-foreground font-sans text-xs font-semibold tracking-wider uppercase">
+                    {group.label}
+                  </h4>
+                  <ul className="border-border border-t">
+                    {group.meetings.map((meeting: MeetingListItem) => (
+                      <UpcomingMeetingRow key={meeting.id} meeting={meeting} />
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+
+            <p className="text-muted-foreground text-xs">
+              Only meetings up to 2 days ahead are synced from your calendar.
+            </p>
+          </div>
         </div>
       )}
     </div>

@@ -6,7 +6,6 @@ import {
 import { meetingsQueryKeys } from '@repo/api-client/v1/meetings/hooks'
 import type { GetCalendarStatusResponse } from '@repo/api-contract/v1/calendar'
 import { Button } from '@repo/ui-web/components/button'
-import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { cn } from '@repo/ui-web/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { RefreshCw } from 'lucide-react'
@@ -149,12 +148,6 @@ function CalendarSyncButton({
 
   const syncLabel = isPending ? 'Syncing…' : label
 
-  const buttonTooltip = !connected
-    ? 'Connect Google Calendar first'
-    : isPending
-      ? 'Syncing calendar…'
-      : 'Sync Google Calendar now'
-
   const resolvedVariant = iconOnly
     ? (variant ?? 'ghost')
     : (variant ?? 'outline')
@@ -170,8 +163,6 @@ function CalendarSyncButton({
         syncMutation.reset()
         syncMutation.mutate()
       }}
-      aria-label={iconOnly ? buttonTooltip : undefined}
-      title={!iconOnly ? buttonTooltip : undefined}
       className={cn(
         iconOnly
           ? 'text-muted-foreground hover:text-foreground hover:bg-muted/60 size-8 rounded-full transition-colors disabled:opacity-50'
@@ -195,9 +186,7 @@ function CalendarSyncButton({
   )
 
   const wrappedButton = iconOnly ? (
-    <Tooltip side="top" content={buttonTooltip}>
-      <span className="inline-flex">{buttonElement}</span>
-    </Tooltip>
+    <span className="inline-flex">{buttonElement}</span>
   ) : (
     buttonElement
   )

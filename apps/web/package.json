@@ -8,6 +8,7 @@
     "#components/auth/*": "./src/components/auth/*.tsx",
     "#components/landing/*": "./src/components/landing/*.tsx",
     "#components/layout/*": "./src/components/layout/*.tsx",
+    "#components/meetings/*": "./src/components/meetings/*.tsx",
     "#components/pages/*": "./src/components/pages/*.tsx",
     "#lib/*": "./src/lib/*.ts",
     "#hooks/*": "./src/hooks/*.ts",

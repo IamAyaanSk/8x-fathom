@@ -2,7 +2,7 @@ import { Waves } from 'lucide-react'
 
 function RootPending() {
   return (
-    <div className="dark bg-background text-foreground flex min-h-dvh flex-col items-center justify-center gap-4">
+    <div className="bg-background text-foreground flex min-h-dvh flex-col items-center justify-center gap-4">
       <div className="bg-card ring-border relative flex size-14 items-center justify-center rounded-2xl shadow-lg ring-1">
         <Waves
           aria-hidden

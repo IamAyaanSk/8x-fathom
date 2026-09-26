@@ -71,7 +71,7 @@ function LandingHero({ isAuthenticated }: LandingHeroProps) {
             href="#showcase"
             className={cn(
               buttonVariants({ variant: 'outline', size: 'default' }),
-              'border-border/60 bg-background/50 hover:bg-muted/50 text-white hover:text-white px-7 h-12 rounded-xl backdrop-blur-md transition-all'
+              'border-border/60 bg-background/70 hover:bg-background text-foreground hover:text-foreground px-7 h-12 rounded-xl backdrop-blur-md transition-all'
             )}
           >
             See product showcase

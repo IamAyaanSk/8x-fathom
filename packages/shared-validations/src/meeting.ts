@@ -203,7 +203,8 @@ export const meetingListItemSchema = z.object({
   htmlLink: z.url().nullable(),
   baasBotId: z.string().nullable(),
   baasStatus: baasBotStatusSchema.nullable(),
-  uiPhase: meetingBotUiPhaseSchema
+  uiPhase: meetingBotUiPhaseSchema,
+  recordingDurationSec: z.number().int().min(0).nullish()
 })
 
 export type MeetingListItem = z.infer<typeof meetingListItemSchema>

@@ -17,6 +17,10 @@ export const getMeetingsCompletedResponseSchema = _createResponseApiZod(
   meetingsListDataSchema
 )
 
+export const getMeetingsLiveResponseSchema = _createResponseApiZod(
+  meetingsListDataSchema
+)
+
 export const postMeetingCaptureRequestParamsSchema = z.object({
   meetingId: z.string()
 })
@@ -39,9 +43,15 @@ export const postMeetingCaptureResponseSchema = _createResponseApiZod(
 export type GetMeetingsUpcomingResponse = z.infer<
   typeof getMeetingsUpcomingResponseSchema
 >
+
+export type GetMeetingsLiveResponse = z.infer<
+  typeof getMeetingsLiveResponseSchema
+>
+
 export type GetMeetingsCompletedResponse = z.infer<
   typeof getMeetingsCompletedResponseSchema
 >
+
 export type PostMeetingCaptureResponse = z.infer<
   typeof postMeetingCaptureResponseSchema
 >

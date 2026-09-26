@@ -13,6 +13,7 @@ import {
 } from '@repo/api-contract/v1/meeting/highlights'
 import {
   getMeetingsCompletedResponseSchema,
+  getMeetingsLiveResponseSchema,
   getMeetingsUpcomingResponseSchema,
   postMeetingCaptureResponseSchema,
   type PostMeetingCaptureRequestParams
@@ -71,6 +72,12 @@ async function getMeetingsUpcoming(options: _HttpRequestOptions = {}) {
   const client = _getApiClient()
   const response = await client.get('/meetings/upcoming', options)
   return getMeetingsUpcomingResponseSchema.parse(response.data)
+}
+
+async function getMeetingsLive(options: _HttpRequestOptions = {}) {
+  const client = _getApiClient()
+  const response = await client.get('/meetings/live', options)
+  return getMeetingsLiveResponseSchema.parse(response.data)
 }
 
 async function getMeetingsCompleted(options: _HttpRequestOptions = {}) {
@@ -192,6 +199,7 @@ export {
   getMeetingDetail,
   getMeetingTranscript,
   getMeetingsCompleted,
+  getMeetingsLive,
   getMeetingsUpcoming,
   patchMeetingActionItem,
   patchMeetingHighlight,

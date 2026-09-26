@@ -1,11 +1,13 @@
 import {
   postMeetingCaptureRequestParamsSchema,
   type GetMeetingsCompletedResponse,
+  type GetMeetingsLiveResponse,
   type GetMeetingsUpcomingResponse,
   type PostMeetingCaptureResponse
 } from '@repo/api-contract/v1/meeting/index'
 import { type Prisma, prisma } from '@repo/db'
 import { dispatchBotForMeeting, DispatchError } from '@repo/meeting-dispatch'
+import { calendarDurationSec } from '@repo/shared-utils/date'
 import { getMeetingUiStatus } from '@repo/shared-utils/meeting'
 import type { MeetingListItem } from '@repo/shared-validations/meeting'
 import type { NextFunction, Request, Response } from 'express'
@@ -13,6 +15,8 @@ import type { NextFunction, Request, Response } from 'express'
 import '#src/env'
 import '#src/types/express'
 import { env } from '#src/env'
+import { isDemoUserEmail } from '#src/services/demo/index'
+import { CALENDAR_SYNC_WINDOW_DAYS } from '#src/services/google-calendar/constants'
 import { HttpError } from '#src/v1/errors/http-error'
 
 const _meetingListSelect = {
@@ -32,7 +36,10 @@ type MeetingListRow = Prisma.MeetingGetPayload<{
   select: typeof _meetingListSelect
 }>
 
-function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
+function _toMeetingListItem(
+  row: MeetingListRow,
+  recordingDurationSec?: number | null
+): MeetingListItem {
   return {
     id: row.id,
     title: row.title,
@@ -48,7 +55,8 @@ function _toMeetingListItem(row: MeetingListRow): MeetingListItem {
     uiPhase: getMeetingUiStatus({
       baasStatus: row.baasStatus,
       processingStatus: row.processingStatus
-    })
+    }),
+    recordingDurationSec: recordingDurationSec ?? null
   }
 }
 
@@ -60,14 +68,22 @@ const getMeetingsUpcomingController = async (
   try {
     const userId = req.session!.user.id
     const now = new Date()
+    const upcomingWindowEndsAt = new Date(
+      now.getTime() + CALENDAR_SYNC_WINDOW_DAYS * 24 * 60 * 60 * 1000
+    )
 
     const rows = await prisma.meeting.findMany({
       where: {
         userId,
         OR: [
           { baasStatus: null },
-          { baasStatus: { notIn: ['completed', 'transcribing'] } }
+          {
+            baasStatus: {
+              notIn: ['in_call_recording', 'completed', 'transcribing']
+            }
+          }
         ],
+        startTime: { gte: now, lt: upcomingWindowEndsAt },
         endTime: { gt: now }
       },
       orderBy: { startTime: 'asc' },
@@ -77,6 +93,35 @@ const getMeetingsUpcomingController = async (
     res.json({
       success: true,
       message: 'Upcoming meetings fetched successfully',
+      data: {
+        meetings: rows.map(_toMeetingListItem)
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getMeetingsLiveController = async (
+  req: Request,
+  res: Response<GetMeetingsLiveResponse>,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.session!.user.id
+
+    const rows = await prisma.meeting.findMany({
+      where: {
+        userId,
+        baasStatus: 'in_call_recording'
+      },
+      orderBy: { startTime: 'asc' },
+      select: _meetingListSelect
+    })
+
+    res.json({
+      success: true,
+      message: 'Live meetings fetched successfully',
       data: {
         meetings: rows.map(_toMeetingListItem)
       }
@@ -98,20 +143,53 @@ const getMeetingsCompletedController = async (
     const rows = await prisma.meeting.findMany({
       where: {
         userId,
+        baasStatus: { not: 'in_call_recording' },
         OR: [
           { endTime: { lte: now } },
           { baasStatus: { in: ['completed', 'transcribing'] } }
         ]
       },
       orderBy: { startTime: 'desc' },
-      select: _meetingListSelect
+      select: {
+        ..._meetingListSelect,
+        artifactsImportedAt: true,
+        transcriptChunks: {
+          select: { endSec: true },
+          orderBy: { endSec: 'desc' },
+          take: 1
+        }
+      }
+    })
+
+    const meetings = rows.map((row) => {
+      const lastChunkEndSec = row.transcriptChunks?.[0]?.endSec
+      let recordingDurationSec: number | null = null
+
+      if (lastChunkEndSec && lastChunkEndSec > 0) {
+        recordingDurationSec = lastChunkEndSec
+      } else if (row.recordingStartedAt && row.artifactsImportedAt) {
+        const diff = Math.floor(
+          (row.artifactsImportedAt.getTime() -
+            row.recordingStartedAt.getTime()) /
+            1000
+        )
+        if (diff > 0) {
+          recordingDurationSec = diff
+        }
+      }
+
+      if (!recordingDurationSec) {
+        recordingDurationSec = calendarDurationSec(row.startTime, row.endTime)
+      }
+
+      return _toMeetingListItem(row, recordingDurationSec)
     })
 
     res.json({
       success: true,
       message: 'Past meetings fetched successfully',
       data: {
-        meetings: rows.map(_toMeetingListItem)
+        meetings
       }
     })
   } catch (error) {
@@ -125,6 +203,11 @@ const postMeetingCaptureController = async (
   next: NextFunction
 ) => {
   try {
+    const userEmail = req.session!.user.email
+    if (isDemoUserEmail(userEmail)) {
+      throw new HttpError(403, 'Bot capture is disabled in demo mode')
+    }
+
     const userId = req.session!.user.id
 
     const validatedParams = postMeetingCaptureRequestParamsSchema.safeParse(
@@ -174,6 +257,7 @@ const postMeetingCaptureController = async (
 
 export {
   getMeetingsCompletedController,
+  getMeetingsLiveController,
   getMeetingsUpcomingController,
   postMeetingCaptureController
 }

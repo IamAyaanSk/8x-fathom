@@ -10,7 +10,7 @@ function LandingPage() {
   const isAuthenticated = Boolean(session?.user)
 
   return (
-    <div className="dark bg-background text-foreground selection:bg-primary/30 selection:text-primary flex min-h-dvh flex-col">
+    <div className="bg-background text-foreground selection:bg-primary/30 selection:text-primary flex min-h-dvh flex-col">
       <LandingNavbar isAuthenticated={isAuthenticated} />
       <main className="flex-1">
         <LandingHero isAuthenticated={isAuthenticated} />

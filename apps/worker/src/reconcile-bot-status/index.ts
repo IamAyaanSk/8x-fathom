@@ -19,6 +19,16 @@ export async function reconcileBotStatus() {
 
     const meetings = await prisma.meeting.findMany({
       where: {
+        ...(env.DEMO_USER_EMAIL
+          ? {
+              user: {
+                email: {
+                  not: env.DEMO_USER_EMAIL,
+                  mode: 'insensitive'
+                }
+              }
+            }
+          : {}),
         baasBotId: {
           not: null
         },

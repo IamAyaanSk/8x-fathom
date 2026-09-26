@@ -1,15 +1,17 @@
 import { usePostMeetingCaptureMutation } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
-import { getMeetingBotUiLabel } from '@repo/shared-utils/meeting'
 import { Button, buttonVariants } from '@repo/ui-web/components/button'
 import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { cn } from '@repo/ui-web/lib/utils'
 import { Link } from '@tanstack/react-router'
-import { CircleDot, Loader2 } from 'lucide-react'
+import { CircleDot, ExternalLink, Loader2, Radio } from 'lucide-react'
 
+import { useIsDemoUser } from '#hooks/use-is-demo'
 import { useNow } from '#hooks/use-now'
-import { formatMeetingStartTime } from '#lib/format-meeting-time'
-import { isLiveCall } from '#lib/meeting-call-tabs'
+import {
+  formatMeetingTimeRange,
+  getUpcomingMeetingStatus
+} from '#lib/format-meeting-time'
 import { getUpcomingMeetingCaptureUi } from '#lib/upcoming-meeting-capture'
 
 type UpcomingMeetingRowProps = {
@@ -17,6 +19,7 @@ type UpcomingMeetingRowProps = {
 }
 
 function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
+  const isDemo = useIsDemoUser()
   const now = useNow()
   const captureMutation = usePostMeetingCaptureMutation()
   const title =
@@ -28,77 +31,91 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
     nowMs: now,
     isCapturing
   })
-  const statusLabel = getMeetingBotUiLabel(meeting.uiPhase, meeting.baasStatus)
+  const canCapture = capture.canCapture && !isDemo
+  const tooltipContent = isDemo
+    ? 'Recording bots are unavailable for the demo account. Sign in with Google for complete access.'
+    : capture.tooltip
+  const timeRange = formatMeetingTimeRange(meeting.startTime, meeting.endTime)
+  const statusLabel = getUpcomingMeetingStatus(meeting, now)
   const failedJoin = meeting.uiPhase === 'failed_to_join'
-  const liveCall = isLiveCall(meeting)
+  const isLiveCall =
+    meeting.uiPhase === 'in_call_recording' ||
+    meeting.baasStatus === 'in_call_recording'
   const actionError =
     captureMutation.isError && captureMutation.variables === meeting.id
 
   return (
-    <li className="border-border flex flex-wrap items-center justify-between gap-4 border-b py-5 last:border-b-0">
+    <li className="hover:bg-muted/30 flex flex-wrap items-center justify-between gap-4 px-6 py-4.5 transition-colors sm:px-7">
       <div className="min-w-0 flex-1">
         <p className="text-foreground truncate text-base leading-snug font-semibold">
           {title}
         </p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {formatMeetingStartTime(meeting.startTime)}
-        </p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {statusLabel}
-          {meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining'
-            ? ' · May take up to 5 minutes to join'
-            : null}
-        </p>
+        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 text-xs sm:text-sm">
+          <span>{timeRange}</span>
+          <span>·</span>
+          {isLiveCall ? (
+            <span className="bg-destructive inline-block size-1.5 animate-pulse rounded-full" />
+          ) : null}
+          <span className="text-xs">{statusLabel}</span>
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        {liveCall ? (
+      <div className="flex shrink-0 items-center gap-3">
+        {isLiveCall ? (
           <Link
             to="/meetings/$meetingId"
             params={{ meetingId: meeting.id }}
             className={cn(
               buttonVariants({ variant: 'default', size: 'sm' }),
-              'rounded-full'
+              'gap-1.5 rounded-full px-4 text-xs font-medium shadow-xs'
             )}
           >
-            Live call
+            <Radio className="text-destructive size-3.5 animate-pulse" />
+            <span>View live call</span>
           </Link>
-        ) : null}
+        ) : (
+          <Tooltip content={tooltipContent}>
+            <span className="inline-flex">
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                className="gap-1.5 rounded-full px-4 text-xs font-medium shadow-xs"
+                disabled={!canCapture}
+                aria-label={capture.ariaLabel}
+                onClick={() => {
+                  captureMutation.mutate(meeting.id)
+                }}
+              >
+                {isCapturing ? (
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                ) : failedJoin ? null : (
+                  <CircleDot className="size-3.5" aria-hidden />
+                )}
+                {failedJoin
+                  ? 'Retry recording'
+                  : isCapturing
+                    ? 'Starting recording…'
+                    : 'Start recording'}
+              </Button>
+            </span>
+          </Tooltip>
+        )}
+
         <a
           href={meeting.meetingUrl}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            buttonVariants({ variant: 'secondary', size: 'sm' }),
-            'rounded-full'
+            buttonVariants({ variant: 'link', size: 'sm' }),
+            'gap-1 text-xs'
           )}
         >
-          Join
+          <ExternalLink className="size-3.5" />
+          <span>Open meet</span>
         </a>
-        <Tooltip content={capture.tooltip}>
-          <span className="inline-flex">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="rounded-full"
-              disabled={!capture.canCapture}
-              aria-label={capture.ariaLabel}
-              onClick={() => {
-                captureMutation.mutate(meeting.id)
-              }}
-            >
-              {isCapturing ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden />
-              ) : failedJoin ? null : (
-                <CircleDot className="size-4" aria-hidden />
-              )}
-              {failedJoin ? 'Try again' : 'Capture'}
-            </Button>
-          </span>
-        </Tooltip>
       </div>
       {actionError ? (
-        <p className="text-destructive w-full text-sm">
+        <p className="text-destructive w-full text-xs">
           {failedJoin
             ? 'Could not send a new bot. Try again.'
             : 'Could not start capture. Try again.'}

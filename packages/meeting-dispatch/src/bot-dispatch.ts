@@ -46,6 +46,7 @@ type DispatchBotForMeetingParams = {
 type DispatchDueMeetingsParams = {
   transcriptionApiKey: string
   meetingBaasApiKey: string
+  excludedUserEmail?: string
 } & MeetingBaasCallbackParams
 
 // function _callbackConfig(params: MeetingBaasCallbackParams) {
@@ -152,8 +153,12 @@ async function _lockMeetingRow(
 
 async function _lockNextDueMeetingRow(
   tx: Prisma.TransactionClient,
-  params: { dueBy: Date; now: Date }
+  params: { dueBy: Date; now: Date; excludedUserEmail?: string }
 ): Promise<LockedMeetingRow | null> {
+  const excludedUserFilter = params.excludedUserEmail
+    ? Prisma.sql`AND LOWER(u.email) <> LOWER(${params.excludedUserEmail})`
+    : Prisma.empty
+
   const rows = await tx.$queryRaw<LockedMeetingRow[]>`
     SELECT
       m.id,
@@ -166,6 +171,7 @@ async function _lockNextDueMeetingRow(
     WHERE m."endTime" > ${params.now}
       AND m."startTime" <= ${params.dueBy}
       ${_eligibleForNewBotDispatchSql()}
+      ${excludedUserFilter}
     ORDER BY m."startTime" ASC
     LIMIT 1
     FOR UPDATE OF m SKIP LOCKED
@@ -353,7 +359,11 @@ async function dispatchDueMeetings(
     try {
       const dispatched = await prisma.$transaction(
         async (tx) => {
-          const locked = await _lockNextDueMeetingRow(tx, { dueBy, now })
+          const locked = await _lockNextDueMeetingRow(tx, {
+            dueBy,
+            now,
+            excludedUserEmail: params.excludedUserEmail
+          })
           if (!locked) {
             return null
           }

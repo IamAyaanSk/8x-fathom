@@ -33,7 +33,8 @@ const envZodSchema = z
     CLOUDFLARE_ACCOUNT_ID: trimmedStringWithMinLengthOneSchema.optional(),
     CLOUDFLARE_API_GATEWAY: trimmedStringWithMinLengthOneSchema.optional(),
     LM_STUDIO_BASE_URL: trimmedStringWithMinLengthOneSchema.optional(),
-    LM_STUDIO_API_KEY: trimmedStringWithMinLengthOneSchema.optional()
+    LM_STUDIO_API_KEY: trimmedStringWithMinLengthOneSchema.optional(),
+    DEMO_USER_EMAIL: trimmedStringWithMinLengthOneSchema.optional()
   })
   .superRefine((data, ctx) => {
     if (isProductionEnvironment(data.NODE_ENV)) {

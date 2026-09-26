@@ -48,7 +48,7 @@ const getMeetingDetailController = async (
         shareSlug: true,
         recordingR2Key: true,
         highlights: {
-          orderBy: { timestampSec: 'asc' },
+          orderBy: { createdAt: 'desc' },
           select: {
             id: true,
             timestampSec: true,
@@ -92,6 +92,11 @@ const getMeetingDetailController = async (
             text: true,
             sentAt: true
           }
+        },
+        transcriptChunks: {
+          select: { endSec: true },
+          orderBy: { endSec: 'desc' },
+          take: 1
         }
       }
     })
@@ -112,10 +117,11 @@ const getMeetingDetailController = async (
       throw new HttpError(502, 'Failed to prepare recording playback')
     }
 
-    const recordingDurationSec = calendarDurationSec(
-      meeting.startTime,
-      meeting.endTime
-    )
+    const lastChunkEndSec = meeting.transcriptChunks?.[0]?.endSec
+    const recordingDurationSec =
+      lastChunkEndSec && lastChunkEndSec > 0
+        ? lastChunkEndSec
+        : calendarDurationSec(meeting.startTime, meeting.endTime)
 
     res.json({
       success: true,

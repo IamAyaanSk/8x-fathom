@@ -1,4 +1,5 @@
 import { useMeetingDetailQuery } from '@repo/api-client/v1/meetings/hooks'
+import { usePostMeetingShareEnableMutation } from '@repo/api-client/v1/share/hooks'
 import { getMeetingBotUiLabel } from '@repo/shared-utils/meeting'
 import { Button } from '@repo/ui-web/components/button'
 import {
@@ -7,32 +8,39 @@ import {
   TabsList,
   TabsTrigger
 } from '@repo/ui-web/components/tabs'
-import { cn } from '@repo/ui-web/lib/utils'
 import { Link } from '@tanstack/react-router'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  Check,
+  FileText,
+  Loader2,
+  Share2,
+  Sparkles
+} from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 
+import { MeetingAskFathomPanel } from '#components/meetings/meeting-ask-fathom-panel'
 import { MeetingDetailSidebar } from '#components/meetings/meeting-detail-sidebar'
-import { MeetingLiveCapturePanel } from '#components/meetings/meeting-live-capture-panel'
-import { MeetingRecordingTabs } from '#components/meetings/meeting-recording-tabs'
+import { MeetingLivePage } from '#components/meetings/meeting-live-page'
+import { MeetingSummaryPanel } from '#components/meetings/meeting-summary-panel'
+import { MeetingTranscriptPanel } from '#components/meetings/meeting-transcript-panel'
 import { MeetingVideoPlayer } from '#components/meetings/meeting-video-player'
+import { useIsDemoUser } from '#hooks/use-is-demo'
 import { useNow } from '#hooks/use-now'
-import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
+import { formatMeetingDetailDate } from '#lib/format-meeting-detail-date'
 import { getRecordingElapsedSec } from '#lib/recording-elapsed-sec'
-
-const detailTabTriggerClassName = cn(
-  'h-9 rounded-lg px-4 text-sm font-medium',
-  'data-active:bg-primary data-active:text-primary-foreground'
-)
 
 type MeetingPlaybackPageProps = {
   meetingId: string
 }
 
 function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
+  const isDemo = useIsDemoUser()
   const { data, isPending, isError, refetch } = useMeetingDetailQuery(meetingId)
+  const enableShare = usePostMeetingShareEnableMutation()
   const nowMs = useNow(1000)
   const [currentTimeSec, setCurrentTimeSec] = useState(0)
+  const [copiedShare, setCopiedShare] = useState(false)
   const seekToRef = useRef<(timestampSec: number) => void>(() => undefined)
 
   const handleSeekReady = useCallback(
@@ -76,7 +84,7 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
             Try again
           </Button>
           <Link
-            to="/meetings"
+            to="/meetings/my-calls"
             className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center rounded-md px-4 text-sm font-medium"
           >
             Back to library
@@ -87,141 +95,229 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
   }
 
   const meeting = data.data
+  const title =
+    meeting.title.trim().length > 0 ? meeting.title : 'Untitled call'
+  const dateLabel = formatMeetingDetailDate(meeting.startTime)
   const isLiveRecording = meeting.uiPhase === 'in_call_recording'
-  const isProcessing =
-    meeting.processingStatus === 'importing' ||
-    meeting.processingStatus === 'pending' ||
-    meeting.processingStatus === 'processing' ||
-    meeting.uiPhase === 'call_ended_processing' ||
-    meeting.uiPhase === 'transcribing'
-  const hasRecordingPlayback = meeting.recordingPlayback != null
-  const defaultDetailTab = isLiveRecording ? 'ongoing' : 'recording'
   const statusLabel = getMeetingBotUiLabel(meeting.uiPhase, meeting.baasStatus)
   const liveElapsedSec = getRecordingElapsedSec(
     meeting.recordingStartedAt,
     nowMs
   )
+  const canShare = meeting.processingStatus === 'ready'
+  const isFailed =
+    meeting.uiPhase === 'failed_to_join' ||
+    meeting.uiPhase === 'failed_processing' ||
+    meeting.baasStatus === 'failed' ||
+    meeting.processingStatus === 'failed'
 
-  const recordingColumn = hasRecordingPlayback ? (
-    <>
-      <MeetingVideoPlayer
-        meeting={meeting}
-        onSeekReady={handleSeekReady}
-        onTimeUpdate={setCurrentTimeSec}
-      />
-      <MeetingRecordingTabs
-        meeting={meeting}
-        currentTimeSec={currentTimeSec}
-        onSeek={handleSeek}
-      />
-    </>
-  ) : isProcessing ? (
-    <div className="bg-card ring-border flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-2xl px-6 text-center shadow-sm ring-1">
-      <div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
-        <Loader2 className="size-6 animate-spin" />
-      </div>
-      <div className="flex max-w-md flex-col gap-1">
-        <p className="text-foreground text-base font-semibold">
-          Generating call summary…
-        </p>
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          This takes a few minutes while we process audio, extract action items,
-          and prepare your recording.
-        </p>
-      </div>
-    </div>
-  ) : (
-    <div className="bg-card ring-border flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-2xl px-6 text-center ring-1">
-      <p className="text-foreground text-sm font-medium">{statusLabel}</p>
-      <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">
-        {isLiveRecording
-          ? 'Use Highlight and Scratchpad while the bot records. The full recording appears here when processing finishes.'
-          : meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining'
-            ? 'It may take up to 5 minutes for the bot to join the meeting.'
-            : 'Recording is not available yet. Check back when processing finishes.'}
-      </p>
-    </div>
-  )
+  async function handleShare() {
+    if (!canShare) {
+      return
+    }
 
-  const mainColumn =
-    isLiveRecording && hasRecordingPlayback ? (
-      <Tabs defaultValue={defaultDetailTab} className="flex flex-col gap-6">
-        <TabsList className="bg-muted/50 w-fit p-1">
-          <TabsTrigger value="ongoing" className={detailTabTriggerClassName}>
-            Ongoing
-          </TabsTrigger>
-          <TabsTrigger value="recording" className={detailTabTriggerClassName}>
-            Recording
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="ongoing" className="mt-0">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            <div className="bg-card ring-border flex flex-col gap-4 rounded-2xl p-6 ring-1">
-              <div>
-                <p className="text-foreground text-lg font-semibold">
-                  {meeting.title}
-                </p>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {statusLabel}
-                  {meeting.recordingStartedAt
-                    ? ` · ${formatPlaybackTimestamp(liveElapsedSec)} elapsed`
-                    : null}
-                </p>
-              </div>
-              <MeetingLiveCapturePanel
-                meeting={meeting}
-                meetingId={meetingId}
-              />
-            </div>
-            <div className="hidden min-w-0 flex-col gap-4 lg:flex">
-              {recordingColumn}
-            </div>
-          </div>
-        </TabsContent>
-        <TabsContent value="recording" className="mt-0 flex flex-col gap-6">
-          {recordingColumn}
-        </TabsContent>
-      </Tabs>
-    ) : isLiveRecording ? (
-      <div className="flex flex-col gap-6">
-        <div className="bg-card ring-border flex flex-col gap-4 rounded-2xl p-6 ring-1">
-          <div>
-            <p className="text-foreground text-lg font-semibold">
-              {meeting.title}
-            </p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {statusLabel}
-              {meeting.recordingStartedAt
-                ? ` · ${formatPlaybackTimestamp(liveElapsedSec)} elapsed`
-                : null}
-            </p>
-          </div>
-          <MeetingLiveCapturePanel meeting={meeting} meetingId={meetingId} />
+    try {
+      let shareSlug = meeting.shareSlug
+      if (!shareSlug) {
+        const result = await enableShare.mutateAsync(meetingId)
+        if (result.success !== true) {
+          return
+        }
+        shareSlug = result.data.shareSlug
+      }
+
+      const shareUrl = `${window.location.origin}/share/${shareSlug}`
+      await navigator.clipboard.writeText(shareUrl)
+      setCopiedShare(true)
+      window.setTimeout(() => {
+        setCopiedShare(false)
+      }, 2000)
+    } catch {
+      return
+    }
+  }
+
+  if (isLiveRecording) {
+    return (
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
+        <Link
+          to="/meetings/live"
+          className="text-muted-foreground hover:text-foreground mb-8 -ml-1 inline-flex w-fit items-center gap-2 text-sm transition-colors sm:-ml-5"
+        >
+          <ArrowLeft aria-hidden className="size-4" />
+          Back to Live Calls
+        </Link>
+        <div className="sm:pl-2">
+          <MeetingLivePage
+            meeting={meeting}
+            meetingId={meetingId}
+            statusLabel={statusLabel}
+            liveElapsedSec={liveElapsedSec}
+          />
         </div>
-        {recordingColumn}
       </div>
-    ) : (
-      <div className="flex flex-col gap-6">{recordingColumn}</div>
     )
+  }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
-      <Link
-        to="/meetings"
-        className="text-muted-foreground hover:text-foreground mb-6 inline-flex w-fit items-center gap-2 text-sm"
-      >
-        <ArrowLeft aria-hidden className="size-4" />
-        Back to My Calls
-      </Link>
+    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
+      <div className="border-border/50 flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1.5">
+          <Link
+            to="/meetings/my-calls"
+            className="text-muted-foreground hover:text-foreground -ml-1.5 inline-flex w-fit items-center gap-1.5 text-xs transition-colors sm:-ml-4"
+          >
+            <ArrowLeft aria-hidden className="size-3.5" />
+            <span>Back to My Calls</span>
+          </Link>
+          <div className="flex flex-wrap items-baseline gap-2.5">
+            <h1 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+              {title}
+            </h1>
+            <span className="text-muted-foreground text-xs select-none">·</span>
+            <span className="text-muted-foreground text-xs font-medium">
+              {dateLabel}
+            </span>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <div className="flex min-w-0 flex-col gap-6">{mainColumn}</div>
-        <MeetingDetailSidebar
-          meeting={meeting}
-          meetingId={meetingId}
-          onSeek={handleSeek}
-          className="lg:sticky lg:top-6"
-        />
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            className="gap-1.5 rounded-full px-4 text-xs font-medium shadow-xs"
+            disabled={!canShare || enableShare.isPending}
+            onClick={() => {
+              void handleShare()
+            }}
+          >
+            {copiedShare ? (
+              <>
+                <Check className="size-3.5" />
+                <span>Link Copied!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="size-3.5" />
+                <span>Share</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_25rem]">
+        <div className="flex min-w-0 flex-col gap-6">
+          {!isFailed ? (
+            <Tabs defaultValue="summary" className="w-full">
+              <div className="border-border/60 border-b pb-1">
+                <TabsList
+                  variant="line"
+                  className="h-10 w-full justify-start gap-8 bg-transparent p-0"
+                >
+                  <TabsTrigger
+                    value="summary"
+                    className="data-active:text-foreground text-muted-foreground h-10 gap-1.5 px-0 text-xs font-semibold tracking-wider uppercase"
+                  >
+                    <Sparkles className="size-3.5" />
+                    <span>AI Summary</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="transcript"
+                    className="data-active:text-foreground text-muted-foreground h-10 gap-1.5 px-0 text-xs font-semibold tracking-wider uppercase"
+                  >
+                    <FileText className="size-3.5" />
+                    <span>Transcript</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="summary" className="mt-6">
+                <div className="flex flex-col gap-10">
+                  <MeetingSummaryPanel
+                    meeting={meeting}
+                    canRecreateSummary={meeting.processingStatus === 'ready'}
+                    recreateDisabledReason={
+                      isDemo
+                        ? 'Recreating summaries is unavailable for the demo account. Sign in with Google for complete access.'
+                        : undefined
+                    }
+                  />
+
+                  <div className="border-border/60 border-t pt-8">
+                    <div className="mb-4 flex items-center gap-2">
+                      <span className="bg-primary/10 text-primary flex size-6 items-center justify-center rounded-md">
+                        <Sparkles className="size-3.5" />
+                      </span>
+                      <h3 className="text-foreground text-sm font-semibold tracking-tight">
+                        Ask Fathom about this and previous calls
+                      </h3>
+                    </div>
+                    <MeetingAskFathomPanel
+                      meetingId={meeting.id}
+                      disabledReason={
+                        isDemo
+                          ? 'Fathom AI is unavailable for the demo account. Sign in with Google for complete access.'
+                          : meeting.processingStatus === 'ready'
+                            ? undefined
+                            : 'Ask Fathom is available after this call is processed.'
+                      }
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="transcript" className="mt-6">
+                <MeetingTranscriptPanel
+                  meetingId={meeting.id}
+                  currentTimeSec={currentTimeSec}
+                  onSeek={handleSeek}
+                />
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="flex flex-col gap-10">
+              <MeetingSummaryPanel
+                meeting={meeting}
+                canRecreateSummary={false}
+              />
+
+              <div className="border-border/60 border-t pt-8">
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="bg-primary/10 text-primary flex size-6 items-center justify-center rounded-md">
+                    <Sparkles className="size-3.5" />
+                  </span>
+                  <h3 className="text-foreground text-sm font-semibold tracking-tight">
+                    Ask Fathom about this and previous calls
+                  </h3>
+                </div>
+                <MeetingAskFathomPanel
+                  meetingId={meeting.id}
+                  disabledReason={
+                    isDemo
+                      ? 'Fathom AI is unavailable for the demo account. Sign in with Google for complete access.'
+                      : 'Ask Fathom is not available because this call could not be processed.'
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-6 lg:sticky lg:top-20">
+          <MeetingVideoPlayer
+            meeting={meeting}
+            onSeekReady={handleSeekReady}
+            onTimeUpdate={setCurrentTimeSec}
+          />
+
+          <MeetingDetailSidebar
+            meeting={meeting}
+            meetingId={meetingId}
+            onSeek={handleSeek}
+          />
+        </div>
       </div>
     </div>
   )

@@ -201,6 +201,13 @@ async function _runCalendarSync(userId: string) {
     }
   }
 
+  await prisma.calendarWatch
+    .updateMany({
+      where: { userId },
+      data: { updatedAt: new Date() }
+    })
+    .catch(() => undefined)
+
   return { syncedCount }
 }
 

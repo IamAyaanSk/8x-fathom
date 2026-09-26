@@ -7,8 +7,10 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@repo/ui-web/components/sheet'
+import { Tooltip } from '@repo/ui-web/components/tooltip'
 import { cn } from '@repo/ui-web/lib/utils'
 import { Sparkles } from 'lucide-react'
+import type { ReactElement } from 'react'
 import { useState } from 'react'
 
 import {
@@ -20,16 +22,39 @@ type MeetingAskFathomSheetProps = {
   meetingId?: string
   disabledReason?: string
   triggerClassName?: string
+  trigger?: ReactElement
 }
 
 function MeetingAskFathomSheet({
   meetingId,
   disabledReason,
-  triggerClassName
+  triggerClassName,
+  trigger
 }: MeetingAskFathomSheetProps) {
   const [open, setOpen] = useState(false)
   const [chatMounted, setChatMounted] = useState(false)
   const disabled = disabledReason != null
+
+  const resolvedTrigger = trigger ?? (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      disabled={disabled}
+      className={cn('shrink-0', triggerClassName)}
+    >
+      <Sparkles aria-hidden />
+      Ask Fathom
+    </Button>
+  )
+
+  if (disabled) {
+    return (
+      <Tooltip content={disabledReason}>
+        <span className="inline-flex">{resolvedTrigger}</span>
+      </Tooltip>
+    )
+  }
 
   return (
     <Sheet
@@ -41,21 +66,7 @@ function MeetingAskFathomSheet({
         }
       }}
     >
-      <SheetTrigger
-        render={
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={disabled}
-            title={disabledReason}
-            className={cn('shrink-0', triggerClassName)}
-          />
-        }
-      >
-        <Sparkles aria-hidden />
-        Ask Fathom
-      </SheetTrigger>
+      <SheetTrigger render={resolvedTrigger} />
       <SheetContent side="right" className="flex h-dvh flex-col gap-0 p-0">
         <SheetHeader className="border-border border-b px-6 py-5">
           <SheetTitle>Ask Fathom</SheetTitle>

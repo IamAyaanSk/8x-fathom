@@ -1,10 +1,20 @@
+import { useCalendarStatusQuery } from '@repo/api-client/v1/calendar/hooks'
+import { useMeetingsCompletedQuery } from '@repo/api-client/v1/meetings/hooks'
 import { Button } from '@repo/ui-web/components/button'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { CircleHelp, LogOut, Settings, Waves } from 'lucide-react'
+import {
+  SidebarInset,
+  SidebarProvider,
+  useSidebar
+} from '@repo/ui-web/components/sidebar'
+import { Link, useLocation } from '@tanstack/react-router'
+import { Menu, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import { MadeWithLoveByAyaan } from '#components/layout/made-with-love-by-ayaan'
-import { authClient } from '#lib/auth-client'
+import { AppSidebar } from '#components/layout/app-sidebar'
+import { CalendarSyncButton } from '#components/meetings/calendar-sync-button'
+import { MeetingAskFathomSheet } from '#components/meetings/meeting-ask-fathom-sheet'
+import { useIsDemoUser } from '#hooks/use-is-demo'
+import { isDemoUser } from '#lib/demo'
 
 type DashboardLayoutProps = {
   children: ReactNode
@@ -15,100 +25,134 @@ type DashboardLayoutProps = {
   }
 }
 
-function getUserInitials(name: string, email: string): string {
-  const trimmed = name.trim()
-  if (trimmed.length > 0) {
-    const parts = trimmed.split(/\s+/).filter(Boolean)
-    if (parts.length >= 2) {
-      return `${parts[0]?.[0] ?? ''}${parts[1]?.[0] ?? ''}`.toUpperCase()
-    }
-    return trimmed.slice(0, 2).toUpperCase()
-  }
-  return email.slice(0, 2).toUpperCase()
+function DashboardHeader() {
+  const isDemo = useIsDemoUser()
+  const location = useLocation()
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  const { data: statusData } = useCalendarStatusQuery()
+  const connected = statusData?.success === true && statusData.data.connected
+
+  const { data: completedData, isPending: completedPending } =
+    useMeetingsCompletedQuery({ enabled: connected === true || isDemo })
+
+  const past =
+    completedData?.success === true ? completedData.data.meetings : []
+  const hasReadyCalls = past.some((m) => m.uiPhase === 'ready')
+
+  const askDisabledReason = isDemo
+    ? 'Demo account: sign in with Google for complete access.'
+    : !connected
+      ? 'Connect your calendar first'
+      : completedPending
+        ? 'AI is available after calls load.'
+        : hasReadyCalls
+          ? undefined
+          : 'AI is available after at least one call is processed.'
+
+  const isMeetingDetail =
+    location.pathname.startsWith('/meetings/') &&
+    location.pathname !== '/meetings' &&
+    location.pathname !== '/meetings/' &&
+    location.pathname !== '/meetings/upcoming' &&
+    location.pathname !== '/meetings/live' &&
+    location.pathname !== '/meetings/my-calls'
+
+  const viewTitle =
+    location.pathname === '/meetings/live'
+      ? 'Live Calls'
+      : location.pathname === '/meetings/my-calls'
+        ? 'My Calls'
+        : isMeetingDetail
+          ? 'Meeting Playback'
+          : 'Upcoming Calls'
+
+  return (
+    <header className="border-border/70 bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b p-[35.5px] px-4 supports-backdrop-filter:backdrop-blur-md sm:px-6">
+      <div className="flex items-center gap-2.5">
+        {isMobile ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setOpenMobile(true)}
+            aria-label="Open menu"
+            className="text-muted-foreground hover:text-foreground -ml-1 md:hidden"
+          >
+            <Menu className="size-5" />
+          </Button>
+        ) : null}
+
+        {isMeetingDetail ? (
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 text-sm"
+          >
+            <Link
+              to="/meetings/upcoming"
+              className="text-muted-foreground hover:text-foreground font-medium transition-colors"
+            >
+              Calls
+            </Link>
+            <span className="text-muted-foreground/60">/</span>
+            <span className="text-foreground font-semibold">Recording</span>
+          </nav>
+        ) : (
+          <h1 className="text-foreground font-sans text-sm font-semibold tracking-tight sm:text-base">
+            {viewTitle}
+          </h1>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        {!isMeetingDetail && (connected || isDemo) ? (
+          <CalendarSyncButton iconOnly showSyncedTime />
+        ) : null}
+
+        {!isMeetingDetail ? (
+          <MeetingAskFathomSheet
+            disabledReason={askDisabledReason}
+            trigger={
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={askDisabledReason != null}
+                className="h-8 cursor-pointer gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs"
+              >
+                <Sparkles className="size-3.5" />
+                <span>Ask your meetings</span>
+              </Button>
+            }
+          />
+        ) : null}
+      </div>
+    </header>
+  )
 }
 
 function DashboardLayout({ children, user }: DashboardLayoutProps) {
-  const navigate = useNavigate()
-  const initials = getUserInitials(user.name, user.email)
-
-  async function handleSignOut() {
-    await authClient.signOut()
-    await navigate({ to: '/login' })
-  }
+  const isDemo = isDemoUser(user.email)
 
   return (
-    <div className="dark bg-background text-foreground flex min-h-dvh flex-col">
-      <header className="border-border border-b">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4">
-          <Link
-            to="/meetings"
-            className="flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-90"
-          >
-            <Waves
-              aria-hidden
-              className="text-primary size-5 sm:size-6"
-              strokeWidth={2.25}
-            />
-            <span className="text-sm font-semibold tracking-[0.2em] sm:text-base">
-              8X FATHOM
-            </span>
-          </Link>
-
-          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground hidden sm:inline-flex"
-              aria-label="Settings"
-            >
-              <Settings />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground hidden sm:inline-flex"
-              aria-label="Help and feedback"
-            >
-              <CircleHelp />
-            </Button>
-            {user.image ? (
-              <img
-                src={user.image}
-                alt=""
-                className="border-border size-8 rounded-full border object-cover"
-              />
-            ) : (
-              <span
-                className="bg-secondary text-secondary-foreground flex size-8 items-center justify-center rounded-full text-xs font-medium"
-                aria-hidden
-              >
-                {initials}
+    <SidebarProvider>
+      <AppSidebar user={user} />
+      <SidebarInset>
+        {isDemo ? (
+          <div className="bg-demo/15 border-demo/30 text-demo-foreground flex items-center justify-between border-b px-4 py-2.5 text-xs font-medium sm:px-6">
+            <div className="flex items-center gap-2">
+              <span className="bg-demo size-1.5 animate-pulse rounded-full" />
+              <span>
+                This is demo account and mutation capabilities are limited. Sign
+                up with google account for complete access.
               </span>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground"
-              aria-label="Sign out"
-              onClick={() => {
-                void handleSignOut()
-              }}
-            >
-              <LogOut />
-            </Button>
+            </div>
           </div>
-        </div>
-      </header>
-
-      <main className="flex min-h-0 flex-1 flex-col">{children}</main>
-
-      <footer className="border-border border-t px-4 py-3 sm:px-6">
-        <MadeWithLoveByAyaan />
-      </footer>
-    </div>
+        ) : null}
+        <DashboardHeader />
+        <main className="flex flex-1 flex-col">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
 

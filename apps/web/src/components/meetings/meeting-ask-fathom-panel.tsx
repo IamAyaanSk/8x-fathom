@@ -262,21 +262,25 @@ function MeetingAskFathomPanel({
   }
 
   if (disabledReason) {
+    const isDemo = disabledReason.toLowerCase().includes('demo')
     return (
-      <p className="text-muted-foreground text-sm leading-relaxed">
+      <div
+        className={
+          isDemo
+            ? 'bg-demo/10 border-demo/30 text-demo-foreground flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm'
+            : 'text-muted-foreground text-sm leading-relaxed'
+        }
+      >
+        {isDemo ? (
+          <span className="shrink-0 text-base leading-none">🧪</span>
+        ) : null}
         {disabledReason}
-      </p>
+      </div>
     )
   }
 
   return (
     <div className={cn('flex min-h-[32rem] flex-col', className)}>
-      {showIntro ? (
-        <p className="text-muted-foreground mb-4 text-sm">
-          Ask about your processed calls — answers search across your library.
-        </p>
-      ) : null}
-
       <MessageScrollerProvider
         autoScroll
         defaultScrollPosition="end"

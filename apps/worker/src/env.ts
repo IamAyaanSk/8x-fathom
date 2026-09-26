@@ -23,6 +23,7 @@ const envZodSchema = z
     R2_SECRET_ACCESS_KEY: trimmedStringWithMinLengthOneSchema,
     R2_BUCKET: trimmedStringWithMinLengthOneSchema,
     R2_ENDPOINT: trimmedStringWithMinLengthOneSchema,
+    DEMO_USER_EMAIL: trimmedStringWithMinLengthOneSchema.optional(),
     CLOUDFLARE_API_TOKEN: trimmedStringWithMinLengthOneSchema.optional(),
     CLOUDFLARE_ACCOUNT_ID: trimmedStringWithMinLengthOneSchema.optional(),
     CLOUDFLARE_API_GATEWAY: trimmedStringWithMinLengthOneSchema.optional(),

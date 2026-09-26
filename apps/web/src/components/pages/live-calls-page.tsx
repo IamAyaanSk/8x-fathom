@@ -67,16 +67,18 @@ function LiveCallsPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
       {liveMeetings.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center py-12">
-          <Empty className="w-full max-w-md bg-muted/40">
-            <EmptyHeader>
+        <div className="w-full py-8">
+          <Empty className="bg-muted/40 min-h-[500px] w-full border-0 p-12 md:min-h-[580px] md:p-20">
+            <EmptyHeader className="max-w-lg">
               <EmptyMedia variant="icon">
-                <Radio className="size-6 text-muted-foreground" />
+                <Radio className="text-muted-foreground size-6" />
               </EmptyMedia>
-              <EmptyTitle>No live calls right now</EmptyTitle>
-              <EmptyDescription>
-                When a bot is in your meeting and recording, the ongoing call shows
-                up here in real time.
+              <EmptyTitle className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+                No live calls right now
+              </EmptyTitle>
+              <EmptyDescription className="text-muted-foreground text-sm leading-relaxed">
+                When a bot is in your meeting and recording, the ongoing call
+                shows up here in real time.
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>

@@ -4,13 +4,15 @@ import { _createResponseApiZod } from '#src/utils'
 
 const getCalendarStatusResponseSchema = _createResponseApiZod(
   z.object({
-    connected: z.boolean()
+    connected: z.boolean(),
+    lastSyncedAt: z.string().datetime().nullish()
   })
 )
 
 const postCalendarSyncResponseSchema = _createResponseApiZod(
   z.object({
-    syncedCount: z.number().int().nonnegative()
+    syncedCount: z.number().int().nonnegative(),
+    lastSyncedAt: z.string().datetime().nullish()
   })
 )
 

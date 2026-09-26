@@ -8,7 +8,7 @@ function Empty({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="empty"
       className={cn(
-        'flex min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-2xl border border-dashed border-border/80 bg-muted/40 p-8 text-center text-balance md:p-14',
+        'flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-2xl bg-muted/40 p-8 text-center text-balance min-h-[420px] md:min-h-[480px] md:p-14',
         className
       )}
       {...props}
@@ -63,7 +63,10 @@ function EmptyTitle({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="empty-title"
-      className={cn('text-base font-semibold tracking-tight text-foreground sm:text-lg', className)}
+      className={cn(
+        'text-foreground text-xl font-bold tracking-tight sm:text-2xl',
+        className
+      )}
       {...props}
     />
   )

@@ -4,16 +4,18 @@ import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle
 } from '@repo/ui-web/components/empty'
 import { getRouteApi } from '@tanstack/react-router'
-import { CalendarDays, Loader2 } from 'lucide-react'
+import { CalendarDays, ExternalLink, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
 import { GoogleMark } from '#components/auth/google-mark'
+import { CalendarSyncButton } from '#components/meetings/calendar-sync-button'
 import { UpcomingMeetingRow } from '#components/meetings/upcoming-meeting-row'
 import { useNow } from '#hooks/use-now'
 import { authClient } from '#lib/auth-client'
@@ -27,8 +29,12 @@ const authenticatedRoute = getRouteApi('/_authenticated')
 function UpcomingCallsPage() {
   const { session } = authenticatedRoute.useRouteContext()
   const now = useNow()
-  const { data: statusData, isPending: statusPending, isError: statusError, refetch: refetchStatus } =
-    useCalendarStatusQuery()
+  const {
+    data: statusData,
+    isPending: statusPending,
+    isError: statusError,
+    refetch: refetchStatus
+  } = useCalendarStatusQuery()
 
   const [isConnecting, setIsConnecting] = useState(false)
   const [connectError, setConnectError] = useState<string | null>(null)
@@ -66,8 +72,13 @@ function UpcomingCallsPage() {
   if (statusPending) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pb-16">
-        <Loader2 aria-hidden className="text-muted-foreground size-8 animate-spin" />
-        <p className="text-muted-foreground text-sm">Checking calendar status…</p>
+        <Loader2
+          aria-hidden
+          className="text-muted-foreground size-8 animate-spin"
+        />
+        <p className="text-muted-foreground text-sm">
+          Checking calendar status…
+        </p>
       </div>
     )
   }
@@ -75,7 +86,9 @@ function UpcomingCallsPage() {
   if (statusError || (statusData && !statusData.success)) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 pb-16 text-center">
-        <p className="text-destructive text-sm">Could not load calendar status.</p>
+        <p className="text-destructive text-sm">
+          Could not load calendar status.
+        </p>
         <Button
           type="button"
           variant="outline"
@@ -105,8 +118,11 @@ function UpcomingCallsPage() {
               Connect your calendar
             </h2>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Link Google Calendar so Fathom can automatically capture and take notes on your video calls ({' '}
-              <span className="text-foreground font-medium">{session.user.email}</span>
+              Link Google Calendar so Fathom can automatically capture and take
+              notes on your video calls ({' '}
+              <span className="text-foreground font-medium">
+                {session.user.email}
+              </span>
               ).
             </p>
           </div>
@@ -119,7 +135,11 @@ function UpcomingCallsPage() {
               void handleConnectCalendar()
             }}
           >
-            {isConnecting ? <Loader2 className="animate-spin" /> : <GoogleMark />}
+            {isConnecting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <GoogleMark />
+            )}
             Connect Google Calendar
           </Button>
           {connectError ? (
@@ -133,7 +153,10 @@ function UpcomingCallsPage() {
   if (upcomingPending) {
     return (
       <div className="flex flex-1 items-center justify-center gap-2.5 py-24">
-        <Loader2 aria-hidden className="text-muted-foreground size-5 animate-spin" />
+        <Loader2
+          aria-hidden
+          className="text-muted-foreground size-5 animate-spin"
+        />
         <p className="text-muted-foreground text-sm">Loading upcoming calls…</p>
       </div>
     )
@@ -142,7 +165,9 @@ function UpcomingCallsPage() {
   if (upcomingError || (upcomingData && !upcomingData.success)) {
     return (
       <div className="border-destructive/20 bg-destructive/5 mx-auto my-8 flex max-w-md flex-col items-center gap-3 rounded-xl border p-10 text-center">
-        <p className="text-destructive text-sm font-medium">Could not load upcoming calls.</p>
+        <p className="text-destructive text-sm font-medium">
+          Could not load upcoming calls.
+        </p>
         <Button
           type="button"
           variant="outline"
@@ -160,19 +185,44 @@ function UpcomingCallsPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
       {upcomingMeetings.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center py-12">
-          <Empty className="w-full max-w-md bg-muted/40">
-            <EmptyHeader>
+        <div className="w-full py-8">
+          <Empty className="bg-muted/40 min-h-[500px] w-full border-0 p-12 md:min-h-[580px] md:p-20">
+            <EmptyHeader className="max-w-lg">
               <EmptyMedia variant="icon">
-                <CalendarDays className="size-6 text-muted-foreground" />
+                <CalendarDays className="text-muted-foreground size-6" />
               </EmptyMedia>
-              <EmptyTitle>No upcoming calls</EmptyTitle>
-              <EmptyDescription>
+              <EmptyTitle className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+                Hmm.. your calendar is quiet
+              </EmptyTitle>
+              <EmptyDescription className="text-muted-foreground text-sm leading-relaxed">
                 Only meetings in the next 2 days with a video link are synced.
-                Future calls appear here until they finish or the scheduled end
-                time passes.
+                If you just scheduled or updated a call, sync your calendar to
+                capture it.
               </EmptyDescription>
             </EmptyHeader>
+            <EmptyContent className="max-w-md">
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <CalendarSyncButton
+                  size="default"
+                  className="rounded-full px-5"
+                />
+                <Button
+                  render={
+                    <a
+                      href="https://calendar.google.com"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    />
+                  }
+                  variant="link"
+                  size="default"
+                  className="gap-2 rounded-full px-5"
+                >
+                  <ExternalLink className="size-4" />
+                  <span>Open Google Calendar</span>
+                </Button>
+              </div>
+            </EmptyContent>
           </Empty>
         </div>
       ) : (

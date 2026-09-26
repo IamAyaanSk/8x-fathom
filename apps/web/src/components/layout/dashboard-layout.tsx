@@ -1,15 +1,18 @@
+import { useCalendarStatusQuery } from '@repo/api-client/v1/calendar/hooks'
+import { useMeetingsCompletedQuery } from '@repo/api-client/v1/meetings/hooks'
+import { Button } from '@repo/ui-web/components/button'
 import {
   SidebarInset,
   SidebarProvider,
   useSidebar
 } from '@repo/ui-web/components/sidebar'
-import { Button } from '@repo/ui-web/components/button'
 import { Link, useLocation } from '@tanstack/react-router'
-import { Menu } from 'lucide-react'
+import { Menu, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { AppSidebar } from '#components/layout/app-sidebar'
-import { FloatingAskFathom } from '#components/meetings/floating-ask-fathom'
+import { CalendarSyncButton } from '#components/meetings/calendar-sync-button'
+import { MeetingAskFathomSheet } from '#components/meetings/meeting-ask-fathom-sheet'
 
 type DashboardLayoutProps = {
   children: ReactNode
@@ -23,6 +26,24 @@ type DashboardLayoutProps = {
 function DashboardHeader() {
   const location = useLocation()
   const { isMobile, setOpenMobile } = useSidebar()
+
+  const { data: statusData } = useCalendarStatusQuery()
+  const connected = statusData?.success === true && statusData.data.connected
+
+  const { data: completedData, isPending: completedPending } =
+    useMeetingsCompletedQuery({ enabled: connected === true })
+
+  const past =
+    completedData?.success === true ? completedData.data.meetings : []
+  const hasReadyCalls = past.some((m) => m.uiPhase === 'ready')
+
+  const askDisabledReason = !connected
+    ? 'Connect your calendar first'
+    : completedPending
+      ? 'AI is available after calls load.'
+      : hasReadyCalls
+        ? undefined
+        : 'AI is available after at least one call is processed.'
 
   const isMeetingDetail =
     location.pathname.startsWith('/meetings/') &&
@@ -42,7 +63,7 @@ function DashboardHeader() {
           : 'Upcoming Calls'
 
   return (
-    <header className="border-border/70 bg-background/80 supports-backdrop-filter:backdrop-blur-md sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b px-4 sm:px-6">
+    <header className="border-border/70 bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b px-4 supports-backdrop-filter:backdrop-blur-md sm:px-6">
       <div className="flex items-center gap-2.5">
         {isMobile ? (
           <Button
@@ -51,14 +72,17 @@ function DashboardHeader() {
             size="icon-sm"
             onClick={() => setOpenMobile(true)}
             aria-label="Open menu"
-            className="md:hidden -ml-1 text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground -ml-1 md:hidden"
           >
             <Menu className="size-5" />
           </Button>
         ) : null}
 
         {isMeetingDetail ? (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 text-sm"
+          >
             <Link
               to="/meetings/upcoming"
               className="text-muted-foreground hover:text-foreground font-medium transition-colors"
@@ -74,6 +98,32 @@ function DashboardHeader() {
           </h1>
         )}
       </div>
+
+      <div className="flex items-center gap-2.5">
+        {connected ? (
+          <CalendarSyncButton
+            variant="outline"
+            size="sm"
+            className="border-border/70 hover:bg-muted/60 h-8 rounded-full px-3 text-xs font-normal"
+          />
+        ) : null}
+
+        <MeetingAskFathomSheet
+          disabledReason={askDisabledReason}
+          trigger={
+            <Button
+              type="button"
+              size="sm"
+              disabled={askDisabledReason != null}
+              title={askDisabledReason ?? 'Ask your meetings with AI'}
+              className="h-8 cursor-pointer gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs"
+            >
+              <Sparkles className="size-3.5" />
+              <span>Ask your meetings</span>
+            </Button>
+          }
+        />
+      </div>
     </header>
   )
 }
@@ -85,7 +135,6 @@ function DashboardLayout({ children, user }: DashboardLayoutProps) {
       <SidebarInset>
         <DashboardHeader />
         <main className="flex flex-1 flex-col">{children}</main>
-        <FloatingAskFathom />
       </SidebarInset>
     </SidebarProvider>
   )

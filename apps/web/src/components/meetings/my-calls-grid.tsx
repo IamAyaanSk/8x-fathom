@@ -79,14 +79,16 @@ function MyCallCard({ meeting }: { meeting: MeetingListItem }) {
 function MyCallsGrid({ meetings, nowMs }: MyCallsGridProps) {
   if (meetings.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center py-12">
-        <Empty className="w-full max-w-md bg-muted/40">
-          <EmptyHeader>
+      <div className="w-full py-8">
+        <Empty className="bg-muted/40 min-h-[500px] w-full border-0 p-12 md:min-h-[580px] md:p-20">
+          <EmptyHeader className="max-w-lg">
             <EmptyMedia variant="icon">
-              <Video className="size-6 text-muted-foreground" />
+              <Video className="text-muted-foreground size-6" />
             </EmptyMedia>
-            <EmptyTitle>No past calls yet</EmptyTitle>
-            <EmptyDescription>
+            <EmptyTitle className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+              No past calls yet
+            </EmptyTitle>
+            <EmptyDescription className="text-muted-foreground text-sm leading-relaxed">
               Recorded and processing calls appear here after the scheduled end
               time.
             </EmptyDescription>

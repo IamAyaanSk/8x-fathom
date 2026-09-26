@@ -14,6 +14,7 @@ type CalendarSyncButtonProps = {
   size?: ComponentProps<typeof Button>['size']
   className?: string
   showText?: boolean
+  label?: string
   onSynced?: (syncedCount: number) => void
 }
 
@@ -22,12 +23,12 @@ function CalendarSyncButton({
   size = 'sm',
   className,
   showText = true,
+  label = 'Sync now',
   onSynced
 }: CalendarSyncButtonProps) {
   const queryClient = useQueryClient()
   const { data: statusData } = useCalendarStatusQuery()
-  const connected =
-    statusData?.success === true && statusData.data.connected
+  const connected = statusData?.success === true && statusData.data.connected
 
   const syncMutation = useCalendarSyncMutation({
     onSuccess: (response) => {
@@ -41,6 +42,14 @@ function CalendarSyncButton({
   const isPending = syncMutation.isPending
   const isDisabled = !connected || isPending
 
+  const syncLabel = isPending ? 'Syncing…' : label
+
+  const title = !connected
+    ? 'Connect Google Calendar first'
+    : isPending
+      ? 'Syncing calendar…'
+      : 'Sync Google Calendar now'
+
   return (
     <Button
       type="button"
@@ -51,22 +60,16 @@ function CalendarSyncButton({
         syncMutation.reset()
         syncMutation.mutate()
       }}
-      title={
-        !connected
-          ? 'Connect Google Calendar first'
-          : isPending
-            ? 'Syncing calendar…'
-            : 'Sync Google Calendar now'
-      }
+      title={title}
       className={cn('shrink-0 gap-1.5', className)}
     >
       {isPending ? (
-        <Loader2 className="size-4 animate-spin text-primary" />
+        <Loader2 className="text-primary size-3.5 animate-spin" />
       ) : (
-        <RefreshCw className="size-4" />
+        <RefreshCw className="text-muted-foreground group-hover:text-foreground size-3.5" />
       )}
       {showText ? (
-        <span>{isPending ? 'Syncing…' : 'Sync now'}</span>
+        <span>{syncLabel}</span>
       ) : (
         <span className="sr-only">Sync calendar</span>
       )}

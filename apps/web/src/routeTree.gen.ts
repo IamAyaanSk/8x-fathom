@@ -17,6 +17,9 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ShareShareSlugRouteImport } from './routes/share/$shareSlug'
 import { Route as AuthenticatedMeetingsIndexRouteImport } from './routes/_authenticated/meetings/index'
 import { Route as AuthenticatedMeetingsMeetingIdRouteImport } from './routes/_authenticated/meetings/$meetingId'
+import { Route as AuthenticatedMeetingsLiveRouteImport } from './routes/_authenticated/meetings/live'
+import { Route as AuthenticatedMeetingsMyCallsRouteImport } from './routes/_authenticated/meetings/my-calls'
+import { Route as AuthenticatedMeetingsUpcomingRouteImport } from './routes/_authenticated/meetings/upcoming'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +62,24 @@ const AuthenticatedMeetingsMeetingIdRoute =
     path: '/meetings/$meetingId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMeetingsLiveRoute =
+  AuthenticatedMeetingsLiveRouteImport.update({
+    id: '/meetings/live',
+    path: '/meetings/live',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMeetingsMyCallsRoute =
+  AuthenticatedMeetingsMyCallsRouteImport.update({
+    id: '/meetings/my-calls',
+    path: '/meetings/my-calls',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMeetingsUpcomingRoute =
+  AuthenticatedMeetingsUpcomingRouteImport.update({
+    id: '/meetings/upcoming',
+    path: '/meetings/upcoming',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,6 +88,9 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/share/$shareSlug': typeof ShareShareSlugRoute
   '/meetings/$meetingId': typeof AuthenticatedMeetingsMeetingIdRoute
+  '/meetings/live': typeof AuthenticatedMeetingsLiveRoute
+  '/meetings/my-calls': typeof AuthenticatedMeetingsMyCallsRoute
+  '/meetings/upcoming': typeof AuthenticatedMeetingsUpcomingRoute
   '/meetings/': typeof AuthenticatedMeetingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +100,9 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/share/$shareSlug': typeof ShareShareSlugRoute
   '/meetings/$meetingId': typeof AuthenticatedMeetingsMeetingIdRoute
+  '/meetings/live': typeof AuthenticatedMeetingsLiveRoute
+  '/meetings/my-calls': typeof AuthenticatedMeetingsMyCallsRoute
+  '/meetings/upcoming': typeof AuthenticatedMeetingsUpcomingRoute
   '/meetings': typeof AuthenticatedMeetingsIndexRoute
 }
 export interface FileRoutesById {
@@ -87,6 +114,9 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/share/$shareSlug': typeof ShareShareSlugRoute
   '/_authenticated/meetings/$meetingId': typeof AuthenticatedMeetingsMeetingIdRoute
+  '/_authenticated/meetings/live': typeof AuthenticatedMeetingsLiveRoute
+  '/_authenticated/meetings/my-calls': typeof AuthenticatedMeetingsMyCallsRoute
+  '/_authenticated/meetings/upcoming': typeof AuthenticatedMeetingsUpcomingRoute
   '/_authenticated/meetings/': typeof AuthenticatedMeetingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -98,6 +128,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/share/$shareSlug'
     | '/meetings/$meetingId'
+    | '/meetings/live'
+    | '/meetings/my-calls'
+    | '/meetings/upcoming'
     | '/meetings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -107,6 +140,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/share/$shareSlug'
     | '/meetings/$meetingId'
+    | '/meetings/live'
+    | '/meetings/my-calls'
+    | '/meetings/upcoming'
     | '/meetings'
   id:
     | '__root__'
@@ -117,6 +153,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/share/$shareSlug'
     | '/_authenticated/meetings/$meetingId'
+    | '/_authenticated/meetings/live'
+    | '/_authenticated/meetings/my-calls'
+    | '/_authenticated/meetings/upcoming'
     | '/_authenticated/meetings/'
   fileRoutesById: FileRoutesById
 }
@@ -187,16 +226,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeetingsMeetingIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/meetings/live': {
+      id: '/_authenticated/meetings/live'
+      path: '/meetings/live'
+      fullPath: '/meetings/live'
+      preLoaderRoute: typeof AuthenticatedMeetingsLiveRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/meetings/my-calls': {
+      id: '/_authenticated/meetings/my-calls'
+      path: '/meetings/my-calls'
+      fullPath: '/meetings/my-calls'
+      preLoaderRoute: typeof AuthenticatedMeetingsMyCallsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/meetings/upcoming': {
+      id: '/_authenticated/meetings/upcoming'
+      path: '/meetings/upcoming'
+      fullPath: '/meetings/upcoming'
+      preLoaderRoute: typeof AuthenticatedMeetingsUpcomingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedMeetingsMeetingIdRoute: typeof AuthenticatedMeetingsMeetingIdRoute
+  AuthenticatedMeetingsLiveRoute: typeof AuthenticatedMeetingsLiveRoute
+  AuthenticatedMeetingsMyCallsRoute: typeof AuthenticatedMeetingsMyCallsRoute
+  AuthenticatedMeetingsUpcomingRoute: typeof AuthenticatedMeetingsUpcomingRoute
   AuthenticatedMeetingsIndexRoute: typeof AuthenticatedMeetingsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMeetingsMeetingIdRoute: AuthenticatedMeetingsMeetingIdRoute,
+  AuthenticatedMeetingsLiveRoute: AuthenticatedMeetingsLiveRoute,
+  AuthenticatedMeetingsMyCallsRoute: AuthenticatedMeetingsMyCallsRoute,
+  AuthenticatedMeetingsUpcomingRoute: AuthenticatedMeetingsUpcomingRoute,
   AuthenticatedMeetingsIndexRoute: AuthenticatedMeetingsIndexRoute,
 }
 

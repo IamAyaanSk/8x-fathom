@@ -9,7 +9,6 @@ import { CircleDot, Loader2 } from 'lucide-react'
 
 import { useNow } from '#hooks/use-now'
 import { formatMeetingStartTime } from '#lib/format-meeting-time'
-import { isLiveCall } from '#lib/meeting-call-tabs'
 import { getUpcomingMeetingCaptureUi } from '#lib/upcoming-meeting-capture'
 
 type UpcomingMeetingRowProps = {
@@ -30,7 +29,7 @@ function UpcomingMeetingRow({ meeting }: UpcomingMeetingRowProps) {
   })
   const statusLabel = getMeetingBotUiLabel(meeting.uiPhase, meeting.baasStatus)
   const failedJoin = meeting.uiPhase === 'failed_to_join'
-  const liveCall = isLiveCall(meeting)
+  const liveCall = meeting.uiPhase === 'in_call_recording'
   const actionError =
     captureMutation.isError && captureMutation.variables === meeting.id
 

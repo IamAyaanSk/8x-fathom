@@ -51,7 +51,7 @@ function UpcomingHeroCard({ meeting, nowMs }: UpcomingHeroCardProps) {
     captureMutation.isError && captureMutation.variables === meeting.id
 
   return (
-    <div className="bg-card border-border/80 relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-2xl border p-6 shadow-xs sm:p-7">
+    <div className="bg-card relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-2xl p-6 shadow-xs sm:p-7">
       <div className="flex items-center justify-between">
         <span className="text-primary font-sans text-xs font-bold tracking-wider uppercase">
           Next up

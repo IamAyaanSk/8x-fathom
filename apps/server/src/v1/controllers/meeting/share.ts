@@ -73,6 +73,11 @@ const getMeetingShareDetailController = async (
             displayName: true,
             profilePicture: true
           }
+        },
+        transcriptChunks: {
+          select: { endSec: true },
+          orderBy: { endSec: 'desc' },
+          take: 1
         }
       }
     })
@@ -88,6 +93,12 @@ const getMeetingShareDetailController = async (
       throw new HttpError(502, 'Failed to prepare recording playback')
     }
 
+    const lastChunkEndSec = meeting.transcriptChunks?.[0]?.endSec
+    const recordingDurationSec =
+      lastChunkEndSec && lastChunkEndSec > 0
+        ? lastChunkEndSec
+        : calendarDurationSec(meeting.startTime, meeting.endTime)
+
     res.json({
       success: true,
       message: 'Shared meeting fetched successfully',
@@ -96,10 +107,7 @@ const getMeetingShareDetailController = async (
         startTime: meeting.startTime.toISOString(),
         endTime: meeting.endTime.toISOString(),
         summary: meeting.summary,
-        recordingDurationSec: calendarDurationSec(
-          meeting.startTime,
-          meeting.endTime
-        ),
+        recordingDurationSec,
         recordingPlayback,
         highlights: meeting.highlights,
         actionItems: meeting.actionItems,

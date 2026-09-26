@@ -1,21 +1,21 @@
 import { usePatchMeetingActionItemMutation } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingDetail } from '@repo/api-client/v1/meetings/index'
-import { usePostMeetingShareEnableMutation } from '@repo/api-client/v1/share/hooks'
 import { Button } from '@repo/ui-web/components/button'
 import { cn } from '@repo/ui-web/lib/utils'
 import {
   Check,
-  Link2,
   Mail,
   MessageSquare,
-  MoreHorizontal,
-  Sparkles
+  Sparkles,
+  StickyNote,
+  Users,
+  Video
 } from 'lucide-react'
 import { useState } from 'react'
 
 import { MeetingTimestampLink } from '#components/meetings/meeting-timestamp-link'
 import { formatChatMessageTime } from '#lib/format-chat-message-time'
-import { formatMeetingDetailDate } from '#lib/format-meeting-detail-date'
+import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
 
 type MeetingDetailSidebarProps = {
   meeting: MeetingDetail
@@ -32,12 +32,16 @@ function MeetingDetailSidebar({
 }: MeetingDetailSidebarProps) {
   const title =
     meeting.title.trim().length > 0 ? meeting.title : 'Untitled call'
-  const dateLabel = formatMeetingDetailDate(meeting.startTime)
   const patchActionItem = usePatchMeetingActionItemMutation()
-  const enableShare = usePostMeetingShareEnableMutation()
   const [copiedFollowUp, setCopiedFollowUp] = useState(false)
-  const [copiedShare, setCopiedShare] = useState(false)
-  const canShare = meeting.processingStatus === 'ready'
+
+  const highlights = meeting.highlights
+    .filter((highlight) => highlight.endTimestampSec != null)
+    .sort((left, right) => left.timestampSec - right.timestampSec)
+
+  const scratchpadEntries = [...(meeting.scratchpadEntries ?? [])].sort(
+    (left, right) => left.timestampSec - right.timestampSec
+  )
 
   function toggleActionItem(actionItemId: string, completed: boolean) {
     patchActionItem.mutate({
@@ -63,96 +67,47 @@ function MeetingDetailSidebar({
     }, 2000)
   }
 
-  async function handleShare() {
-    if (!canShare) {
-      return
-    }
-
-    try {
-      let shareSlug = meeting.shareSlug
-      if (!shareSlug) {
-        const result = await enableShare.mutateAsync(meetingId)
-        if (result.success !== true) {
-          return
-        }
-        shareSlug = result.data.shareSlug
-      }
-
-      const shareUrl = `${window.location.origin}/share/${shareSlug}`
-      await navigator.clipboard.writeText(shareUrl)
-      setCopiedShare(true)
-      window.setTimeout(() => {
-        setCopiedShare(false)
-      }, 2000)
-    } catch {
-      return
-    }
-  }
-
   return (
-    <aside className={cn('flex flex-col gap-0', className)}>
-      <div className="flex flex-col gap-4">
-        <div className="min-w-0">
-          <h1 className="text-foreground truncate text-lg leading-snug font-semibold">
-            {title}
-          </h1>
-          <p className="text-muted-foreground mt-1.5 text-sm">{dateLabel}</p>
+    <aside className={cn('flex flex-col gap-6', className)}>
+      {/* 1. Attendees (Requirement 6) */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Users className="text-muted-foreground size-3.5" />
+          <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+            Attendees ({meeting.participants.length})
+          </h2>
         </div>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="default"
-            className="min-w-0 flex-1"
-            disabled={!canShare || enableShare.isPending}
-            onClick={() => {
-              void handleShare()
-            }}
-          >
-            <Link2 aria-hidden className="size-4" />
-            {copiedShare ? 'Copied' : 'Share'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="shrink-0"
-            aria-label="More options"
-            disabled
-          >
-            <MoreHorizontal aria-hidden />
-          </Button>
-        </div>
-      </div>
 
-      <section className="border-border flex flex-col gap-3 border-t py-8">
-        <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Attendees
-        </h2>
         {meeting.participants.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No attendees listed.</p>
+          <p className="text-muted-foreground text-xs">
+            No attendees recorded.
+          </p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-2">
             {meeting.participants.map((participant) => {
               const label = participant.name
+              const initials = label.slice(0, 2).toUpperCase()
+
               return (
                 <li
                   key={participant.id}
-                  className="flex items-center gap-3 rounded-lg"
+                  className="flex items-center gap-2.5 rounded-lg py-1"
                 >
                   {participant.profilePicture ? (
                     <img
                       src={participant.profilePicture}
-                      className="border-border size-10 rounded-full border object-cover"
+                      alt={label}
+                      className="border-border size-7 rounded-full border object-cover"
                     />
                   ) : (
                     <span
-                      className="bg-secondary text-secondary-foreground flex size-10 items-center justify-center rounded-full text-xs font-semibold"
+                      className="bg-secondary text-secondary-foreground flex size-7 items-center justify-center rounded-full text-[11px] font-semibold select-none"
                       aria-hidden
                     >
-                      {label.slice(0, 2).toUpperCase()}
+                      {initials}
                     </span>
                   )}
-                  <span className="text-foreground min-w-0 truncate text-sm font-medium">
+                  <span className="text-foreground min-w-0 truncate text-xs font-medium">
                     {label}
                   </span>
                 </li>
@@ -162,127 +117,131 @@ function MeetingDetailSidebar({
         )}
       </section>
 
-      <section className="border-border flex flex-col gap-4 border-t py-8">
-        <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Action items
-        </h2>
+      {/* 2. Action Items (Requirement 6) */}
+      <section className="border-border/60 flex flex-col gap-3 border-t pt-5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Check className="text-muted-foreground size-3.5" />
+            <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+              Action Items ({meeting.actionItems.length})
+            </h2>
+          </div>
+
+          {meeting.actionItems.length > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground h-6 gap-1 px-2 text-[11px]"
+              onClick={() => {
+                void handleCopyFollowUpEmail()
+              }}
+            >
+              {copiedFollowUp ? (
+                <>
+                  <Check className="size-3 text-emerald-500" />
+                  <span>Copied email</span>
+                </>
+              ) : (
+                <>
+                  <Mail className="size-3" />
+                  <span>Copy email</span>
+                </>
+              )}
+            </Button>
+          ) : null}
+        </div>
+
         {meeting.actionItems.length === 0 ? (
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            No action items yet. They appear after AI processing finishes.
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            No action items recorded for this call.
           </p>
         ) : (
-          <>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="text-muted-foreground"
-                disabled
+          <ul className="flex flex-col gap-2.5">
+            {meeting.actionItems.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-start gap-2.5 text-xs leading-snug"
               >
-                Copy for …
-              </Button>
-              <Button
-                type="button"
-                variant="default"
-                size="sm"
-                onClick={() => {
-                  void handleCopyFollowUpEmail()
-                }}
-              >
-                <Mail aria-hidden className="size-4" />
-                {copiedFollowUp ? 'Copied' : 'Copy follow-up email'}
-              </Button>
-            </div>
-            <ul className="flex flex-col gap-5">
-              {meeting.actionItems.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-start gap-3 text-sm leading-snug"
+                <button
+                  type="button"
+                  className={cn(
+                    'border-border mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border transition-colors',
+                    item.completed &&
+                      'border-primary bg-primary text-primary-foreground'
+                  )}
+                  aria-label={
+                    item.completed
+                      ? 'Mark action item incomplete'
+                      : 'Mark action item complete'
+                  }
+                  disabled={patchActionItem.isPending}
+                  onClick={() => {
+                    toggleActionItem(item.id, !item.completed)
+                  }}
                 >
-                  <button
-                    type="button"
+                  {item.completed ? (
+                    <Check aria-hidden className="size-2.5" strokeWidth={3} />
+                  ) : null}
+                </button>
+                <div className="min-w-0 flex-1">
+                  <span
                     className={cn(
-                      'border-border mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors',
-                      item.completed &&
-                        'border-primary bg-primary text-primary-foreground'
+                      'text-foreground/90 block',
+                      item.completed && 'text-muted-foreground line-through'
                     )}
-                    aria-label={
-                      item.completed
-                        ? 'Mark action item incomplete'
-                        : 'Mark action item complete'
-                    }
-                    disabled={patchActionItem.isPending}
-                    onClick={() => {
-                      toggleActionItem(item.id, !item.completed)
-                    }}
                   >
-                    {item.completed ? (
-                      <Check aria-hidden className="size-3" strokeWidth={3} />
-                    ) : null}
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <span
-                      className={cn(
-                        'text-foreground/90 block',
-                        item.completed && 'text-muted-foreground line-through'
-                      )}
-                    >
-                      {item.text}
-                    </span>
-                    {item.timestampSec !== null ? (
-                      <div className="mt-1.5 flex items-center gap-1">
-                        <Sparkles
-                          aria-hidden
-                          className="text-chart-4 size-3 shrink-0"
-                        />
-                        <MeetingTimestampLink
-                          timestampSec={item.timestampSec}
-                          onSeek={onSeek}
-                          className="text-primary text-xs font-medium tabular-nums hover:underline"
-                        />
-                      </div>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-              <Sparkles aria-hidden className="text-chart-4 size-3.5" />
-              Action items generated by AI
-            </p>
-          </>
+                    {item.text}
+                  </span>
+                  {item.timestampSec !== null ? (
+                    <div className="mt-1 flex items-center gap-1">
+                      <Sparkles
+                        aria-hidden
+                        className="text-primary/70 size-2.5 shrink-0"
+                      />
+                      <MeetingTimestampLink
+                        timestampSec={item.timestampSec}
+                        onSeek={onSeek}
+                        className="text-primary font-mono text-[11px] tabular-nums hover:underline"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
-      <section className="border-border flex flex-col gap-4 border-t pt-8 pb-8">
-        <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Chat messages
-        </h2>
+      {/* 3. Chat Messages (Requirement 6) */}
+      <section className="border-border/60 flex flex-col gap-3 border-t pt-5">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="text-muted-foreground size-3.5" />
+          <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+            Chat Messages ({meeting.chatMessages.length})
+          </h2>
+        </div>
+
         {meeting.chatMessages.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <MessageSquare
-              aria-hidden
-              className="text-muted-foreground size-8 opacity-50"
-            />
-            <p className="text-muted-foreground text-sm">No chat messages</p>
-          </div>
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            No chat messages in this call.
+          </p>
         ) : (
-          <ul className="flex max-h-[min(24rem,40vh)] flex-col gap-4 overflow-y-auto pr-1">
+          <ul className="flex max-h-56 flex-col gap-2.5 overflow-y-auto pr-1">
             {meeting.chatMessages.map((message) => (
-              <li key={message.id} className="flex flex-col gap-1 text-sm">
+              <li key={message.id} className="flex flex-col gap-0.5 text-xs">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-foreground min-w-0 truncate font-medium">
+                  <span className="text-foreground min-w-0 truncate font-semibold">
                     {message.senderName}
                   </span>
                   <time
                     dateTime={message.sentAt}
-                    className="text-muted-foreground shrink-0 text-xs tabular-nums"
+                    className="text-muted-foreground shrink-0 text-[10px] tabular-nums"
                   >
                     {formatChatMessageTime(message.sentAt)}
                   </time>
                 </div>
-                <p className="text-foreground/90 leading-relaxed break-words">
+                <p className="text-foreground/80 leading-relaxed break-words">
                   {message.text}
                 </p>
               </li>
@@ -290,6 +249,88 @@ function MeetingDetailSidebar({
           </ul>
         )}
       </section>
+
+      {/* 4. Highlights (Requirement 7) */}
+      {highlights.length > 0 ? (
+        <section className="border-border/60 flex flex-col gap-3 border-t pt-5">
+          <div className="flex items-center gap-2">
+            <Video className="text-muted-foreground size-3.5" />
+            <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+              Highlights ({highlights.length})
+            </h2>
+          </div>
+
+          <ul className="flex flex-col gap-2">
+            {highlights.map((highlight) => {
+              const endSec = highlight.endTimestampSec ?? highlight.timestampSec
+              const rangeLabel =
+                endSec > highlight.timestampSec
+                  ? `${formatPlaybackTimestamp(highlight.timestampSec)} – ${formatPlaybackTimestamp(endSec)}`
+                  : formatPlaybackTimestamp(highlight.timestampSec)
+              const label =
+                highlight.note?.trim() ||
+                `Highlight at ${formatPlaybackTimestamp(highlight.timestampSec)}`
+
+              return (
+                <li
+                  key={highlight.id}
+                  className="bg-muted/30 flex flex-col gap-1 rounded-lg px-2.5 py-2"
+                >
+                  <button
+                    type="button"
+                    className="text-foreground text-left text-xs font-medium hover:underline"
+                    onClick={() => {
+                      onSeek(highlight.timestampSec)
+                    }}
+                  >
+                    {label}
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <MeetingTimestampLink
+                      timestampSec={highlight.timestampSec}
+                      onSeek={onSeek}
+                      className="text-primary font-mono text-[11px] tabular-nums hover:underline"
+                    />
+                    <span className="text-muted-foreground text-[11px] tabular-nums">
+                      ({rangeLabel})
+                    </span>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      {/* 5. Scratchpad Notes (Requirement 7) */}
+      {scratchpadEntries.length > 0 ? (
+        <section className="border-border/60 flex flex-col gap-3 border-t pt-5">
+          <div className="flex items-center gap-2">
+            <StickyNote className="text-muted-foreground size-3.5" />
+            <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+              Scratchpad Notes ({scratchpadEntries.length})
+            </h2>
+          </div>
+
+          <ul className="flex flex-col gap-2">
+            {scratchpadEntries.map((entry) => (
+              <li
+                key={entry.id}
+                className="bg-muted/30 flex flex-col gap-1 rounded-lg px-2.5 py-2"
+              >
+                <MeetingTimestampLink
+                  timestampSec={entry.timestampSec}
+                  onSeek={onSeek}
+                  className="text-primary w-fit font-mono text-[11px] tabular-nums hover:underline"
+                />
+                <p className="text-foreground/85 text-xs leading-relaxed whitespace-pre-wrap">
+                  {entry.text}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </aside>
   )
 }

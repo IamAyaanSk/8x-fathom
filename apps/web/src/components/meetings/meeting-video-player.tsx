@@ -1,6 +1,13 @@
 import type { MeetingPlaybackMedia } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
-import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react'
+import {
+  Maximize2,
+  Pause,
+  Play,
+  VideoOff,
+  Volume2,
+  VolumeX
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
@@ -125,9 +132,10 @@ function MeetingVideoPlayer({
 
   if (!playbackUrl) {
     return (
-      <div className="bg-card ring-border flex aspect-video w-full items-center justify-center rounded-2xl ring-1">
-        <p className="text-muted-foreground max-w-sm px-6 text-center text-sm leading-relaxed">
-          Recording is not available yet. Check back when processing finishes.
+      <div className="bg-muted/40 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl p-4 text-center">
+        <VideoOff className="text-muted-foreground/60 size-5" />
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          No recording available for this call.
         </p>
       </div>
     )
@@ -142,11 +150,11 @@ function MeetingVideoPlayer({
   const playbackRate = PLAYBACK_RATES[playbackRateIndex] ?? 1
 
   return (
-    <div className="bg-card ring-border overflow-hidden rounded-2xl ring-1">
-      <div className="relative bg-black">
+    <div className="bg-card overflow-hidden rounded-xl shadow-xs">
+      <div className="group relative aspect-video w-full bg-black">
         <video
           ref={videoRef}
-          className="aspect-video w-full bg-black"
+          className="h-full w-full object-cover"
           playsInline
           preload="metadata"
           src={playbackUrl}
@@ -169,18 +177,19 @@ function MeetingVideoPlayer({
             onTimeUpdate(nextTime)
           }}
         />
+
         {!isPlaying ? (
           <button
             type="button"
-            className="bg-background/20 absolute inset-0 flex flex-col items-center justify-center gap-3 backdrop-blur-[1px]"
+            className="bg-background/25 absolute inset-0 flex flex-col items-center justify-center gap-2 backdrop-blur-[1px] transition-opacity"
             aria-label="Play recording"
             onClick={togglePlay}
           >
-            <span className="bg-primary text-primary-foreground flex size-16 items-center justify-center rounded-full shadow-lg">
-              <Play aria-hidden className="ml-0.5 size-8" />
+            <span className="bg-background/90 text-foreground flex size-12 items-center justify-center rounded-full shadow-md backdrop-blur-xs transition-transform duration-200 hover:scale-105">
+              <Play aria-hidden className="fill-foreground ml-0.5 size-5" />
             </span>
             {scrubDuration > 0 ? (
-              <span className="text-foreground text-sm font-medium tabular-nums">
+              <span className="bg-background/80 text-foreground rounded-md px-2 py-0.5 text-xs font-medium tabular-nums backdrop-blur-xs">
                 {formatRecordingDurationLabel(scrubDuration)}
               </span>
             ) : null}
@@ -188,7 +197,9 @@ function MeetingVideoPlayer({
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-3 px-4 py-3">
+      {/* Scrubber & Controls */}
+      <div className="flex flex-col gap-1.5 p-3">
+        {/* Scrubber line */}
         <div
           ref={scrubRef}
           role="slider"
@@ -197,7 +208,7 @@ function MeetingVideoPlayer({
           aria-valuenow={Math.floor(currentTimeSec)}
           aria-label="Recording progress"
           tabIndex={0}
-          className="relative h-8 w-full cursor-pointer touch-none"
+          className="group/scrub relative flex h-4 w-full cursor-pointer touch-none items-center"
           onClick={(event) => {
             _seekFromClientX(event.clientX)
           }}
@@ -220,104 +231,91 @@ function MeetingVideoPlayer({
             }
           }}
         >
-          <div className="bg-muted absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full" />
-          <div
-            className="bg-primary/80 absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full"
-            style={{ width: `${progressPercent}%` }}
-          />
+          <div className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full transition-all group-hover/scrub:h-2">
+            <div
+              className="bg-primary h-full rounded-full transition-all"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+
           {highlightMarkers.map((highlight) => {
             const startPercent = Math.min(
               100,
               Math.max(0, (highlight.timestampSec / scrubDuration) * 100)
             )
-            const endSec = highlight.endTimestampSec ?? highlight.timestampSec
-            const endPercent = Math.min(
-              100,
-              Math.max(0, (endSec / scrubDuration) * 100)
-            )
-            const rangeWidth = Math.max(endPercent - startPercent, 0.35)
-            const isRange = highlight.endTimestampSec != null
-            const titleLabel = highlight.note
-              ? `${formatPlaybackTimestamp(highlight.timestampSec)} — ${highlight.note}`
-              : isRange
-                ? `${formatPlaybackTimestamp(highlight.timestampSec)} – ${formatPlaybackTimestamp(endSec)}`
-                : formatPlaybackTimestamp(highlight.timestampSec)
-
-            if (isRange) {
-              return (
-                <span
-                  key={highlight.id}
-                  className="bg-primary/35 absolute top-1/2 z-10 h-2 -translate-y-1/2 rounded-sm"
-                  style={{
-                    left: `${startPercent}%`,
-                    width: `${rangeWidth}%`
-                  }}
-                  title={titleLabel}
-                />
-              )
-            }
-
             return (
               <span
                 key={highlight.id}
-                className="bg-foreground/90 absolute top-1/2 z-10 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                className="bg-primary/50 absolute top-1/2 z-10 h-3 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full"
                 style={{ left: `${startPercent}%` }}
-                title={titleLabel}
               />
             )
           })}
+
           <span
-            className="bg-primary absolute top-1/2 z-20 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm"
+            className="bg-primary absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 shadow-xs transition-opacity group-hover/scrub:opacity-100"
             style={{ left: `${progressPercent}%` }}
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground shrink-0"
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-            onClick={togglePlay}
-          >
-            {isPlaying ? <Pause aria-hidden /> : <Play aria-hidden />}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground shrink-0"
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
-            onClick={toggleMute}
-          >
-            {isMuted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
-          </Button>
-          <p className="text-muted-foreground min-w-0 flex-1 text-xs tabular-nums">
-            {formatPlaybackTimestamp(currentTimeSec)}
-            {scrubDuration > 0
-              ? ` / ${formatPlaybackTimestamp(scrubDuration)}`
-              : null}
-          </p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground shrink-0 tabular-nums"
-            onClick={cyclePlaybackRate}
-          >
-            {playbackRate}x
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground shrink-0"
-            aria-label="Fullscreen"
-            onClick={toggleFullscreen}
-          >
-            <Maximize2 aria-hidden />
-          </Button>
+        {/* Minimal Control Bar */}
+        <div className="flex items-center justify-between gap-1 pt-0.5">
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="text-foreground size-7 rounded-md"
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+              onClick={togglePlay}
+            >
+              {isPlaying ? (
+                <Pause aria-hidden className="size-3.5" />
+              ) : (
+                <Play aria-hidden className="size-3.5 fill-current" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="text-muted-foreground hover:text-foreground size-7 rounded-md"
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+              onClick={toggleMute}
+            >
+              {isMuted ? (
+                <VolumeX aria-hidden className="size-3.5" />
+              ) : (
+                <Volume2 aria-hidden className="size-3.5" />
+              )}
+            </Button>
+            <span className="text-muted-foreground pl-1 font-mono text-[11px] tabular-nums">
+              {formatPlaybackTimestamp(currentTimeSec)} /{' '}
+              {formatPlaybackTimestamp(scrubDuration)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground h-6 px-1.5 font-mono text-[11px] tabular-nums"
+              onClick={cyclePlaybackRate}
+            >
+              {playbackRate}x
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="text-muted-foreground hover:text-foreground size-7 rounded-md"
+              aria-label="Fullscreen"
+              onClick={toggleFullscreen}
+            >
+              <Maximize2 aria-hidden className="size-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

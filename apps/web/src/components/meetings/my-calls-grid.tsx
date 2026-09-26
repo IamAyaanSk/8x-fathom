@@ -32,7 +32,8 @@ function _meetingTitle(meeting: MeetingListItem): string {
 function _hasRecordingThumbnail(meeting: MeetingListItem): boolean {
   return (
     meeting.uiPhase !== 'failed_to_join' &&
-    meeting.uiPhase !== 'failed_processing'
+    meeting.uiPhase !== 'failed_processing' &&
+    meeting.baasStatus !== 'failed'
   )
 }
 
@@ -64,10 +65,15 @@ function MyCallCard({ meeting }: { meeting: MeetingListItem }) {
   const weekday = formatMeetingCardWeekday(meeting.startTime)
   const timeRange = formatMeetingTimeRange(meeting.startTime, meeting.endTime)
   const showRecording = _hasRecordingThumbnail(meeting)
+  const isFailed =
+    meeting.uiPhase === 'failed_to_join' ||
+    meeting.uiPhase === 'failed_processing' ||
+    meeting.baasStatus === 'failed'
   const isProcessing =
     meeting.uiPhase === 'transcribing' ||
     meeting.uiPhase === 'call_ended_processing'
   const statusLabel = getMeetingBotUiLabel(meeting.uiPhase, meeting.baasStatus)
+  const displayStatus = isFailed ? 'Processing failed' : statusLabel
 
   return (
     <Link
@@ -115,8 +121,15 @@ function MyCallCard({ meeting }: { meeting: MeetingListItem }) {
           {title}
         </p>
         <p className="text-muted-foreground mt-0.5 text-xs">
-          {statusLabel !== 'Ready' ? (
-            <span className="text-primary font-medium">{statusLabel} · </span>
+          {displayStatus !== 'Ready' ? (
+            <span
+              className={cn(
+                'font-medium',
+                isFailed ? 'text-destructive' : 'text-primary'
+              )}
+            >
+              {displayStatus} ·{' '}
+            </span>
           ) : null}
           <span>{weekday}</span>
           <span> · </span>

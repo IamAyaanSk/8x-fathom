@@ -271,12 +271,6 @@ function MeetingAskFathomPanel({
 
   return (
     <div className={cn('flex min-h-[32rem] flex-col', className)}>
-      {showIntro ? (
-        <p className="text-muted-foreground mb-4 text-sm">
-          Ask about your processed calls — answers search across your library.
-        </p>
-      ) : null}
-
       <MessageScrollerProvider
         autoScroll
         defaultScrollPosition="end"

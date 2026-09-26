@@ -100,24 +100,28 @@ function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-2.5 sm:gap-3">
-        {connected ? <CalendarSyncButton iconOnly showSyncedTime /> : null}
+        {!isMeetingDetail && connected ? (
+          <CalendarSyncButton iconOnly showSyncedTime />
+        ) : null}
 
-        <MeetingAskFathomSheet
-          disabledReason={askDisabledReason}
-          trigger={
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={askDisabledReason != null}
-              title={askDisabledReason ?? 'Ask your meetings with AI'}
-              className="h-8 cursor-pointer gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs"
-            >
-              <Sparkles className="size-3.5" />
-              <span>Ask your meetings</span>
-            </Button>
-          }
-        />
+        {!isMeetingDetail ? (
+          <MeetingAskFathomSheet
+            disabledReason={askDisabledReason}
+            trigger={
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={askDisabledReason != null}
+                title={askDisabledReason ?? 'Ask your meetings with AI'}
+                className="h-8 cursor-pointer gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs"
+              >
+                <Sparkles className="size-3.5" />
+                <span>Ask your meetings</span>
+              </Button>
+            }
+          />
+        ) : null}
       </div>
     </header>
   )

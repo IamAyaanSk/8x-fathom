@@ -144,12 +144,40 @@ const getMeetingsCompletedController = async (
         ]
       },
       orderBy: { startTime: 'desc' },
-      select: _meetingListSelect
+      select: {
+        ..._meetingListSelect,
+        artifactsImportedAt: true,
+        transcriptChunks: {
+          select: { endSec: true },
+          orderBy: { endSec: 'desc' },
+          take: 1
+        }
+      }
     })
 
-    const meetings = rows.map((row) =>
-      _toMeetingListItem(row, calendarDurationSec(row.startTime, row.endTime))
-    )
+    const meetings = rows.map((row) => {
+      const lastChunkEndSec = row.transcriptChunks?.[0]?.endSec
+      let recordingDurationSec: number | null = null
+
+      if (lastChunkEndSec && lastChunkEndSec > 0) {
+        recordingDurationSec = lastChunkEndSec
+      } else if (row.recordingStartedAt && row.artifactsImportedAt) {
+        const diff = Math.floor(
+          (row.artifactsImportedAt.getTime() -
+            row.recordingStartedAt.getTime()) /
+            1000
+        )
+        if (diff > 0) {
+          recordingDurationSec = diff
+        }
+      }
+
+      if (!recordingDurationSec) {
+        recordingDurationSec = calendarDurationSec(row.startTime, row.endTime)
+      }
+
+      return _toMeetingListItem(row, recordingDurationSec)
+    })
 
     res.json({
       success: true,

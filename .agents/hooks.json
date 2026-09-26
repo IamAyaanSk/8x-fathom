@@ -1,0 +1,20 @@
+{
+  "agent-capture-prompt": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "AGY_HOOK_EVENT=pre_invocation python3 hooks/agent-capture.py",
+        "timeout": 15
+      }
+    ]
+  },
+  "agent-capture-response": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "AGY_HOOK_EVENT=stop python3 hooks/agent-capture.py",
+        "timeout": 15
+      }
+    ]
+  }
+}

@@ -108,7 +108,7 @@ function AppSidebar({ user }: AppSidebarProps) {
               8X FATHOM
             </span>
             <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-              Notebook AI
+              AI Meeting Assistant
             </span>
           </div>
         </Link>

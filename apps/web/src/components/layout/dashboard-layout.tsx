@@ -63,7 +63,7 @@ function DashboardHeader() {
           : 'Upcoming Calls'
 
   return (
-    <header className="border-border/70 bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b px-4 supports-backdrop-filter:backdrop-blur-md sm:px-6">
+    <header className="border-border/70 bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b p-[35.5px] px-4 supports-backdrop-filter:backdrop-blur-md sm:px-6">
       <div className="flex items-center gap-2.5">
         {isMobile ? (
           <Button
@@ -99,14 +99,8 @@ function DashboardHeader() {
         )}
       </div>
 
-      <div className="flex items-center gap-2.5">
-        {connected ? (
-          <CalendarSyncButton
-            variant="outline"
-            size="sm"
-            className="border-border/70 hover:bg-muted/60 h-8 rounded-full px-3 text-xs font-normal"
-          />
-        ) : null}
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        {connected ? <CalendarSyncButton iconOnly showSyncedTime /> : null}
 
         <MeetingAskFathomSheet
           disabledReason={askDisabledReason}
@@ -114,6 +108,7 @@ function DashboardHeader() {
             <Button
               type="button"
               size="sm"
+              variant="outline"
               disabled={askDisabledReason != null}
               title={askDisabledReason ?? 'Ask your meetings with AI'}
               className="h-8 cursor-pointer gap-1.5 rounded-full px-3.5 text-xs font-medium shadow-xs"

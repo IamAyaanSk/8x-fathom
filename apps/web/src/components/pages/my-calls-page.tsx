@@ -9,7 +9,8 @@ import { useNow } from '#hooks/use-now'
 
 function MyCallsPage() {
   const now = useNow()
-  const { data: statusData, isPending: statusPending } = useCalendarStatusQuery()
+  const { data: statusData, isPending: statusPending } =
+    useCalendarStatusQuery()
   const connected = statusData?.success === true && statusData.data.connected
 
   const {
@@ -27,8 +28,13 @@ function MyCallsPage() {
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center gap-2.5 py-24">
-        <Loader2 aria-hidden className="text-muted-foreground size-5 animate-spin" />
-        <p className="text-muted-foreground text-sm">Loading your calls library…</p>
+        <Loader2
+          aria-hidden
+          className="text-muted-foreground size-5 animate-spin"
+        />
+        <p className="text-muted-foreground text-sm">
+          Loading your calls library…
+        </p>
       </div>
     )
   }
@@ -36,7 +42,9 @@ function MyCallsPage() {
   if (completedError || (completedData && !completedData.success)) {
     return (
       <div className="border-destructive/20 bg-destructive/5 mx-auto my-8 flex max-w-md flex-col items-center gap-3 rounded-xl border p-10 text-center">
-        <p className="text-destructive text-sm font-medium">Could not load calls library.</p>
+        <p className="text-destructive text-sm font-medium">
+          Could not load calls library.
+        </p>
         <Button
           type="button"
           variant="outline"

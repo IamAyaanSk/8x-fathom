@@ -83,7 +83,7 @@ function LandingFeatures({ isAuthenticated }: LandingFeaturesProps) {
           {WORKFLOW.map((item) => (
             <div
               key={item.step}
-              className="flex flex-col justify-between p-8 transition-colors hover:bg-muted/30 sm:p-10"
+              className="hover:bg-muted/30 flex flex-col justify-between p-8 transition-colors sm:p-10"
             >
               <div>
                 <div className="mb-8 flex items-center justify-between">
@@ -122,7 +122,7 @@ function LandingFeatures({ isAuthenticated }: LandingFeaturesProps) {
           {CAPABILITIES.map((cap, index) => (
             <div
               key={cap.title}
-              className="border-border/50 hover:border-border bg-card/70 group relative flex flex-col rounded-2xl border p-8 shadow-xs transition-all hover:bg-card"
+              className="border-border/50 hover:border-border bg-card/70 group hover:bg-card relative flex flex-col rounded-2xl border p-8 shadow-xs transition-all"
             >
               <div className="mb-6 flex items-center justify-between">
                 <span className="text-muted-foreground/60 font-mono text-xs tracking-wider uppercase">

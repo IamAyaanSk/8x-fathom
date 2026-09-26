@@ -199,7 +199,7 @@ function LandingShowcaseCard() {
       </div>
 
       <div className="mt-10 sm:mt-12">
-        <div className="border-border/70 bg-card relative rounded-2xl border p-1.5 shadow-xl ring-1 ring-border/50">
+        <div className="border-border/70 bg-card ring-border/50 relative rounded-2xl border p-1.5 shadow-xl ring-1">
           <div className="border-border/40 bg-card overflow-hidden rounded-xl border">
             <div className="border-border/40 bg-muted/40 flex items-center justify-between border-b px-4 py-3">
               <div className="flex items-center gap-2">

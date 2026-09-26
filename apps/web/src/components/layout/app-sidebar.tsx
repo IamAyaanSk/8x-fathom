@@ -21,13 +21,7 @@ import {
 } from '@repo/ui-web/components/sidebar'
 import { cn } from '@repo/ui-web/lib/utils'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
-import {
-  CalendarDays,
-  LogOut,
-  Radio,
-  Video,
-  Waves
-} from 'lucide-react'
+import { CalendarDays, LogOut, Radio, Video, Waves } from 'lucide-react'
 
 import { MadeWithLoveByAyaan } from '#components/layout/made-with-love-by-ayaan'
 import { authClient } from '#lib/auth-client'
@@ -103,17 +97,17 @@ function AppSidebar({ user }: AppSidebarProps) {
       <SidebarHeader>
         <Link
           to="/meetings/upcoming"
-          className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-sidebar-accent"
+          className="hover:bg-sidebar-accent flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors"
           onClick={handleLinkClick}
         >
-          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg border border-primary/20">
+          <div className="bg-primary/10 text-primary border-primary/20 flex size-8 shrink-0 items-center justify-center rounded-lg border">
             <Waves className="size-4.5" strokeWidth={2.5} />
           </div>
           <div className="flex min-w-0 flex-col">
-            <span className="font-sans text-sm font-bold tracking-wide text-sidebar-foreground truncate">
+            <span className="text-sidebar-foreground truncate font-sans text-sm font-bold tracking-wide">
               8X FATHOM
             </span>
-            <span className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
               Notebook AI
             </span>
           </div>
@@ -177,7 +171,7 @@ function AppSidebar({ user }: AppSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-sidebar-accent/50">
+        <div className="hover:bg-sidebar-accent/50 flex items-center gap-2.5 rounded-lg p-1.5 transition-colors">
           {user.image ? (
             <img
               src={user.image}

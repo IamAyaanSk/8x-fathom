@@ -346,7 +346,7 @@ function _mergeMeetingDetailHighlight(
     ? detail.data.highlights.map((item) =>
         item.id === highlight.id ? highlight : item
       )
-    : [...detail.data.highlights, highlight]
+    : [highlight, ...detail.data.highlights]
 
   return {
     ...detail,

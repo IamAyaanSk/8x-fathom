@@ -13,11 +13,10 @@ import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 
 import { MeetingDetailSidebar } from '#components/meetings/meeting-detail-sidebar'
-import { MeetingLiveCapturePanel } from '#components/meetings/meeting-live-capture-panel'
+import { MeetingLivePage } from '#components/meetings/meeting-live-page'
 import { MeetingRecordingTabs } from '#components/meetings/meeting-recording-tabs'
 import { MeetingVideoPlayer } from '#components/meetings/meeting-video-player'
 import { useNow } from '#hooks/use-now'
-import { formatPlaybackTimestamp } from '#lib/format-playback-timestamp'
 import { getRecordingElapsedSec } from '#lib/recording-elapsed-sec'
 
 const detailTabTriggerClassName = cn(
@@ -102,6 +101,28 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
     nowMs
   )
 
+  if (isLiveRecording) {
+    return (
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
+        <Link
+          to="/meetings/live"
+          className="text-muted-foreground hover:text-foreground mb-8 -ml-1 inline-flex w-fit items-center gap-2 text-sm transition-colors sm:-ml-5"
+        >
+          <ArrowLeft aria-hidden className="size-4" />
+          Back to Live Calls
+        </Link>
+        <div className="sm:pl-2">
+          <MeetingLivePage
+            meeting={meeting}
+            meetingId={meetingId}
+            statusLabel={statusLabel}
+            liveElapsedSec={liveElapsedSec}
+          />
+        </div>
+      </div>
+    )
+  }
+
   const recordingColumn = hasRecordingPlayback ? (
     <>
       <MeetingVideoPlayer
@@ -134,11 +155,9 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
     <div className="bg-card ring-border flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-2xl px-6 text-center ring-1">
       <p className="text-foreground text-sm font-medium">{statusLabel}</p>
       <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">
-        {isLiveRecording
-          ? 'Use Highlight and Scratchpad while the bot records. The full recording appears here when processing finishes.'
-          : meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining'
-            ? 'It may take up to 5 minutes for the bot to join the meeting.'
-            : 'Recording is not available yet. Check back when processing finishes.'}
+        {meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining'
+          ? 'It may take up to 5 minutes for the bot to join the meeting.'
+          : 'Recording is not available yet. Check back when processing finishes.'}
       </p>
     </div>
   )
@@ -161,17 +180,7 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
                 <p className="text-foreground text-lg font-semibold">
                   {meeting.title}
                 </p>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {statusLabel}
-                  {meeting.recordingStartedAt
-                    ? ` · ${formatPlaybackTimestamp(liveElapsedSec)} elapsed`
-                    : null}
-                </p>
               </div>
-              <MeetingLiveCapturePanel
-                meeting={meeting}
-                meetingId={meetingId}
-              />
             </div>
             <div className="hidden min-w-0 flex-col gap-4 lg:flex">
               {recordingColumn}
@@ -182,24 +191,6 @@ function MeetingPlaybackPage({ meetingId }: MeetingPlaybackPageProps) {
           {recordingColumn}
         </TabsContent>
       </Tabs>
-    ) : isLiveRecording ? (
-      <div className="flex flex-col gap-6">
-        <div className="bg-card ring-border flex flex-col gap-4 rounded-2xl p-6 ring-1">
-          <div>
-            <p className="text-foreground text-lg font-semibold">
-              {meeting.title}
-            </p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {statusLabel}
-              {meeting.recordingStartedAt
-                ? ` · ${formatPlaybackTimestamp(liveElapsedSec)} elapsed`
-                : null}
-            </p>
-          </div>
-          <MeetingLiveCapturePanel meeting={meeting} meetingId={meetingId} />
-        </div>
-        {recordingColumn}
-      </div>
     ) : (
       <div className="flex flex-col gap-6">{recordingColumn}</div>
     )

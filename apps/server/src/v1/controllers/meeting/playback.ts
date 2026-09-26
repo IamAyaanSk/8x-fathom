@@ -48,7 +48,7 @@ const getMeetingDetailController = async (
         shareSlug: true,
         recordingR2Key: true,
         highlights: {
-          orderBy: { timestampSec: 'asc' },
+          orderBy: { createdAt: 'desc' },
           select: {
             id: true,
             timestampSec: true,

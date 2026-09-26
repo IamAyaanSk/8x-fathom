@@ -2,6 +2,13 @@ import { useCalendarStatusQuery } from '@repo/api-client/v1/calendar/hooks'
 import { useMeetingsUpcomingQuery } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle
+} from '@repo/ui-web/components/empty'
 import { getRouteApi } from '@tanstack/react-router'
 import { CalendarDays, Loader2 } from 'lucide-react'
 import { useState } from 'react'
@@ -153,11 +160,20 @@ function UpcomingCallsPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
       {upcomingMeetings.length === 0 ? (
-        <div className="border-border/60 bg-card/40 rounded-xl border p-12 text-center">
-          <p className="text-foreground text-sm font-semibold">No upcoming calls</p>
-          <p className="text-muted-foreground mx-auto mt-1.5 max-w-sm text-xs leading-relaxed">
-            Only meetings in the next 2 days with a video link are synced. Future calls appear here until they finish or the scheduled end time passes.
-          </p>
+        <div className="flex flex-1 items-center justify-center py-12">
+          <Empty className="w-full max-w-md bg-muted/40">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <CalendarDays className="size-6 text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>No upcoming calls</EmptyTitle>
+              <EmptyDescription>
+                Only meetings in the next 2 days with a video link are synced.
+                Future calls appear here until they finish or the scheduled end
+                time passes.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </div>
       ) : (
         <div className="flex flex-col gap-8">

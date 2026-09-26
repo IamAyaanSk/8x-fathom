@@ -2,6 +2,14 @@ import { useCalendarStatusQuery } from '@repo/api-client/v1/calendar/hooks'
 import { useMeetingsLiveQuery } from '@repo/api-client/v1/meetings/hooks'
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
 import { Button } from '@repo/ui-web/components/button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle
+} from '@repo/ui-web/components/empty'
 import { Link } from '@tanstack/react-router'
 import { Loader2, Radio } from 'lucide-react'
 
@@ -59,25 +67,28 @@ function LiveCallsPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pt-4 pb-12 sm:px-6 sm:pt-6">
       {liveMeetings.length === 0 ? (
-        <div className="border-border/60 bg-card/40 flex flex-col items-center justify-center rounded-xl border p-12 text-center">
-          <div className="bg-muted text-muted-foreground mb-3 flex size-12 items-center justify-center rounded-full">
-            <Radio className="size-6" />
-          </div>
-          <p className="text-foreground text-sm font-semibold">
-            No live calls right now
-          </p>
-          <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs leading-relaxed">
-            When a bot is in your meeting and recording, the ongoing call shows
-            up here in real time.
-          </p>
-          <Button
-            render={<Link to="/meetings/upcoming" />}
-            variant="outline"
-            size="sm"
-            className="mt-5"
-          >
-            View upcoming calls
-          </Button>
+        <div className="flex flex-1 items-center justify-center py-12">
+          <Empty className="w-full max-w-md bg-muted/40">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Radio className="size-6 text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>No live calls right now</EmptyTitle>
+              <EmptyDescription>
+                When a bot is in your meeting and recording, the ongoing call shows
+                up here in real time.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button
+                render={<Link to="/meetings/upcoming" />}
+                variant="outline"
+                size="sm"
+              >
+                View upcoming calls
+              </Button>
+            </EmptyContent>
+          </Empty>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

@@ -1,6 +1,14 @@
 import type { MeetingListItem } from '@repo/api-client/v1/meetings/index'
 import { getMeetingBotUiLabel } from '@repo/shared-utils/meeting'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle
+} from '@repo/ui-web/components/empty'
 import { Link } from '@tanstack/react-router'
+import { Video } from 'lucide-react'
 
 import {
   formatMeetingCardWeekday,
@@ -71,12 +79,19 @@ function MyCallCard({ meeting }: { meeting: MeetingListItem }) {
 function MyCallsGrid({ meetings, nowMs }: MyCallsGridProps) {
   if (meetings.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <p className="text-foreground text-sm font-medium">No past calls yet</p>
-        <p className="text-muted-foreground mt-2 text-sm">
-          Recorded and processing calls appear here after the scheduled end
-          time.
-        </p>
+      <div className="flex flex-1 items-center justify-center py-12">
+        <Empty className="w-full max-w-md bg-muted/40">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Video className="size-6 text-muted-foreground" />
+            </EmptyMedia>
+            <EmptyTitle>No past calls yet</EmptyTitle>
+            <EmptyDescription>
+              Recorded and processing calls appear here after the scheduled end
+              time.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </div>
     )
   }

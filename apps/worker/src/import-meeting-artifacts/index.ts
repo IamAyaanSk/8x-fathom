@@ -1,8 +1,8 @@
-import '#src/env'
 import { Prisma, prisma } from '@repo/db'
 import { R2UploadError } from '@repo/r2'
 import { baasSignedArtifactUrlsSchema } from '@repo/shared-validations/meeting'
 
+import { env } from '#src/env'
 import {
   ARTIFACT_IMPORT_BATCH_SIZE,
   ARTIFACT_IMPORT_FETCH_TIMEOUT_MS,
@@ -26,10 +26,22 @@ async function _lockImportingMeetingRows(
   tx: Prisma.TransactionClient,
   limit: number
 ): Promise<LockedImportingMeetingRow[]> {
+  const demoUserFilter = env.DEMO_USER_EMAIL
+    ? Prisma.sql`
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "user" u
+          WHERE u.id = m."userId"
+            AND LOWER(u.email) = LOWER(${env.DEMO_USER_EMAIL})
+        )
+      `
+    : Prisma.empty
+
   return tx.$queryRaw<LockedImportingMeetingRow[]>`
     SELECT m.id
     FROM meeting m
     WHERE m."processingStatus" = 'importing'::"ProcessingStatus"
+      ${demoUserFilter}
       AND (
         m."processingLeaseExpiresAt" IS NULL
         OR m."processingLeaseExpiresAt" < NOW()

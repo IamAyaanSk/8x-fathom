@@ -6,6 +6,7 @@ export async function dispatchBotForDueMeetings() {
   try {
     const { dispatchedCount, errors } = await dispatchDueMeetings({
       meetingBaasApiKey: env.MEETINGBAAS_API_KEY,
+      excludedUserEmail: env.DEMO_USER_EMAIL,
       callbackBaseUrl: env.BASE_URL,
       webhookSecret: env.MEETINGBAAS_WEBHOOK_SECRET,
       transcriptionApiKey: env.DEEPGRAM_API_KEY

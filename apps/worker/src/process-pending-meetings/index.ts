@@ -1,5 +1,6 @@
 import { Prisma, prisma } from '@repo/db'
 
+import { env } from '#src/env'
 import {
   MEETING_PROCESSING_LEASE_MS,
   PENDING_PROCESSING_BATCH_SIZE,
@@ -15,6 +16,17 @@ async function _lockPendingMeetingRows(
   tx: Prisma.TransactionClient,
   limit: number
 ): Promise<LockedPendingMeetingRow[]> {
+  const demoUserFilter = env.DEMO_USER_EMAIL
+    ? Prisma.sql`
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "user" u
+          WHERE u.id = m."userId"
+            AND LOWER(u.email) = LOWER(${env.DEMO_USER_EMAIL})
+        )
+      `
+    : Prisma.empty
+
   return tx.$queryRaw<LockedPendingMeetingRow[]>`
     SELECT m.id
     FROM meeting m
@@ -34,6 +46,7 @@ async function _lockPendingMeetingRows(
         )
       )
     )
+    ${demoUserFilter}
     ORDER BY m."updatedAt" ASC
     LIMIT ${limit}
     FOR UPDATE OF m SKIP LOCKED

@@ -94,14 +94,14 @@ function LiveCallsPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="text-destructive flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+          <div className="text-destructive flex items-center gap-2 px-6 text-xs font-semibold tracking-wider uppercase sm:px-7">
             <span className="relative flex size-2">
               <span className="bg-destructive absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
               <span className="bg-destructive relative inline-flex size-2 rounded-full" />
             </span>
             <span>Currently Recording ({liveMeetings.length})</span>
           </div>
-          <ul className="border-border border-t">
+          <ul className="divide-border/60 divide-y">
             {liveMeetings.map((meeting: MeetingListItem) => (
               <UpcomingMeetingRow key={meeting.id} meeting={meeting} />
             ))}

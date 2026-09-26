@@ -294,7 +294,7 @@ function UpcomingCallsPage() {
           </div>
 
           <div className="flex flex-col gap-6 pt-2">
-            <div className="border-border flex items-center justify-between border-b pb-3">
+            <div className="flex items-center justify-between px-6 pb-1 sm:px-7">
               <h3 className="text-foreground text-base font-semibold tracking-tight sm:text-lg">
                 All upcoming calls ({upcomingMeetings.length})
               </h3>
@@ -304,10 +304,10 @@ function UpcomingCallsPage() {
             <div className="flex flex-col gap-8">
               {groups.map((group) => (
                 <section key={group.label} className="flex flex-col gap-3">
-                  <h4 className="text-muted-foreground font-sans text-xs font-semibold tracking-wider uppercase">
+                  <h4 className="text-muted-foreground px-6 font-sans text-xs font-semibold tracking-wider uppercase sm:px-7">
                     {group.label}
                   </h4>
-                  <ul className="border-border border-t">
+                  <ul className="divide-border/60 divide-y">
                     {group.meetings.map((meeting: MeetingListItem) => (
                       <UpcomingMeetingRow key={meeting.id} meeting={meeting} />
                     ))}
@@ -316,7 +316,7 @@ function UpcomingCallsPage() {
               ))}
             </div>
 
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground px-6 text-xs sm:px-7">
               Only meetings up to 2 days ahead are synced from your calendar.
             </p>
           </div>

@@ -262,6 +262,87 @@ function formatMeetingStartingIn(
   return `Starts in ${hours}h ${minutes}m`
 }
 
+function getUpcomingMeetingStatus(
+  meeting: MeetingListItem,
+  nowMs: number
+): string {
+  if (
+    meeting.uiPhase === 'in_call_recording' ||
+    meeting.baasStatus === 'in_call_recording'
+  ) {
+    return 'In call — recording'
+  }
+
+  if (
+    meeting.uiPhase === 'in_waiting_room' ||
+    meeting.baasStatus === 'in_waiting_room'
+  ) {
+    return 'In waiting room…'
+  }
+
+  if (meeting.uiPhase === 'joining' || meeting.baasStatus === 'joining') {
+    return 'Joining… · May take up to 5 minutes to join'
+  }
+
+  if (
+    meeting.uiPhase === 'transcribing' ||
+    meeting.baasStatus === 'transcribing'
+  ) {
+    return 'Transcribing…'
+  }
+
+  if (meeting.uiPhase === 'call_ended_processing') {
+    return 'Call ended, processing…'
+  }
+
+  if (meeting.uiPhase === 'failed_to_join') {
+    return 'Failed to join'
+  }
+
+  if (meeting.uiPhase === 'failed_processing') {
+    return 'Failed processing'
+  }
+
+  const startMs = Date.parse(meeting.startTime)
+  const endMs = Date.parse(meeting.endTime)
+
+  if (nowMs >= startMs && nowMs < endMs) {
+    return 'Happening now'
+  }
+
+  if (nowMs >= endMs) {
+    return 'Call ended'
+  }
+
+  const diffMs = Math.max(0, startMs - nowMs)
+  const totalMinutes = Math.floor(diffMs / 60_000)
+
+  if (totalMinutes < 1) {
+    return 'Starts in < 1m'
+  }
+
+  if (totalMinutes < 60) {
+    return `Starts in ${totalMinutes}m`
+  }
+
+  const dayLabel = getMeetingDayGroupLabel(meeting.startTime, nowMs)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+
+  if (dayLabel === 'Today') {
+    if (minutes === 0) {
+      return `Starts in ${hours}h`
+    }
+    return `Starts in ${hours}h ${minutes}m`
+  }
+
+  if (dayLabel === 'Tomorrow') {
+    return 'Scheduled for tomorrow'
+  }
+
+  return 'Scheduled'
+}
+
 export type { MeetingPlatform, MeetingRelativeStatus }
 export {
   formatMeetingEndTime,
@@ -270,5 +351,6 @@ export {
   formatMeetingTimeRange,
   getGreeting,
   getMeetingPlatform,
-  getMeetingRelativeStatus
+  getMeetingRelativeStatus,
+  getUpcomingMeetingStatus
 }
